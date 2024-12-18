@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to fetch available models for the selected provider
     async function fetchModels(provider) {
         try {
-            const response = await fetch(`/api/models?provider=${provider}`);
+            const response = await fetch(`http://127.0.0.1:5000/api/models?provider=${provider}`);
             if (!response.ok) {
                 const message = `HTTP error! status: ${response.status}`;
                 console.error('Failed to fetch models:', message);
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const response = await fetch('/api/generate', {
+                const response = await fetch('http://127.0.0.1:5000/api/generate', {
                     method: 'POST',
                     body: formData,
                 });
