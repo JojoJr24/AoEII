@@ -32,21 +32,32 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`/api/models?provider=${provider}`);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const message = `HTTP error! status: ${response.status}`;
+                console.error('Failed to fetch models:', message);
+                addMessage(`Error loading models: ${message}`, false)
+                llmModel.innerHTML = '<option>Error loading models</option>';
+                return;
             }
             const models = await response.json();
             llmModel.innerHTML = ''; // Clear existing options
-            models.forEach(model => {
-                const option = document.createElement('option');
-                option.value = model;
-                option.textContent = model;
-                llmModel.appendChild(option);
-            });
-            selectedModel = models[0];
-            llmModel.value = selectedModel;
-            updateStatus();
+            if (models && models.length > 0) {
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    llmModel.appendChild(option);
+                });
+                selectedModel = models[0];
+                llmModel.value = selectedModel;
+                updateStatus();
+            } else {
+                 console.error('No models returned from the API.');
+                 addMessage('No models available for this provider.', false);
+                 llmModel.innerHTML = '<option>No models available</option>';
+            }
         } catch (error) {
             console.error('Failed to fetch models:', error);
+            addMessage(`Error loading models: ${error.message}`, false)
             llmModel.innerHTML = '<option>Error loading models</option>';
         }
     }
@@ -89,14 +100,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: formData,
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorMsg = `HTTP error! status: ${response.status}`;
+                    console.error('Failed to send message:', errorMsg);
+                    addMessage(`Error generating response: ${errorMsg}`, false);
+                    return;
                 }
                 const data = await response.json();
                 addMessage(data.response, false);
                 uploadedImage = null; // Clear the uploaded image after sending
             } catch (error) {
                 console.error('Failed to send message:', error);
-                addMessage('Error generating response.', false);
+                addMessage(`Error generating response: ${error.message}`, false);
             }
         }
     });
