@@ -63,8 +63,8 @@ def chatbot_interface(user_input, history):
     return history, history
 
 with gr.Blocks() as demo:
-    with gr.Row(equal=True):
-        with gr.Column(scale=1, equal=True):
+    with gr.Row():
+        with gr.Column(scale=1):
             gr.Markdown("## Configuración")
             llm_provider_selector = gr.Dropdown(
                 choices=list(llm_providers.keys()),
@@ -87,7 +87,7 @@ with gr.Blocks() as demo:
                 inputs=llm_model_selector,
                 outputs=llm_status
             )
-        with gr.Column(scale=4, equal=True):
+        with gr.Column(scale=4):
             gr.Markdown("# Mi Playground de LLM con Gradio")
             gr.Markdown("Escribe un mensaje y recibe una respuesta del modelo.")
             
