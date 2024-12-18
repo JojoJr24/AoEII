@@ -1,6 +1,7 @@
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+from typing import List
 
 load_dotenv()
 
@@ -11,20 +12,31 @@ class GeminiAPI:
         if not api_key:
             raise ValueError("No GOOGLE_API_KEY found in environment variables.")
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.available_models = ['gemini-pro', 'gemini-pro-vision']
 
-    def generate_response(self, prompt: str) -> str:
+    def list_models(self) -> List[str]:
         """
-        Generates a response using the Gemini Pro model.
+        Lists available models for Gemini API.
+
+        Returns:
+            List[str]: A list of available model names.
+        """
+        return self.available_models
+
+    def generate_response(self, prompt: str, model_name: str) -> str:
+        """
+        Generates a response using the specified Gemini model.
 
         Args:
             prompt (str): The input prompt.
+            model_name (str): The name of the model to use.
 
         Returns:
             str: The generated response from Gemini.
         """
         try:
-            response = self.model.generate_content(prompt)
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(prompt)
             return response.text
         except Exception as e:
             return f"Error generating response: {e}"
