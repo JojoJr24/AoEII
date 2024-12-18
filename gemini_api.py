@@ -8,11 +8,11 @@ load_dotenv()
 class GeminiAPI:
     def __init__(self):
         # Configure the API key
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("No GOOGLE_API_KEY found in environment variables.")
+            raise ValueError("No GEMINI_API_KEY found in environment variables.")
         genai.configure(api_key=api_key)
-        self.available_models = ['gemini-pro', 'gemini-pro-vision']
+        self.available_models = ['gemini-flash', 'gemini-flash-vision']
 
     def list_models(self) -> List[str]:
         """
