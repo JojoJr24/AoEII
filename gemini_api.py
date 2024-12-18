@@ -12,7 +12,18 @@ class GeminiAPI:
         if not api_key:
             raise ValueError("No GEMINI_API_KEY found in environment variables.")
         genai.configure(api_key=api_key)
-        self.available_models = ['gemini-flash', 'gemini-flash-vision']
+        self.available_models = self._list_available_models()
+
+    def _list_available_models(self) -> List[str]:
+        """
+        Lists available models from Gemini API.
+
+        Returns:
+            List[str]: A list of available model names.
+        """
+        models = genai.list_models()
+        return [model.name for model in models if 'generateContent' in model.supported_generation_methods]
+
 
     def list_models(self) -> List[str]:
         """
