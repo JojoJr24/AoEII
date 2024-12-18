@@ -1,6 +1,7 @@
 import gradio as gr
 from gemini_api import GeminiAPI
 from PIL import Image
+import io
 
 # Initialize the Gemini API
 gemini_api = GeminiAPI()
@@ -52,14 +53,19 @@ def update_selected_model(model_name):
     return f"Proveedor seleccionado: {selected_provider}, Modelo seleccionado: {model_name}"
 
 # Interfaz de Gradio
-def chatbot_interface(user_input, history, image):
+def chatbot_interface(user_input, history, image_file):
     # history es una lista de pares (usuario, asistente).
     # Append el nuevo input del usuario
     history = history or []
     
-    # Prepare the input for the chatbot
-    if image:
-        history.append(((user_input, image), None))
+    image = None
+    if image_file:
+        try:
+            image = Image.open(io.BytesIO(image_file.read()))
+            history.append(((user_input, image), None))
+        except Exception as e:
+            history.append(((user_input, "Error al cargar la imagen"), None))
+            print(f"Error al cargar la imagen: {e}")
     else:
         history.append((user_input, None))
     
@@ -105,18 +111,18 @@ with gr.Blocks() as demo:
             
             chatbot = gr.Chatbot()
             with gr.Row():
+                image_upload_button = gr.UploadButton("📁", file_types=["image"], label="Subir imagen")
                 msg = gr.Textbox(label="Escribe tu mensaje aquí...")
-                image_input = gr.Image(label="Sube una imagen aquí...", type="pil")
             state = gr.State([])
 
             submit_btn = gr.Button("Enviar")
             submit_btn.click(fn=chatbot_interface, 
-                            inputs=[msg, state, image_input], 
+                            inputs=[msg, state, image_upload_button], 
                             outputs=[chatbot, state])
             
             # O también podrías permitir enviar con Enter:
             msg.submit(fn=chatbot_interface, 
-                    inputs=[msg, state, image_input], 
+                    inputs=[msg, state, image_upload_button], 
                     outputs=[chatbot, state])
 
 # Ejecuta la interfaz localmente en http://localhost:7860/
