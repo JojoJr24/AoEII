@@ -26,7 +26,10 @@ def generate_response(prompt):
     global selected_provider, selected_model
     provider = llm_providers.get(selected_provider)
     if provider:
-        return provider.generate_response(prompt, selected_model)
+        if selected_model:
+            return provider.generate_response(prompt, selected_model)
+        else:
+            return "Error: No model selected for the provider."
     else:
         return "Error: LLM provider not found"
 
