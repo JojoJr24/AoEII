@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from gemini_api import GeminiAPI
 from PIL import Image
 import io
@@ -6,6 +7,7 @@ import base64
 import os
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Initialize the Gemini API
 gemini_api = GeminiAPI()
