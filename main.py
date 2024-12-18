@@ -1,5 +1,6 @@
 import gradio as gr
 from gemini_api import GeminiAPI
+from PIL import Image
 
 # Initialize the Gemini API
 gemini_api = GeminiAPI()
@@ -22,12 +23,12 @@ def get_available_models(provider_name):
     return []
 
 # Function to generate responses using the selected LLM
-def generate_response(prompt):
+def generate_response(prompt, image=None):
     global selected_provider, selected_model
     provider = llm_providers.get(selected_provider)
     if provider:
         if selected_model:
-            return provider.generate_response(prompt, selected_model)
+            return provider.generate_response(prompt, selected_model, image)
         else:
             return "Error: No model selected for the provider."
     else:
@@ -51,15 +52,26 @@ def update_selected_model(model_name):
     return f"Proveedor seleccionado: {selected_provider}, Modelo seleccionado: {model_name}"
 
 # Interfaz de Gradio
-def chatbot_interface(user_input, history):
+def chatbot_interface(user_input, history, image):
     # history es una lista de pares (usuario, asistente).
     # Append el nuevo input del usuario
     history = history or []
-    history.append((user_input, None))
+    
+    # Prepare the input for the chatbot
+    if image:
+        history.append(((user_input, image), None))
+    else:
+        history.append((user_input, None))
     
     # Genera la respuesta del LLM
-    response = generate_response(user_input)
-    history[-1] = (user_input, response)
+    response = generate_response(user_input, image)
+    
+    # Update the history with the response
+    if image:
+        history[-1] = ((user_input, image), response)
+    else:
+        history[-1] = (user_input, response)
+    
     return history, history
 
 with gr.Blocks() as demo:
@@ -92,17 +104,19 @@ with gr.Blocks() as demo:
             gr.Markdown("Escribe un mensaje y recibe una respuesta del modelo.")
             
             chatbot = gr.Chatbot()
-            msg = gr.Textbox(label="Escribe tu mensaje aquí...")
+            with gr.Row():
+                msg = gr.Textbox(label="Escribe tu mensaje aquí...")
+                image_input = gr.Image(label="Sube una imagen aquí...", type="pil")
             state = gr.State([])
 
             submit_btn = gr.Button("Enviar")
             submit_btn.click(fn=chatbot_interface, 
-                            inputs=[msg, state], 
+                            inputs=[msg, state, image_input], 
                             outputs=[chatbot, state])
             
             # O también podrías permitir enviar con Enter:
             msg.submit(fn=chatbot_interface, 
-                    inputs=[msg, state], 
+                    inputs=[msg, state, image_input], 
                     outputs=[chatbot, state])
 
 # Ejecuta la interfaz localmente en http://localhost:7860/
