@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Playground</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Configuración</h2>
+            <div class="form-group">
+                <label for="llm-provider">Proveedor de LLM:</label>
+                <select id="llm-provider">
+                    <option value="gemini">Gemini</option>
+                    <!-- Add other providers here -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="llm-model">Modelo de LLM:</label>
+                <select id="llm-model">
+                    <option value="gemini-pro">gemini-pro</option>
+                    <!-- Models will be populated by JS -->
+                </select>
+            </div>
+            <div class="form-group">
+                <p id="llm-status">Proveedor seleccionado: gemini, Modelo seleccionado: gemini-pro</p>
+            </div>
+        </div>
+        <div class="main-content">
+            <h1>Mi Playground de LLM</h1>
+            <div id="chat-window">
+                <!-- Chat messages will be displayed here -->
+            </div>
+            <div class="input-area">
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                <button id="upload-button">📁</button>
+                <input type="text" id="user-input" placeholder="Escribe tu mensaje aquí...">
+                <button id="send-button">Enviar</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
