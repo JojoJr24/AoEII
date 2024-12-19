@@ -57,7 +57,10 @@ class GeminiAPI:
             contents = []
             if history:
                 for message in history:
-                    contents.append({"role": message["role"], "parts": [message["content"]]})
+                    if message["role"] == "model":
+                        contents.append({"role": "assistant", "parts": [message["content"]]})
+                    else:
+                        contents.append({"role": message["role"], "parts": [message["content"]]})
             
             parts = []
             if prompt:
