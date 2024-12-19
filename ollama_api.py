@@ -18,6 +18,7 @@ class OllamaAPI:
         models = ollama.list()
         return [model['name'] for model in models['models']]
 
+
     def list_models(self) -> List[str]:
         """
         Lists available models for Ollama API.
