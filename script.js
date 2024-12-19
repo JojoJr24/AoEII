@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageUpload = document.getElementById('image-upload');
     const uploadButton = document.getElementById('upload-button');
     const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const darkModeToggleHeader = document.getElementById('dark-mode-toggle-header');
     const sidebar = document.querySelector('.sidebar');
     const inputWithUpload = document.querySelector('.input-with-upload');
     const formSelects = document.querySelectorAll('.form-group select');
@@ -185,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for dark mode toggle
     darkModeToggle.addEventListener('change', toggleDarkMode);
+    darkModeToggleHeader.addEventListener('change', toggleDarkMode);
 
     // Initial fetch of models
     fetchModels(selectedProvider);

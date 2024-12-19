@@ -85,6 +85,18 @@ body.dark-mode {
     font-size: 2em;
 }
 
+.header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dark-mode-switch-header {
+    display: flex;
+    align-items: center;
+}
+
 #chat-window {
     flex: 1;
     border: 1px solid #ddd;
