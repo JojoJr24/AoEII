@@ -250,6 +250,16 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                 for chunk in tool_response_generator:
                     tool_response += chunk
                 debug_print(BLUE, f"Tool response: {tool_response}")
+                
+                prompt = f"""
+                    The tool response is:
+                    ```tool_response
+                    {tool_response}
+                    ```
+                    
+                    Now, respond to the following prompt:
+                    {prompt}
+                """
             
             response = provider.generate_response(prompt, model_name, image, history, system_message)
             debug_print(GREEN, f"Response generated successfully.")
