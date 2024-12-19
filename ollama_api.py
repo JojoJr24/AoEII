@@ -45,7 +45,8 @@ class OllamaAPI:
         try:
             messages = []
             if history:
-                messages.extend(history)
+                for message in history:
+                    messages.append({"role": message["role"], "content": message["content"]})
             
             if image:
                 # Convert PIL Image to bytes
