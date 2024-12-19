@@ -220,10 +220,35 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
             except Exception as e:
                 debug_print(RED, f"Error loading tool {tool_name}: {e}")
         
-        
     provider = llm_providers.get(provider_name)
     if provider:
         if model_name:
+            if tool_instances:
+                tool_descriptions = "\n".join([f"- {tool['name']}: {tool['description']}" for tool in tool_instances])
+                tool_prompt = f"""
+                    You have access to the following tools, use them if needed:
+                    {tool_descriptions}
+                    
+                    Use the tools by calling them with the following format:
+                    ```tool_code
+                    {{
+                        "tool_name": "tool_name",
+                        "parameters": {{
+                            "param1": "value1",
+                            "param2": "value2"
+                        }}
+                    }}
+                    ```
+                    
+                    After using the tool, continue with the conversation.
+                    
+                    Now, respond to the following prompt:
+                    {prompt}
+                """
+                
+                tool_response = provider.generate_response(tool_prompt, model_name, image, None, system_message, tool_instances)
+                debug_print(BLUE, f"Tool response: {tool_response}")
+            
             response = provider.generate_response(prompt, model_name, image, history, system_message, tool_instances)
             debug_print(GREEN, f"Response generated successfully.")
             return response
