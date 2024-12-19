@@ -16,6 +16,7 @@ class OllamaAPI:
             List[str]: A list of available model names.
         """
         models = ollama.list()
+        print(f"Ollama models response: {models}")
         return [model['name'] for model in models['models']]
 
 
