@@ -1,4 +1,4 @@
-def execute(*args):
+s def execute(*args):
     """
     This is an example tool that takes a variable number of arguments and returns a string.
     """
