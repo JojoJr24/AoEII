@@ -69,7 +69,7 @@ class GeminiAPI:
                 image.save(image_bytes, format=image.format if image.format else "PNG")
                 image_bytes = image_bytes.getvalue()
                 
-                parts.append(genai.Part.from_data(image_bytes, mime_type=f'image/{image.format.lower() if image.format else "png"}'))
+                parts.append(genai.types.Part.from_data(image_bytes, mime_type=f'image/{image.format.lower() if image.format else "png"}'))
             
             if parts:
                 contents.append({"role": "user", "parts": parts})
