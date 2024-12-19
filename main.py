@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from gemini_api import GeminiAPI
 from PIL import Image
 import io
-import base64
 import os
+import json
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -64,8 +64,11 @@ def generate():
     if not prompt:
         return jsonify({"response": "Prompt is required"}), 400
 
-    response = generate_response(prompt, model_name, image)
-    return jsonify({"response": response})
+    def stream_response():
+        for chunk in generate_response(prompt, model_name, image):
+            yield f" {json.dumps({'response': chunk})}\n\n"
+    
+    return Response(stream_response(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

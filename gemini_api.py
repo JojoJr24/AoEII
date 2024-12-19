@@ -1,7 +1,7 @@
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-from typing import List, Optional
+from typing import List, Optional, Generator
 from PIL import Image
 import io
 
@@ -36,17 +36,17 @@ class GeminiAPI:
         """
         return self.available_models
 
-    def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None) -> str:
+    def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None) -> Generator[str, None, None]:
         """
-        Generates a response using the specified Gemini model.
+        Generates a response using the specified Gemini model, yielding chunks of the response.
 
         Args:
             prompt (str): The input prompt.
             model_name (str): The name of the model to use.
             image (Optional[Image.Image]): An optional image to include in the prompt.
 
-        Returns:
-            str: The generated response from Gemini.
+        Yields:
+            str: The generated response chunks from Gemini.
         """
         try:
             model = genai.GenerativeModel(model_name)
@@ -61,7 +61,8 @@ class GeminiAPI:
             else:
                 contents = [prompt]
             
-            response = model.generate_content(contents)
-            return response.text
+            response_stream = model.generate_content(contents, stream=True)
+            for chunk in response_stream:
+                yield chunk.text
         except Exception as e:
-            return f"Error generating response: {e}"
+            yield f"Error generating response: {e}"

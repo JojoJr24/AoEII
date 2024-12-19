@@ -125,6 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch('http://127.0.0.1:5000/api/generate', {
                     method: 'POST',
                     body: formData,
+                    headers: {
+                        'Accept': 'text/event-stream'
+                    }
                 });
                 if (!response.ok) {
                     const errorMsg = `HTTP error! status: ${response.status}`;
@@ -132,8 +135,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     addMessage(`Error generating response: ${errorMsg}`, false);
                     return;
                 }
-                const data = await response.json();
-                addMessage(data.response, false);
+                
+                const reader = response.body.getReader();
+                let partialResponse = '';
+                
+                while(true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+                    const text = new TextDecoder().decode(value);
+                    const lines = text.split('\n').filter(line => line.startsWith(''));
+                    
+                    for (const line of lines) {
+                        try {
+                            const jsonString = line.substring(5);
+                            const data = JSON.parse(jsonString);
+                            partialResponse += data.response;
+                            addMessage(partialResponse, false);
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e, line);
+                        }
+                    }
+                }
                 uploadedImage = null; // Clear the uploaded image after sending
             } catch (error) {
                 console.error('Failed to send message:', error);
