@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Get references to DOM elements
     const chatWindow = document.getElementById('chat-window');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
@@ -12,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputWithUpload = document.querySelector('.input-with-upload');
     const formSelects = document.querySelectorAll('.form-group select');
 
-
+    // Initialize variables
     let selectedProvider = llmProvider.value;
     let selectedModel = llmModel.value;
     let uploadedImage = null;
@@ -32,13 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     hljs.highlightBlock(block);
                     // Add copy button
                     const copyButton = document.createElement('button');
-                    copyButton.textContent = 'Copiar';
+                    copyButton.innerHTML = '<i class="fas fa-copy"></i>';
                     copyButton.classList.add('copy-button');
                     copyButton.addEventListener('click', () => {
                         navigator.clipboard.writeText(block.textContent).then(() => {
-                            copyButton.textContent = 'Copiado!';
+                            copyButton.innerHTML = '<i class="fas fa-check"></i>';
                             setTimeout(() => {
-                                copyButton.textContent = 'Copiar';
+                                copyButton.innerHTML = '<i class="fas fa-copy"></i>';
                             }, 2000);
                         });
                     });

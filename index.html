@@ -6,8 +6,10 @@
     <title>LLM Playground</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -41,10 +43,10 @@
             <div class="input-area">
                 <div class="input-with-upload">
                     <input type="text" id="user-input" placeholder="Escribe tu mensaje aquí...">
-                    <button id="upload-button">Imagen</button>
+                    <button id="upload-button"><i class="fas fa-upload"></i>Imagen</button>
                     <input type="file" id="image-upload" accept="image/*" style="display: none;">
                 </div>
-                <button id="send-button">Enviar</button>
+                <button id="send-button"><i class="fas fa-paper-plane"></i>Enviar</button>
             </div>
         </div>
     </div>

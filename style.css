@@ -1,16 +1,16 @@
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #f8f9fa;
+    color: #343a40;
     display: flex;
     height: 100vh;
     transition: background-color 0.3s, color 0.3s;
 }
 
 body.dark-mode {
-    background-color: #1a1a1a;
+    background-color: #212529;
     color: #fff;
 }
 
@@ -21,8 +21,8 @@ body.dark-mode {
 }
 
 .sidebar {
-    width: 250px;
-    background-color: #2c3e50;
+    width: 280px;
+    background-color: #343a40;
     color: #fff;
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
@@ -32,13 +32,14 @@ body.dark-mode {
 }
 
 .sidebar.dark-mode {
-    background-color: #333;
+    background-color: #343a40;
     color: #fff;
 }
 
 .sidebar h2 {
     margin-bottom: 20px;
     text-align: center;
+    color: #fff;
 }
 
 .form-group {
@@ -53,18 +54,18 @@ body.dark-mode {
 
 .form-group select {
     width: calc(100% - 10px);
-    padding: 8px;
-    border: 1px solid #4e6a85;
+    padding: 10px;
+    border: 1px solid #495057;
     border-radius: 4px;
-    background-color: #34495e;
+    background-color: #495057;
     color: #fff;
     transition: background-color 0.3s, color 0.3s;
 }
 
 .form-group select.dark-mode {
-    background-color: #555;
+    background-color: #495057;
     color: #fff;
-    border: 1px solid #777;
+    border: 1px solid #6c757d;
 }
 
 .form-group p {
@@ -77,12 +78,6 @@ body.dark-mode {
     padding: 20px;
     display: flex;
     flex-direction: column;
-}
-
-.main-content h1 {
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 2em;
 }
 
 .header {
@@ -99,38 +94,41 @@ body.dark-mode {
 
 #chat-window {
     flex: 1;
-    border: 1px solid #ddd;
+    border: 1px solid #dee2e6;
     padding: 10px;
     margin-bottom: 10px;
     overflow-y: auto;
     background-color: #fff;
     border-radius: 8px;
     transition: background-color 0.3s, color 0.3s;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
 #chat-window.dark-mode {
-    background-color: #262626;
+    background-color: #343a40;
     color: #fff;
-    border: 1px solid #555;
+    border: 1px solid #495057;
 }
 
 .message {
-    padding: 8px;
-    margin-bottom: 5px;
+    padding: 10px;
+    margin-bottom: 8px;
     border-radius: 8px;
     max-width: 80%;
     clear: both;
     transition: background-color 0.3s, color 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .user-message {
-    background-color: #e0f7fa;
+    background-color: #e8f5e9;
     align-self: flex-end;
     float: right;
+    color: #2e7d32;
 }
 
 .user-message.dark-mode {
-    background-color: #444;
+    background-color: #495057;
     color: #fff;
 }
 
@@ -138,10 +136,11 @@ body.dark-mode {
     background-color: #f0f0f0;
     align-self: flex-start;
     float: left;
+    color: #212529;
 }
 
 .llm-message.dark-mode {
-    background-color: #333;
+    background-color: #495057;
     color: #fff;
 }
 
@@ -153,22 +152,22 @@ body.dark-mode {
 .input-with-upload {
     display: flex;
     flex: 1;
-    border: 1px solid #ddd;
+    border: 1px solid #ced4da;
     border-radius: 4px;
-    overflow: hidden; /* Ensure the button stays within the container */
-    transition: background-color 0.3s, color 0.3s;
+    overflow: hidden;
+    transition: border-color 0.3s, background-color 0.3s;
 }
 
 .input-with-upload.dark-mode {
-    border: 1px solid #555;
-    background-color: #333;
+    border: 1px solid #495057;
+    background-color: #495057;
 }
 
 .input-with-upload input[type="text"] {
     flex: 1;
     padding: 10px;
     border: none;
-    outline: none; /* Remove the input's outline */
+    outline: none;
     background-color: transparent;
     color: inherit;
 }
@@ -176,29 +175,35 @@ body.dark-mode {
 .input-with-upload button {
     padding: 10px 15px;
     border: none;
-    background-color: #2ecc71;
+    background-color: #28a745;
     color: #fff;
     cursor: pointer;
-    border-radius: 0; /* Remove the button's border radius */
+    border-radius: 0;
     transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .input-with-upload button:hover {
-    background-color: #27ae60;
+    background-color: #218838;
 }
 
 .input-area button {
     padding: 10px 15px;
     border: none;
-    background-color: #3498db;
+    background-color: #007bff;
     color: #fff;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .input-area button:hover {
-    background-color: #2980b9;
+    background-color: #0056b3;
 }
 
 .dark-mode-toggle-container {
@@ -209,5 +214,25 @@ body.dark-mode {
 
 .dark-mode-toggle-container label {
     color: #fff;
+    margin-right: 5px;
+}
+
+.copy-button {
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.copy-button:hover {
+    background-color: #5a6268;
+}
+
+.input-with-upload button i,
+.input-area button i {
     margin-right: 5px;
 }
