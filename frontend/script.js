@@ -478,31 +478,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for back button
     backButton.addEventListener('click', async () => {
-        if (previousResponses.length > 1) {
-            previousResponses.pop();
-            const previous = previousResponses[previousResponses.length - 1];
-            chatWindow.innerHTML = '';
-            chatHistory = [];
-            currentConversationId = previous.conversationId;
-            
-            try {
-                const response = await fetch(`http://127.0.0.1:5000/api/conversations/${currentConversationId}`);
-                if (!response.ok) {
-                    console.error('Failed to fetch conversation:', response.statusText);
-                    return;
-                }
-                const data = await response.json();
-                if (data && data.messages) {
-                    data.messages.forEach(message => {
-                        addMessage(message.content, message.role === 'user');
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching conversation:', error);
+        if (previousResponses.length > 0) {
+            // Remove the last message from the chat window
+            const lastMessage = chatWindow.lastElementChild;
+            if (lastMessage) {
+                chatWindow.removeChild(lastMessage);
             }
             
-            addMessage(previous.response, false);
-            lastResponse = previous.response;
+            // Remove the last message from the chat history
+            if (chatHistory.length > 0) {
+                chatHistory.pop();
+            }
+            
+            previousResponses.pop();
+            
+            if (previousResponses.length > 0) {
+                const previous = previousResponses[previousResponses.length - 1];
+                chatWindow.innerHTML = '';
+                chatHistory = [];
+                currentConversationId = previous.conversationId;
+                
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/api/conversations/${currentConversationId}`);
+                    if (!response.ok) {
+                        console.error('Failed to fetch conversation:', response.statusText);
+                        return;
+                    }
+                    const data = await response.json();
+                    if (data && data.messages) {
+                        data.messages.forEach(message => {
+                            addMessage(message.content, message.role === 'user');
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error fetching conversation:', error);
+                }
+                
+                addMessage(previous.response, false);
+                lastResponse = previous.response;
+            } else {
+                chatWindow.innerHTML = '';
+                chatHistory = [];
+                previousResponses = [];
+            }
         } else {
             chatWindow.innerHTML = '';
             chatHistory = [];
