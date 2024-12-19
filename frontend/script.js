@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let chatHistory = []; // Store chat history
     let systemMessage = systemMessageTextarea.value;
     let currentConversationId = null;
+    let firstMessage = true; // Flag to track if it's the first message in a new conversation
+    let conversationTitle = null;
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -127,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             conversations.forEach(conversation => {
                 const option = document.createElement('option');
                 option.value = conversation.id;
-                option.textContent = `Conversation ${conversation.id} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})`;
+                option.textContent = conversation.title ? `${conversation.title} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})` : `Conversation ${conversation.id} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})`;
                 conversationSelect.appendChild(option);
             });
         } catch (error) {
@@ -195,6 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentConversationId) {
                 formData.append('conversation_id', currentConversationId);
             }
+            if (firstMessage) {
+                conversationTitle = message;
+                formData.append('conversation_title', conversationTitle);
+            }
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/generate', {
@@ -248,6 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 uploadedImage = null; // Clear the uploaded image after sending
+                if (firstMessage) {
+                    firstMessage = false;
+                    loadConversations();
+                }
             } catch (error) {
                 console.error('Failed to send message:', error);
                 addMessage(`Error generating response: ${error.message}`, false);
@@ -307,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentConversationId = null;
         conversationSelect.value = "";
         deleteConversationButton.style.display = 'none';
+        firstMessage = true;
     });
 
     // Event listener for sidebar toggle
@@ -319,11 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedConversationId = conversationSelect.value;
         if (selectedConversationId) {
             await loadConversation(selectedConversationId);
+            firstMessage = false;
         } else {
             chatWindow.innerHTML = '';
             chatHistory = [];
             currentConversationId = null;
             deleteConversationButton.style.display = 'none';
+            firstMessage = true;
         }
     });
 
@@ -342,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     conversationSelect.value = "";
                     deleteConversationButton.style.display = 'none';
                     await loadConversations();
+                    firstMessage = true;
                 } else {
                     console.error('Failed to delete conversation:', response.statusText);
                 }
