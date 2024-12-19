@@ -138,7 +138,7 @@ def list_system_messages():
     return [dict(system_message) for system_message in system_messages]
 
 def list_tools():
-    tools_dir = 'tools'
+    tools_dir = '../tools'
     tools = []
     for filename in os.listdir(tools_dir):
         if filename.endswith('.py'):
