@@ -434,6 +434,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentConversationId) {
                 formData.append('conversation_id', currentConversationId);
             }
+            const activeTools = Array.from(activeToolsContainer.querySelectorAll('.active-tool-tag')).map(tool => tool.textContent);
+            formData.append('selected_tools', JSON.stringify(activeTools));
             if (firstMessage) {
                 conversationTitle = message;
                 formData.append('conversation_title', conversationTitle);
