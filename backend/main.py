@@ -106,11 +106,11 @@ def list_conversations():
     conn.close()
     return [dict(conversation) for conversation in conversations]
 
-def save_system_message(content):
+def save_system_message(name, content):
     conn = get_db_connection()
     cursor = conn.cursor()
     timestamp = datetime.now().isoformat()
-    cursor.execute("INSERT INTO system_messages (content, created_at) VALUES (?, ?)", (content, timestamp))
+    cursor.execute("INSERT INTO system_messages (name, content, created_at) VALUES (?, ?, ?)", (name, content, timestamp))
     system_message_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -131,7 +131,7 @@ def list_system_messages():
     cursor = conn.cursor()
     cursor.execute("SELECT id, provider, model, created_at FROM conversations ORDER BY created_at DESC")
     conversations = cursor.fetchall()
-    cursor.execute("SELECT id, content, created_at FROM system_messages ORDER BY created_at DESC")
+    cursor.execute("SELECT id, name, content, created_at FROM system_messages ORDER BY created_at DESC")
     system_messages = cursor.fetchall()
     conn.close()
     return [dict(system_message) for system_message in system_messages]

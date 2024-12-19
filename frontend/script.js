@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             systemMessages.forEach(message => {
                 const option = document.createElement('option');
                 option.value = message.id;
-                option.textContent = message.content.length > 50 ? message.content.substring(0, 50) + '...' : message.content;
+                option.textContent = `${message.name} (${message.content.length > 50 ? message.content.substring(0, 50) + '...' : message.content})`;
                 systemMessageSelect.appendChild(option);
             });
         } catch (error) {
@@ -395,14 +395,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to save a system message
     async function saveSystemMessage() {
         const content = systemMessageTextarea.value;
-        if (content) {
+        const name = document.getElementById('system-message-name').value;
+        if (content && name) {
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/system_messages', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ content: content })
+                    body: JSON.stringify({ name: name, content: content })
                 });
                 if (response.ok) {
                     console.log('System message saved.');
