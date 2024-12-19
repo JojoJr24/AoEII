@@ -27,7 +27,6 @@ class GeminiAPI:
         models = genai.list_models()
         return [model.name for model in models if 'generateContent' in model.supported_generation_methods]
 
-
     def list_models(self) -> List[str]:
         """
         Lists available models for Gemini API.
@@ -58,9 +57,12 @@ class GeminiAPI:
             if history:
                 for message in history:
                     if message["role"] == "model":
-                        contents.append({"role": "assistant", "parts": [message["content"]]})
+                        contents.append({"role": "user", "parts": [message["content"]]})
+                    elif message["role"] == "user":
+                        contents.append({"role": "user", "parts": [message["content"]]})
                     else:
                         contents.append({"role": message["role"], "parts": [message["content"]]})
+
             
             parts = []
             if prompt:
