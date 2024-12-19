@@ -28,7 +28,19 @@ body.dark-mode {
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s, color 0.3s, width 0.3s;
+    min-width: 50px;
+}
+
+.sidebar.collapsed {
+    width: 50px;
+    overflow: hidden;
+}
+
+.sidebar.collapsed h2,
+.sidebar.collapsed .form-group,
+.sidebar.collapsed p {
+    display: none;
 }
 
 .sidebar.dark-mode {
@@ -260,4 +272,14 @@ body.dark-mode {
 
 #reset-button:hover {
     background-color: #c82333;
+}
+
+#sidebar-toggle {
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+    margin-right: 10px;
+    padding: 0;
 }

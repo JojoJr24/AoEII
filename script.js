@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputWithUpload = document.querySelector('.input-with-upload');
     const formSelects = document.querySelectorAll('.form-group select');
     const resetButton = document.getElementById('reset-button');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -245,6 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
     resetButton.addEventListener('click', () => {
         chatHistory = [];
         chatWindow.innerHTML = '';
+    });
+
+    // Event listener for sidebar toggle
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
     });
 
     // Initial fetch of models
