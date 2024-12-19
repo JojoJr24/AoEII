@@ -15,10 +15,8 @@ CORS(app)  # Enable CORS for all routes
 # ANSI escape codes for colors
 RED = '\033[91m'
 GREEN = '\033[92m'
-YELLOW = '\033[93m'
 BLUE = '\033[94m'
 MAGENTA = '\033[95m'
-CYAN = '\033[96m'
 RESET = '\033[0m'
 
 DEBUG = True
@@ -28,15 +26,13 @@ def debug_print(color, message):
         print(f"{color}{message}{RESET}")
 
 # Initialize the Gemini API
-debug_print(CYAN, "Initializing Gemini API...")
 gemini_api = GeminiAPI()
-debug_print(CYAN, "Gemini API initialized.")
+debug_print(BLUE, "Gemini API initialized.")
 
 # Initialize the Ollama API
-debug_print(CYAN, "Initializing Ollama API...")
 try:
     ollama_api = OllamaAPI()
-    debug_print(CYAN, "Ollama API initialized.")
+    debug_print(BLUE, "Ollama API initialized.")
 except Exception as e:
     debug_print(RED, f"Error initializing Ollama API: {e}")
     ollama_api = None
@@ -126,7 +122,6 @@ def delete_all_conversations():
 
 # Function to get available models for the selected provider
 def get_available_models(provider_name):
-    debug_print(BLUE, f"Getting available models for provider: {provider_name}")
     provider = llm_providers.get(provider_name)
     if provider:
         models = provider.list_models()
@@ -173,7 +168,7 @@ def generate():
     system_message = data.get('system_message')
     conversation_id = data.get('conversation_id')
     
-    debug_print(BLUE, f"Request  prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}'")
+    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}'")
     
     image = None
     if image_file:
@@ -206,7 +201,7 @@ def generate():
                 history.append({"role": message['role'], "content": message['content']})
             debug_print(GREEN, f"Retrieved conversation {conversation_id} from database.")
         else:
-            debug_print(YELLOW, f"Conversation {conversation_id} not found.")
+            debug_print(RED, f"Conversation {conversation_id} not found.")
             history = []
     else:
         conversation_id = save_conversation(provider_name, model_name, system_message)
@@ -216,13 +211,12 @@ def generate():
     add_message_to_conversation(conversation_id, "user", prompt)
 
     def stream_response():
-        debug_print(CYAN, "Starting response stream...")
         full_response = ""
         for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message):
             full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
         add_message_to_conversation(conversation_id, "model", full_response)
-        debug_print(CYAN, "Response stream finished.")
+        debug_print(GREEN, f"Response: {full_response}")
     
     return Response(stream_response(), mimetype='text/event-stream')
 
@@ -230,6 +224,7 @@ def generate():
 def list_conversations_route():
     debug_print(MAGENTA, "Received request for /api/conversations")
     conversations = list_conversations()
+    debug_print(GREEN, f"Response: {conversations}")
     return jsonify(conversations)
 
 @app.route('/api/conversations/<int:conversation_id>', methods=['GET'])
@@ -237,18 +232,22 @@ def get_conversation_route(conversation_id):
     debug_print(MAGENTA, f"Received request for /api/conversations/{conversation_id}")
     conversation, messages = get_conversation(conversation_id)
     if conversation:
+        debug_print(GREEN, f"Response: {conversation}, {messages}")
         return jsonify({"conversation": conversation, "messages": messages})
+    debug_print(RED, f"Response: Conversation {conversation_id} not found")
     return jsonify({"message": "Conversation not found"}), 404
 
 @app.route('/api/conversations/<int:conversation_id>', methods=['DELETE'])
 def delete_conversation_route(conversation_id):
     debug_print(MAGENTA, f"Received request to DELETE /api/conversations/{conversation_id}")
+    debug_print(GREEN, f"Response: Conversation {conversation_id} deleted")
     return jsonify({"message": f"Conversation {conversation_id} deleted"})
 
 @app.route('/api/conversations', methods=['DELETE'])
 def delete_all_conversations_route():
     debug_print(MAGENTA, "Received request to DELETE all conversations")
     delete_all_conversations()
+    debug_print(GREEN, "Response: All conversations deleted")
     return jsonify({"message": "All conversations deleted"})
 
 if __name__ == '__main__':
