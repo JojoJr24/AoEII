@@ -329,8 +329,7 @@ def delete_all_conversations_route():
 
 if __name__ == '__main__':
     # Initialize the database
-    if not os.path.exists(DATABASE):
-        debug_print(BLUE, "Initializing database...")
-        init_db()
-        debug_print(BLUE, "Database initialized.")
+    debug_print(BLUE, "Initializing database...")
+    init_db()
+    debug_print(BLUE, "Database initialized.")
     app.run(debug=True, port=5000)
