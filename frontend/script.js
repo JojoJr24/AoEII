@@ -141,6 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             systemMessage = systemMessageTextarea.value;
+            if (!systemMessage) {
+                systemMessage = " ";
+            }
             formData.append('system_message', systemMessage);
 
             try {
