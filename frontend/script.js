@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const systemMessageTextarea = document.getElementById('system-message');
     const conversationSelect = document.getElementById('conversation-select');
     const deleteConversationButton = document.getElementById('delete-conversation-button');
+    const regenerateButton = document.getElementById('regenerate-button');
+    const backButton = document.getElementById('back-button');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -27,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentConversationId = null;
     let firstMessage = true; // Flag to track if it's the first message in a new conversation
     let conversationTitle = null;
+    let lastResponse = null;
+    let previousResponses = [];
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -253,6 +257,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 }
+                lastResponse = partialResponse;
+                previousResponses.push({
+                    prompt: message,
+                    response: partialResponse,
+                    conversationId: currentConversationId,
+                    model: selectedModel,
+                    provider: selectedProvider,
+                    systemMessage: systemMessage,
+                    image: uploadedImage
+                });
                 uploadedImage = null; // Clear the uploaded image after sending
                 if (firstMessage) {
                     firstMessage = false;
@@ -318,6 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
         conversationSelect.value = "";
         deleteConversationButton.style.display = 'none';
         firstMessage = true;
+        previousResponses = [];
     });
 
     // Event listener for sidebar toggle
@@ -362,6 +377,117 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error deleting conversation:', error);
             }
+        }
+    });
+
+    // Event listener for regenerate button
+    regenerateButton.addEventListener('click', async () => {
+        if (previousResponses.length > 0) {
+            const last = previousResponses[previousResponses.length - 1];
+            const { prompt, conversationId, model, provider, systemMessage, image } = last;
+            
+            const formData = new FormData();
+            formData.append('prompt', prompt);
+            formData.append('model', model);
+            formData.append('provider', provider)
+            formData.append('history', JSON.stringify(chatHistory));
+            if (image) {
+                formData.append('image', image);
+            }
+            if (systemMessage) {
+                formData.append('system_message', systemMessage);
+            }
+            if (conversationId) {
+                formData.append('conversation_id', conversationId);
+            }
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/generate', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'text/event-stream'
+                    }
+                });
+                if (!response.ok) {
+                    const errorMsg = `HTTP error! status: ${response.status}`;
+                    console.error('Failed to regenerate response:', errorMsg);
+                    addMessage(`Error regenerating response: ${errorMsg}`, false);
+                    return;
+                }
+                
+                const reader = response.body.getReader();
+                let partialResponse = '';
+                let llmMessageDiv = null;
+                
+                while(true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+                    const text = new TextDecoder().decode(value);
+                    const lines = text.split('\n').filter(line => line.startsWith(' '));
+                    
+                    for (const line of lines) {
+                        if (line.trim() === '') {
+                            continue;
+                        }
+                        try {
+                            const jsonString = line.substring(1);
+                            const data = JSON.parse(jsonString);
+                            partialResponse += data.response;
+                            if (!llmMessageDiv) {
+                                llmMessageDiv = addMessage(partialResponse, false);
+                            } else {
+                                addMessage(partialResponse, false, llmMessageDiv);
+                            }
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e, line);
+                            // If parsing fails, still add the partial response
+                            if (!llmMessageDiv) {
+                                llmMessageDiv = addMessage(partialResponse, false);
+                            } else {
+                                addMessage(partialResponse, false, llmMessageDiv);
+                            }
+                        }
+                    }
+                }
+                lastResponse = partialResponse;
+                previousResponses[previousResponses.length - 1].response = partialResponse;
+            } catch (error) {
+                 console.error('Failed to regenerate response:', error);
+                 addMessage(`Error regenerating response: ${error.message}`, false);
+            }
+        }
+    });
+
+    // Event listener for back button
+    backButton.addEventListener('click', async () => {
+        if (previousResponses.length > 1) {
+            previousResponses.pop();
+            const previous = previousResponses[previousResponses.length - 1];
+            chatWindow.innerHTML = '';
+            chatHistory = [];
+            currentConversationId = previous.conversationId;
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/conversations/${currentConversationId}`);
+                if (!response.ok) {
+                    console.error('Failed to fetch conversation:', response.statusText);
+                    return;
+                }
+                const data = await response.json();
+                if (data && data.messages) {
+                    data.messages.forEach(message => {
+                        addMessage(message.content, message.role === 'user');
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching conversation:', error);
+            }
+            
+            addMessage(previous.response, false);
+            lastResponse = previous.response;
         }
     });
 
