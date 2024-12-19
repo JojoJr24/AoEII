@@ -37,10 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.classList.add('message', isUser ? 'user-message' : 'llm-message');
         }
         
+        let historyMessage = null;
         if (typeof message === 'string') {
             if (isUser) {
                 messageDiv.textContent = message;
-                chatHistory.push({ role: "user", content: message }); // Add user message to history
+                historyMessage = { role: "user", content: message };
             } else {
                 // Parse markdown and highlight code blocks
                 messageDiv.innerHTML = marked.parse(message);
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pre.appendChild(copyButton);
                     hljs.highlightBlock(block);
                 });
-                chatHistory.push({ role: "model", content: message }); // Add LLM message to history with role "model"
+                historyMessage = { role: "model", content: message };
             }
         } else if (message instanceof HTMLImageElement) {
             messageDiv.appendChild(message);
@@ -86,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
             chatWindow.appendChild(messageDiv);
         }
         chatWindow.scrollTop = chatWindow.scrollHeight;
+        if (historyMessage) {
+            chatHistory.push(historyMessage);
+        }
         return messageDiv;
     }
 
@@ -200,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton.addEventListener('click', async () => {
         const message = userInput.value.trim();
         if (message) {
-            addMessage(message);
+            const userMessageDiv = addMessage(message);
             userInput.value = '';
             
             const formData = new FormData();
@@ -277,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 lastResponse = partialResponse;
+                addMessage(partialResponse, false, llmMessageDiv);
                 previousResponses.push({
                     prompt: message,
                     response: partialResponse,
