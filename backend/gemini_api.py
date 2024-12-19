@@ -74,6 +74,9 @@ class GeminiAPI:
             if parts:
                 contents.append({"role": "user", "parts": parts})
             
+            if not contents:
+                contents.append({"role": "user", "parts": [""]})
+            
             response_stream = model.generate_content(
                 contents=contents,
                 stream=True,
