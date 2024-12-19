@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector('.sidebar');
     const inputWithUpload = document.querySelector('.input-with-upload');
     const formSelects = document.querySelectorAll('.form-group select');
+    const resetButton = document.getElementById('reset-button');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -238,6 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for dark mode toggle
     darkModeToggle.addEventListener('change', toggleDarkMode);
+
+    // Event listener for reset button
+    resetButton.addEventListener('click', () => {
+        chatHistory = [];
+        chatWindow.innerHTML = '';
+    });
 
     // Initial fetch of models
     fetchModels(selectedProvider);

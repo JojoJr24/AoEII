@@ -236,3 +236,28 @@ body.dark-mode {
 .input-area button i {
     margin-right: 5px;
 }
+
+#upload-button {
+    padding: 8px;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#reset-button {
+    padding: 10px;
+    border: none;
+    background-color: #dc3545;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#reset-button:hover {
+    background-color: #c82333;
+}
