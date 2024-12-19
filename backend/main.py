@@ -116,6 +116,12 @@ def delete_conversation(conversation_id):
     cursor.execute("DELETE FROM conversations WHERE id = ?", (conversation_id,))
     cursor.execute("DELETE FROM messages WHERE conversation_id = ?", (conversation_id,))
     conn.commit()
+def delete_all_conversations():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM conversations")
+    cursor.execute("DELETE FROM messages")
+    conn.commit()
     conn.close()
 
 # Function to get available models for the selected provider
@@ -237,8 +243,13 @@ def get_conversation_route(conversation_id):
 @app.route('/api/conversations/<int:conversation_id>', methods=['DELETE'])
 def delete_conversation_route(conversation_id):
     debug_print(MAGENTA, f"Received request to DELETE /api/conversations/{conversation_id}")
-    delete_conversation(conversation_id)
     return jsonify({"message": f"Conversation {conversation_id} deleted"})
+
+@app.route('/api/conversations', methods=['DELETE'])
+def delete_all_conversations_route():
+    debug_print(MAGENTA, "Received request to DELETE all conversations")
+    delete_all_conversations()
+    return jsonify({"message": "All conversations deleted"})
 
 if __name__ == '__main__':
     # Initialize the database
