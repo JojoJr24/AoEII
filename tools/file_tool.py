@@ -1,8 +1,19 @@
 import os
-import mimetypes
+import json
 
 def get_tool_description():
-    return "This tool reads a file and returns its content if it is a text file, otherwise returns file information."
+    return """
+    This tool reads a file and returns its content if it is a text file, otherwise returns file information.
+    It accepts a JSON object with the following format:
+    {
+        "tool_name": "file_tool",
+        "parameters": {
+            "file_path": "path/to/your/file.txt"
+        }
+    }
+    
+    The tool will return the content of the file or file information.
+    """
 
 def execute(file_path):
     """
