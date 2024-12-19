@@ -18,7 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.classList.add('message', isUser ? 'user-message' : 'llm-message');
         
         if (typeof message === 'string') {
-            messageDiv.textContent = message;
+            if (isUser) {
+                messageDiv.textContent = message;
+            } else {
+                messageDiv.innerHTML = marked.parse(message);
+            }
         } else if (message instanceof HTMLImageElement) {
             messageDiv.appendChild(message);
         }
