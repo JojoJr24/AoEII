@@ -30,11 +30,11 @@ def get_available_models(provider_name):
     return []
 
 # Function to generate responses using the selected LLM
-def generate_response(prompt, model_name, image=None):
+def generate_response(prompt, model_name, image=None, history=None):
     provider = llm_providers.get(selected_provider)
     if provider:
         if model_name:
-            return provider.generate_response(prompt, model_name, image)
+            return provider.generate_response(prompt, model_name, image, history)
         else:
             return "Error: No model selected for the provider."
     else:
@@ -53,6 +53,7 @@ def generate():
     prompt = data.get('prompt')
     model_name = data.get('model', selected_model)
     image_file = request.files.get('image')
+    history_str = data.get('history')
     
     image = None
     if image_file:
@@ -60,12 +61,19 @@ def generate():
             image = Image.open(io.BytesIO(image_file.read()))
         except Exception as e:
             return jsonify({"response": f"Error al cargar la imagen: {e}"}), 400
+    
+    history = None
+    if history_str:
+        try:
+            history = json.loads(history_str)
+        except json.JSONDecodeError:
+            return jsonify({"response": "Error decoding chat history"}), 400
 
     if not prompt:
         return jsonify({"response": "Prompt is required"}), 400
 
     def stream_response():
-        for chunk in generate_response(prompt, model_name, image):
+        for chunk in generate_response(prompt, model_name, image, history):
             yield f" {json.dumps({'response': chunk})}\n\n"
     
     return Response(stream_response(), mimetype='text/event-stream')

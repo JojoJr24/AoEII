@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from typing import List, Optional, Generator
 from PIL import Image
 import io
+import json
 
 load_dotenv()
 
@@ -36,7 +37,7 @@ class GeminiAPI:
         """
         return self.available_models
 
-    def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None) -> Generator[str, None, None]:
+    def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None, history: Optional[List[dict]] = None) -> Generator[str, None, None]:
         """
         Generates a response using the specified Gemini model, yielding chunks of the response.
 
@@ -44,6 +45,7 @@ class GeminiAPI:
             prompt (str): The input prompt.
             model_name (str): The name of the model to use.
             image (Optional[Image.Image]): An optional image to include in the prompt.
+            history (Optional[List[dict]]): An optional list of previous chat messages.
 
         Yields:
             str: The generated response chunks from Gemini.
@@ -51,15 +53,20 @@ class GeminiAPI:
         try:
             model = genai.GenerativeModel(model_name)
             
+            contents = []
+            if history:
+                for message in history:
+                    contents.append({"role": message["role"], "parts": [message["content"]]})
+            
             if image:
                 # Convert PIL Image to bytes
                 image_bytes = io.BytesIO()
                 image.save(image_bytes, format=image.format if image.format else "PNG")
                 image_bytes = image_bytes.getvalue()
                 
-                contents = [prompt, genai.Part.from_data(image_bytes, mime_type=f'image/{image.format.lower() if image.format else "png"}')]
+                contents.append({"role": "user", "parts": [prompt, genai.Part.from_data(image_bytes, mime_type=f'image/{image.format.lower() if image.format else "png"}')]})
             else:
-                contents = [prompt]
+                contents.append({"role": "user", "parts": [prompt]})
             
             response_stream = model.generate_content(contents, stream=True)
             for chunk in response_stream:
