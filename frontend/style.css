@@ -85,6 +85,60 @@ body.dark-mode {
     font-size: 0.9em;
 }
 
+.system-message-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.system-message-actions input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #495057;
+    border-radius: 4px;
+    background-color: #495057;
+    color: #fff;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.system-message-actions button {
+    padding: 8px;
+    border: none;
+    background-color: #28a745;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+}
+
+.system-message-actions button:hover {
+    background-color: #218838;
+}
+
+.system-message-actions button#delete-system-message-button {
+    background-color: #dc3545;
+}
+
+.system-message-actions button#delete-system-message-button:hover {
+    background-color: #c82333;
+}
+
+.system-message-column .form-group textarea {
+    width: calc(100% - 10px);
+    padding: 10px;
+    border: 1px solid #495057;
+    border-radius: 4px;
+    background-color: #495057;
+    color: #fff;
+    transition: background-color 0.3s, color 0.3s;
+    height: 150px;
+    resize: vertical;
+}
+
 #delete-all-conversations-button {
     background-color: transparent;
     color: #dc3545;
