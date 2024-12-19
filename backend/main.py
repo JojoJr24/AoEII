@@ -266,10 +266,10 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                     {prompt}
                 """
                 
-                tool_response = provider.generate_response(tool_prompt, model_name, image, None, system_message, tool_instances)
+                tool_response = provider.generate_response(tool_prompt, model_name, image, None, system_message)
                 debug_print(BLUE, f"Tool response: {tool_response}")
             
-            response = provider.generate_response(prompt, model_name, image, history, system_message, tool_instances)
+            response = provider.generate_response(prompt, model_name, image, history, system_message)
             debug_print(GREEN, f"Response generated successfully.")
             return response
         else:
