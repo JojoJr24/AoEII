@@ -45,7 +45,7 @@ llm_providers = {
 if ollama_api:
     llm_providers["ollama"] = ollama_api
 else:
-    debug_print(YELLOW, "Ollama API not available, setting empty model list.")
+    debug_print(BLUE, "Ollama API not available, setting empty model list.")
 
 # Default LLM provider and model
 selected_provider = "gemini"
@@ -253,7 +253,7 @@ def delete_all_conversations_route():
 if __name__ == '__main__':
     # Initialize the database
     if not os.path.exists(DATABASE):
-        debug_print(CYAN, "Initializing database...")
+        debug_print(BLUE, "Initializing database...")
         init_db()
-        debug_print(CYAN, "Database initialized.")
+        debug_print(BLUE, "Database initialized.")
     app.run(debug=True, port=5000)
