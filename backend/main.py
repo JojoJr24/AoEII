@@ -277,7 +277,17 @@ def generate():
     history_str = data.get('history')
     system_message = data.get('system_message')
     conversation_id = data.get('conversation_id')
-    selected_tools = data.get('selected_tools')
+    selected_tools_str = data.get('selected_tools')
+    
+    if selected_tools_str:
+        try:
+            selected_tools = json.loads(selected_tools_str)
+            debug_print(GREEN, f"Selected tools: {selected_tools}")
+        except json.JSONDecodeError:
+            debug_print(RED, "Error decoding selected tools")
+            selected_tools = []
+    else:
+        selected_tools = []
         
     debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}', selected_tools='{selected_tools}'")
     
