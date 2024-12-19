@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     copyButton.classList.add('copy-button');
                     copyButton.style.position = 'absolute';
                     copyButton.style.top = '0.5em';
-                    copyButton.style.left = '0.5em';
+                    copyButton.style.right = '0.5em';
                     copyButton.addEventListener('click', () => {
                         navigator.clipboard.writeText(block.textContent).then(() => {
                             copyButton.innerHTML = '<i class="fas fa-check"></i>';
