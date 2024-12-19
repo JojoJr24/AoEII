@@ -458,6 +458,10 @@ document.addEventListener('DOMContentLoaded', () => {
                  console.error('Failed to regenerate response:', error);
                  addMessage(`Error regenerating response: ${error.message}`, false);
             }
+        } else {
+            chatWindow.innerHTML = '';
+            chatHistory = [];
+            previousResponses = [];
         }
     });
 
@@ -488,6 +492,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             addMessage(previous.response, false);
             lastResponse = previous.response;
+        } else {
+            chatWindow.innerHTML = '';
+            chatHistory = [];
+            previousResponses = [];
         }
     });
 
