@@ -219,7 +219,27 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                     debug_print(RED, f"Error: Tool {tool_name} does not have 'execute' or 'get_tool_description' functions.")
             except Exception as e:
                 debug_print(RED, f"Error loading tool {tool_name}: {e}")
-        
+    tool_instances = []
+    if selected_tools:
+        tools_dir = '../tools'
+        for tool_name in selected_tools:
+            try:
+                filename = f'{tool_name}.py'
+                file_path = os.path.join(tools_dir, filename)
+                spec = importlib.util.spec_from_file_location(tool_name, file_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, 'execute') and hasattr(module, 'get_tool_description'):
+                    tool_instances.append({
+                        'name': tool_name,
+                        'description': module.get_tool_description(),
+                        'execute': module.execute
+                    })
+                else:
+                    debug_print(RED, f"Error: Tool {tool_name} does not have 'execute' or 'get_tool_description' functions.")
+            except Exception as e:
+                debug_print(RED, f"Error loading tool {tool_name}: {e}")
+    
     provider = llm_providers.get(provider_name)
     if provider:
         if model_name:
