@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to update the status display
     function updateStatus() {
-        llmStatus.textContent = `Proveedor seleccionado: ${selectedProvider}, Modelo seleccionado: ${selectedModel}`;
+        llmStatus.textContent = `${selectedProvider}, ${selectedModel}`;
     }
 
     // Event listener for provider change
