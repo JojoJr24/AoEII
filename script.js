@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const llmStatus = document.getElementById('llm-status');
     const imageUpload = document.getElementById('image-upload');
     const uploadButton = document.getElementById('upload-button');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const inputWithUpload = document.querySelector('.input-with-upload');
+    const formSelects = document.querySelectorAll('.form-group select');
+
 
     let selectedProvider = llmProvider.value;
     let selectedModel = llmModel.value;
@@ -166,6 +171,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Allow new line with Shift+Enter, default behavior
         }
     });
+
+    // Function to toggle dark mode
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        sidebar.classList.toggle('dark-mode');
+        chatWindow.classList.toggle('dark-mode');
+        inputWithUpload.classList.toggle('dark-mode');
+        formSelects.forEach(select => select.classList.toggle('dark-mode'));
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(message => message.classList.toggle('dark-mode'));
+    }
+
+    // Event listener for dark mode toggle
+    darkModeToggle.addEventListener('change', toggleDarkMode);
 
     // Initial fetch of models
     fetchModels(selectedProvider);

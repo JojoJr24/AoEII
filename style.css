@@ -6,6 +6,12 @@ body {
     color: #333;
     display: flex;
     height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #fff;
 }
 
 .container {
@@ -22,7 +28,14 @@ body {
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
+    transition: background-color 0.3s, color 0.3s;
 }
+
+.sidebar.dark-mode {
+    background-color: #333;
+    color: #fff;
+}
+
 
 .sidebar h2 {
     margin-bottom: 20px;
@@ -46,6 +59,13 @@ body {
     border-radius: 4px;
     background-color: #34495e;
     color: #fff;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.form-group select.dark-mode {
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #777;
 }
 
 .form-group p {
@@ -73,6 +93,13 @@ body {
     overflow-y: auto;
     background-color: #fff;
     border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#chat-window.dark-mode {
+    background-color: #262626;
+    color: #fff;
+    border: 1px solid #555;
 }
 
 .message {
@@ -81,6 +108,7 @@ body {
     border-radius: 8px;
     max-width: 80%;
     clear: both;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .user-message {
@@ -89,10 +117,20 @@ body {
     float: right;
 }
 
+.user-message.dark-mode {
+    background-color: #444;
+    color: #fff;
+}
+
 .llm-message {
     background-color: #f0f0f0;
     align-self: flex-start;
     float: left;
+}
+
+.llm-message.dark-mode {
+    background-color: #333;
+    color: #fff;
 }
 
 .input-area {
@@ -106,6 +144,12 @@ body {
     border: 1px solid #ddd;
     border-radius: 4px;
     overflow: hidden; /* Ensure the button stays within the container */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.input-with-upload.dark-mode {
+    border: 1px solid #555;
+    background-color: #333;
 }
 
 .input-with-upload input[type="text"] {
@@ -113,6 +157,8 @@ body {
     padding: 10px;
     border: none;
     outline: none; /* Remove the input's outline */
+    background-color: transparent;
+    color: inherit;
 }
 
 .input-with-upload button {
@@ -122,12 +168,12 @@ body {
     color: #fff;
     cursor: pointer;
     border-radius: 0; /* Remove the button's border radius */
+    transition: background-color 0.3s;
 }
 
 .input-with-upload button:hover {
     background-color: #27ae60;
 }
-
 
 .input-area button {
     padding: 10px 15px;
@@ -136,6 +182,7 @@ body {
     color: #fff;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .input-area button:hover {
