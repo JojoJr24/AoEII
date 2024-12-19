@@ -85,6 +85,30 @@ body.dark-mode {
     font-size: 0.9em;
 }
 
+#delete-all-conversations-button {
+    background-color: transparent;
+    color: #dc3545;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1em;
+    margin-left: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#delete-all-conversations-button:hover {
+    color: #c82333;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
 .main-content {
     flex: 1;
     padding: 20px;
