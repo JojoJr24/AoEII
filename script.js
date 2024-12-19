@@ -14,12 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const formSelects = document.querySelectorAll('.form-group select');
     const resetButton = document.getElementById('reset-button');
     const sidebarToggle = document.getElementById('sidebar-toggle');
+    const systemMessageTextarea = document.getElementById('system-message');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
     let selectedModel = llmModel.value;
     let uploadedImage = null;
     let chatHistory = []; // Store chat history
+    let systemMessage = systemMessageTextarea.value;
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -137,6 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (uploadedImage) {
                 formData.append('image', uploadedImage);
             }
+            
+            systemMessage = systemMessageTextarea.value;
+            formData.append('system_message', systemMessage);
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/generate', {

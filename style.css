@@ -283,3 +283,43 @@ body.dark-mode {
     margin-right: 10px;
     padding: 0;
 }
+
+.system-message-column {
+    width: 280px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s, color 0.3s, width 0.3s;
+    min-width: 50px;
+}
+
+.system-message-column h2 {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #fff;
+}
+
+.system-message-column .form-group {
+    margin-bottom: 15px;
+}
+
+.system-message-column .form-group textarea {
+    width: calc(100% - 10px);
+    padding: 10px;
+    border: 1px solid #495057;
+    border-radius: 4px;
+    background-color: #495057;
+    color: #fff;
+    transition: background-color 0.3s, color 0.3s;
+    height: 200px;
+    resize: vertical;
+}
+
+.system-message-column .form-group textarea.dark-mode {
+    background-color: #495057;
+    color: #fff;
+    border: 1px solid #6c757d;
+}

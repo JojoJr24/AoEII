@@ -29,7 +29,7 @@
                     <!-- Models will be loaded here -->
                 </select>
             </div>
-            <p id="llm-status">Proveedor seleccionado: Gemini, Modelo seleccionado: gemini-1.5-flash</p>
+            <p id="llm-status">Gemini, gemini-1.5-flash</p>
         </div>
         <div class="main-content">
             <div class="header">
@@ -50,6 +50,12 @@
                 </div>
                 <button id="send-button"><i class="fas fa-paper-plane"></i>Enviar</button>
                 <button id="reset-button"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+        <div class="system-message-column">
+            <h2>System Message</h2>
+            <div class="form-group">
+                <textarea id="system-message" placeholder="Enter system message here..."></textarea>
             </div>
         </div>
     </div>
