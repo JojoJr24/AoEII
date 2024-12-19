@@ -386,6 +386,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const last = previousResponses[previousResponses.length - 1];
             const { prompt, conversationId, model, provider, systemMessage, image } = last;
             
+            // Remove the last message from the chat window
+            const lastMessage = chatWindow.lastElementChild;
+            if (lastMessage) {
+                chatWindow.removeChild(lastMessage);
+            }
+            
+            // Remove the last message from the chat history
+            if (chatHistory.length > 0) {
+                chatHistory.pop();
+            }
+            
             const formData = new FormData();
             formData.append('prompt', prompt);
             formData.append('model', model);
