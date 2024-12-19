@@ -20,7 +20,7 @@ llm_providers = {
 
 # Default LLM provider and model
 selected_provider = "gemini"
-selected_model = "gemini-pro"
+selected_model = "gemini-1.5-flash"
 
 # Function to get available models for the selected provider
 def get_available_models(provider_name):
