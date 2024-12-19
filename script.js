@@ -21,7 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isUser) {
                 messageDiv.textContent = message;
             } else {
+                // Parse markdown and highlight code blocks
                 messageDiv.innerHTML = marked.parse(message);
+                messageDiv.querySelectorAll('pre code').forEach(block => {
+                    hljs.highlightBlock(block);
+                    // Add copy button
+                    const copyButton = document.createElement('button');
+                    copyButton.textContent = 'Copiar';
+                    copyButton.classList.add('copy-button');
+                    copyButton.addEventListener('click', () => {
+                        navigator.clipboard.writeText(block.textContent).then(() => {
+                            copyButton.textContent = 'Copiado!';
+                            setTimeout(() => {
+                                copyButton.textContent = 'Copiar';
+                            }, 2000);
+                        });
+                    });
+                    block.parentNode.insertBefore(copyButton, block);
+                });
             }
         } else if (message instanceof HTMLImageElement) {
             messageDiv.appendChild(message);
