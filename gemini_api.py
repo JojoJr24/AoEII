@@ -37,7 +37,7 @@ class GeminiAPI:
         """
         return self.available_models
 
-    def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None, history: Optional[List[dict]] = None) -> Generator[str, None, None]:
+    def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None, history: Optional[List[dict]] = None, system_message: Optional[str] = None) -> Generator[str, None, None]:
         """
         Generates a response using the specified Gemini model, yielding chunks of the response.
 
@@ -46,6 +46,7 @@ class GeminiAPI:
             model_name (str): The name of the model to use.
             image (Optional[Image.Image]): An optional image to include in the prompt.
             history (Optional[List[dict]]): An optional list of previous chat messages.
+            system_message (Optional[str]): An optional system message to include in the prompt.
 
         Yields:
             str: The generated response chunks from Gemini.
@@ -54,6 +55,8 @@ class GeminiAPI:
             model = genai.GenerativeModel(model_name)
             
             contents = []
+            if system_message:
+                contents.append({"role": "system", "parts": [system_message]})
             if history:
                 for message in history:
                     contents.append({"role": message["role"], "parts": [message["content"]]})

@@ -57,14 +57,14 @@ def get_available_models(provider_name):
     return []
 
 # Function to generate responses using the selected LLM
-def generate_response(prompt, model_name, image=None, history=None, provider_name=None):
+def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None):
     if not provider_name:
         provider_name = selected_provider
     debug_print(BLUE, f"Generating response with provider: {provider_name}, model: {model_name}")
     provider = llm_providers.get(provider_name)
     if provider:
         if model_name:
-            response = provider.generate_response(prompt, model_name, image, history)
+            response = provider.generate_response(prompt, model_name, image, history, system_message)
             debug_print(GREEN, f"Response generated successfully.")
             return response
         else:
@@ -91,8 +91,9 @@ def generate():
     provider_name = data.get('provider', selected_provider)
     image_file = request.files.get('image')
     history_str = data.get('history')
+    system_message = data.get('system_message')
     
-    debug_print(BLUE, f"Request  prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}'")
+    debug_print(BLUE, f"Request  prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}'")
     
     image = None
     if image_file:
@@ -118,7 +119,7 @@ def generate():
 
     def stream_response():
         debug_print(CYAN, "Starting response stream...")
-        for chunk in generate_response(prompt, model_name, image, history, provider_name):
+        for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message):
             yield f" {json.dumps({'response': chunk})}\n\n"
         debug_print(CYAN, "Response stream finished.")
     
