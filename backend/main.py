@@ -202,7 +202,7 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
     provider = llm_providers.get(provider_name)
     if provider:
         if model_name:
-            if selected_tools:
+            if selected_tools and len(selected_tools) > 0:
                 tools_dir = '../tools'
                 tool_instances = []
                 for tool_name in selected_tools:
