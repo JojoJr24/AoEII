@@ -250,6 +250,55 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                 for chunk in tool_response_generator:
                     tool_response += chunk
                 debug_print(BLUE, f"Tool response: {tool_response}")
+                
+                try:
+                    tool_call = json.loads(tool_response)
+                    tool_name = tool_call.get('tool_name')
+                    tool_params = tool_call.get('parameters', {})
+                    
+                    if tool_name:
+                        tool = next((tool for tool in tool_instances if tool['name'] == tool_name), None)
+                        if tool:
+                            debug_print(BLUE, f"Executing tool: {tool_name} with params: {tool_params}")
+                            tool_result = tool['execute'](**tool_params)
+                            debug_print(BLUE, f"Tool result: {tool_result}")
+                            prompt = f"""
+                                The tool {tool_name} was called with the following parameters:
+                                ```tool_params
+                                {tool_params}
+                                ```
+                                The tool response is:
+                                ```tool_response
+                                {tool_result}
+                                ```
+                                
+                                Now, respond to the following prompt:
+                                {prompt}
+                            """
+                        else:
+                            debug_print(RED, f"Error: Tool {tool_name} not found.")
+                            prompt = f"""
+                                Error: Tool {tool_name} not found.
+                                
+                                Now, respond to the following prompt:
+                                {prompt}
+                            """
+                    else:
+                        debug_print(RED, "Error: No tool name found in tool response.")
+                        prompt = f"""
+                            Error: No tool name found in tool response.
+                            
+                            Now, respond to the following prompt:
+                            {prompt}
+                        """
+                except json.JSONDecodeError:
+                    debug_print(RED, "Error decoding tool response.")
+                    prompt = f"""
+                        Error decoding tool response.
+                        
+                        Now, respond to the following prompt:
+                        {prompt}
+                    """
             
             response = provider.generate_response(prompt, model_name, image, history, system_message)
             debug_print(GREEN, f"Response generated successfully.")
