@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from gemini_api import GeminiAPI
+from ollama_api import OllamaAPI
 from PIL import Image
 import io
 import os
@@ -11,10 +12,12 @@ CORS(app)  # Enable CORS for all routes
 
 # Initialize the Gemini API
 gemini_api = GeminiAPI()
+ollama_api = OllamaAPI()
 
 # Dictionary to hold available LLM providers
 llm_providers = {
     "gemini": gemini_api,
+    "ollama": ollama_api,
     # Add other LLM providers here as needed
 }
 
