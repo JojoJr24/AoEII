@@ -71,10 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.appendChild(message);
         }
         
+        const deleteButton = document.createElement('button');
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteButton.classList.add('delete-message-button');
+        messageDiv.appendChild(deleteButton);
+        deleteButton.addEventListener('click', () => {
+            const index = Array.from(chatWindow.children).indexOf(messageDiv);
+            if (index > -1) {
+                chatHistory.splice(index, 1);
+            }
+            messageDiv.remove();
+        });
         if (!messageDiv.parentNode) {
             chatWindow.appendChild(messageDiv);
         }
-        chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll
+        chatWindow.scrollTop = chatWindow.scrollHeight;
         return messageDiv;
     }
 
