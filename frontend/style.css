@@ -443,3 +443,13 @@ body.dark-mode {
     color: #fff;
     border: 1px solid #6c757d;
 }
+
+.tool-tag {
+    display: inline-block;
+    background-color: #6c757d;
+    color: #fff;
+    padding: 5px 10px;
+    margin: 2px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}

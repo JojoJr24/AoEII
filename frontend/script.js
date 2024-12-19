@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const systemMessageSelect = document.getElementById('system-message-select');
     const saveSystemMessageButton = document.getElementById('save-system-message-button');
     const deleteSystemMessageButton = document.getElementById('delete-system-message-button');
+    const toolsContainer = document.getElementById('tools-container');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -199,6 +200,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     addMessage(`Error generating response: ${error.message}`, false);
                 }
             }
+        }
+    }
+
+    // Function to fetch and display tools
+    async function fetchTools() {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/tools');
+            if (!response.ok) {
+                console.error('Failed to fetch tools:', response.statusText);
+                return;
+            }
+            const tools = await response.json();
+            toolsContainer.innerHTML = '';
+            tools.forEach(tool => {
+                const toolTag = document.createElement('span');
+                toolTag.classList.add('tool-tag');
+                toolTag.textContent = tool.name;
+                toolTag.title = tool.description;
+                toolsContainer.appendChild(toolTag);
+            });
+        } catch (error) {
+            console.error('Error fetching tools:', error);
         }
     }
 
@@ -634,6 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial fetch of models, system messages and conversations
     fetchModels(selectedProvider);
     fetchSystemMessages();
+    fetchTools();
     updateStatus();
     loadConversations();
     setInitialDarkMode();
