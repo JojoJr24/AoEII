@@ -136,6 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Event listener for user input keydown to handle Enter and Shift+Enter
+    userInput.addEventListener('keydown', async (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Prevent the default Enter behavior (new line)
+            sendButton.click(); // Trigger the send button click
+        } else if (event.key === 'Enter' && event.shiftKey) {
+            // Allow new line with Shift+Enter, default behavior
+        }
+    });
+
     // Initial fetch of models
     fetchModels(selectedProvider);
     updateStatus();
