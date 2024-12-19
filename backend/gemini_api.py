@@ -59,15 +59,20 @@ class GeminiAPI:
                 for message in history:
                     contents.append({"role": message["role"], "parts": [message["content"]]})
             
+            parts = []
+            if prompt:
+                parts.append(prompt)
+            
             if image:
                 # Convert PIL Image to bytes
                 image_bytes = io.BytesIO()
                 image.save(image_bytes, format=image.format if image.format else "PNG")
                 image_bytes = image_bytes.getvalue()
                 
-                contents.append({"role": "user", "parts": [prompt, genai.Part.from_data(image_bytes, mime_type=f'image/{image.format.lower() if image.format else "png"}')]})
-            else:
-                contents.append({"role": "user", "parts": [prompt]})
+                parts.append(genai.Part.from_data(image_bytes, mime_type=f'image/{image.format.lower() if image.format else "png"}'))
+            
+            if parts:
+                contents.append({"role": "user", "parts": parts})
             
             response_stream = model.generate_content(
                 contents=contents,
