@@ -32,11 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Parse markdown and highlight code blocks
                 messageDiv.innerHTML = marked.parse(message);
                 messageDiv.querySelectorAll('pre code').forEach(block => {
-                    hljs.highlightBlock(block);
                     // Add copy button
                     const copyButton = document.createElement('button');
                     copyButton.innerHTML = '<i class="fas fa-copy"></i>';
                     copyButton.classList.add('copy-button');
+                    copyButton.style.position = 'absolute';
+                    copyButton.style.top = '0.5em';
+                    copyButton.style.left = '0.5em';
                     copyButton.addEventListener('click', () => {
                         navigator.clipboard.writeText(block.textContent).then(() => {
                             copyButton.innerHTML = '<i class="fas fa-check"></i>';
@@ -45,7 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             }, 2000);
                         });
                     });
-                    block.parentNode.insertBefore(copyButton, block);
+                    const pre = block.parentNode;
+                    pre.style.position = 'relative';
+                    pre.appendChild(copyButton);
+                    hljs.highlightBlock(block);
                 });
             }
         } else if (message instanceof HTMLImageElement) {
