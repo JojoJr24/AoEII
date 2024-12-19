@@ -105,7 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
     async function regenerateResponse(messageDiv) {
         const index = Array.from(chatWindow.children).indexOf(messageDiv);
         if (index > -1) {
-            const message = previousResponses[index];
+            // Remove all messages after the clicked message, including the clicked message
+            const messagesToRemove = Array.from(chatWindow.children).slice(index);
+            messagesToRemove.forEach(msg => msg.remove());
+            
+            // Rebuild chat history
+            chatHistory = chatHistory.slice(0, index);
+            previousResponses = previousResponses.slice(0, index);
+
+            const message = previousResponses[index - 1];
             if (message) {
                 const userMessageDiv = addMessage(message.prompt);
                 chatHistory.push({ role: "user", content: message.prompt });
