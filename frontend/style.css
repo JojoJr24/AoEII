@@ -64,6 +64,16 @@ body.dark-mode {
     color: #fff;
 }
 
+.form-group input[type="text"] {
+    width: calc(100% - 10px);
+    padding: 10px;
+    border: 1px solid #495057;
+    border-radius: 4px;
+    background-color: #495057;
+    color: #fff;
+    transition: background-color 0.3s, color 0.3s;
+}
+
 .form-group select {
     width: calc(100% - 10px);
     padding: 10px;
