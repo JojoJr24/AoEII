@@ -36,12 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv = document.createElement('div');
             messageDiv.classList.add('message', isUser ? 'user-message' : 'llm-message');
         }
-        
-        let historyMessage = null;
         if (typeof message === 'string') {
             if (isUser) {
                 messageDiv.textContent = message;
-                historyMessage = { role: "user", content: message };
             } else {
                 // Parse markdown and highlight code blocks
                 messageDiv.innerHTML = marked.parse(message);
@@ -66,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     pre.appendChild(copyButton);
                     hljs.highlightBlock(block);
                 });
-                historyMessage = { role: "model", content: message };
             }
         } else if (message instanceof HTMLImageElement) {
             messageDiv.appendChild(message);
@@ -87,9 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
             chatWindow.appendChild(messageDiv);
         }
         chatWindow.scrollTop = chatWindow.scrollHeight;
-        if (historyMessage) {
-            chatHistory.push(historyMessage);
-        }
         return messageDiv;
     }
 
@@ -205,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = userInput.value.trim();
         if (message) {
             const userMessageDiv = addMessage(message);
+            chatHistory.push({ role: "user", content: message });
             userInput.value = '';
             
             const formData = new FormData();
@@ -282,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 lastResponse = partialResponse;
                 addMessage(partialResponse, false, llmMessageDiv);
+                chatHistory.push({ role: "model", content: partialResponse });
                 previousResponses.push({
                     prompt: message,
                     response: partialResponse,
