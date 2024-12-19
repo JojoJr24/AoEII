@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-from gemini_api import GeminiAPI
-from ollama_api import OllamaAPI
+from backend.gemini_api import GeminiAPI
+from backend.ollama_api import OllamaAPI
 from PIL import Image
 import io
 import os
