@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentConversationId = null;
                 firstMessage = true;
                 previousResponses = [];
-                await loadConversations();
+                conversationList.innerHTML = '';
             } else {
                 console.error('Failed to delete all conversations:', response.statusText);
             }
