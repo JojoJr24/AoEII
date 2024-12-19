@@ -52,7 +52,7 @@ class GeminiAPI:
             str: The generated response chunks from Gemini.
         """
         try:
-            model = genai.GenerativeModel(model_name)
+            model = genai.GenerativeModel(model_name=model_name, system_instruction=system_message)
             
             contents = []
             if history:
@@ -72,7 +72,6 @@ class GeminiAPI:
             response_stream = model.generate_content(
                 contents=contents,
                 stream=True,
-                system_instruction=system_message if system_message else None
             )
             for chunk in response_stream:
                 yield chunk.text
