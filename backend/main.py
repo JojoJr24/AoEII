@@ -252,17 +252,21 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                 debug_print(BLUE, f"Tool response: {tool_response}")
                 
                 try:
-                    tool_call = json.loads(tool_response)
-                    tool_name = tool_call.get('tool_name')
-                    tool_params = tool_call.get('parameters', {})
-                    
-                    if tool_name:
-                        tool = next((tool for tool in tool_instances if tool['name'] == tool_name), None)
-                        if tool:
-                            debug_print(BLUE, f"Executing tool: {tool_name} with params: {tool_params}")
-                            tool_result = tool['execute'](**tool_params)
-                            debug_print(BLUE, f"Tool result: {tool_result}")
-                            prompt = f"""
+                    start_index = tool_response.find('{')
+                    end_index = tool_response.rfind('}')
+                    if start_index != -1 and end_index != -1:
+                        json_string = tool_response[start_index:end_index+1]
+                        tool_call = json.loads(json_string)
+                        tool_name = tool_call.get('tool_name')
+                        tool_params = tool_call.get('parameters', {})
+                        
+                        if tool_name:
+                            tool = next((tool for tool in tool_instances if tool['name'] == tool_name), None)
+                            if tool:
+                                debug_print(BLUE, f"Executing tool: {tool_name} with params: {tool_params}")
+                                tool_result = tool['execute'](**tool_params)
+                                debug_print(BLUE, f"Tool result: {tool_result}")
+                                prompt = f"""
                                 The tool {tool_name} was called with the following parameters:
                                 ```tool_params
                                 {tool_params}
