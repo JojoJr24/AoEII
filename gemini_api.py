@@ -55,8 +55,6 @@ class GeminiAPI:
             model = genai.GenerativeModel(model_name)
             
             contents = []
-            if system_message:
-                contents.append({"role": "system", "parts": [system_message]})
             if history:
                 for message in history:
                     contents.append({"role": message["role"], "parts": [message["content"]]})
@@ -71,7 +69,11 @@ class GeminiAPI:
             else:
                 contents.append({"role": "user", "parts": [prompt]})
             
-            response_stream = model.generate_content(contents, stream=True)
+            response_stream = model.generate_content(
+                contents=contents,
+                stream=True,
+                system_instruction=system_message if system_message else None
+            )
             for chunk in response_stream:
                 yield chunk.text
         except Exception as e:
