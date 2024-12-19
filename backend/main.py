@@ -132,6 +132,7 @@ def get_available_models(provider_name):
 
 # Function to generate responses using the selected LLM
 def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None):
+    print("Hist",history)
     if not provider_name:
         provider_name = selected_provider
     debug_print(BLUE, f"Generating response with provider: {provider_name}, model: {model_name}")
@@ -167,7 +168,7 @@ def generate():
     history_str = data.get('history')
     system_message = data.get('system_message')
     conversation_id = data.get('conversation_id')
-    
+        
     debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}'")
     
     image = None
@@ -206,7 +207,6 @@ def generate():
     else:
         conversation_id = save_conversation(provider_name, model_name, system_message)
         debug_print(GREEN, f"Created new conversation with id {conversation_id}")
-        history = []
     
     add_message_to_conversation(conversation_id, "user", prompt)
 

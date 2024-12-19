@@ -52,7 +52,7 @@ class GeminiAPI:
         """
         try:
             model = genai.GenerativeModel(model_name=model_name, system_instruction=system_message)
-            
+           
             contents = []
             if history:
                 for message in history:
@@ -87,7 +87,7 @@ class GeminiAPI:
             
             if not contents:
                 contents.append({"role": "user", "parts": [""]})
-                        
+                                        
             response_stream = model.generate_content(
                 contents=contents,
                 stream=True,
