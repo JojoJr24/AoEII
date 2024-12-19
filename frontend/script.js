@@ -311,18 +311,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Function to toggle dark mode
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        sidebar.classList.toggle('dark-mode');
-        chatWindow.classList.toggle('dark-mode');
-        inputWithUpload.classList.toggle('dark-mode');
-        formSelects.forEach(select => select.classList.toggle('dark-mode'));
+    function toggleDarkMode(isDark) {
+        document.body.classList.toggle('dark-mode', isDark);
+        sidebar.classList.toggle('dark-mode', isDark);
+        chatWindow.classList.toggle('dark-mode', isDark);
+        inputWithUpload.classList.toggle('dark-mode', isDark);
+        formSelects.forEach(select => select.classList.toggle('dark-mode', isDark));
         const messages = document.querySelectorAll('.message');
-        messages.forEach(message => message.classList.toggle('dark-mode'));
+        messages.forEach(message => message.classList.toggle('dark-mode', isDark));
     }
 
     // Event listener for dark mode toggle
-    darkModeToggle.addEventListener('change', toggleDarkMode);
+    darkModeToggle.addEventListener('change', () => {
+        toggleDarkMode(darkModeToggle.checked);
+    });
+
+    // Function to set initial dark mode based on system preference
+    function setInitialDarkMode() {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        darkModeToggle.checked = prefersDark;
+        toggleDarkMode(prefersDark);
+    }
 
     // Event listener for reset button
     resetButton.addEventListener('click', () => {
@@ -532,4 +541,5 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchModels(selectedProvider);
     updateStatus();
     loadConversations();
+    setInitialDarkMode();
 });
