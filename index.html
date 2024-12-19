@@ -5,4 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Playground</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>LLM Options</h2>
+            <div class="form-group">
+                <label for="llm-provider">Provider:</label>
+                <select id="llm-provider">
+                    <option value="gemini">Gemini</option>
+                    <!-- Add other providers here -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="llm-model">Model:</label>
+                <select id="llm-model">
+                    <!-- Models will be loaded here -->
+                </select>
+            </div>
+            <p id="llm-status">Proveedor seleccionado: Gemini, Modelo seleccionado: gemini-1.5-flash</p>
+        </div>
+        <div class="main-content">
+            <h1>LLM Playground</h1>
+            <div id="chat-window">
+                <!-- Chat messages will be displayed here -->
+            </div>
+            <div class="input-area">
+                <div class="input-with-upload">
+                    <input type="text" id="user-input" placeholder="Escribe tu mensaje aquí...">
+                    <button id="upload-button">Imagen</button>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                </div>
+                <button id="send-button">Enviar</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
