@@ -391,7 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener for delete all conversations button
-    deleteAllConversationsButton.addEventListener('click', async () => {
+    deleteAllConversationsButton.addEventListener('click', async (event) => {
+        event.preventDefault();
         try {
             const response = await fetch('http://127.0.0.1:5000/api/conversations', {
                 method: 'DELETE'
