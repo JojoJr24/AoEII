@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pre.appendChild(copyButton);
                     hljs.highlightBlock(block);
                 });
-                chatHistory.push({ role: "llm", content: message }); // Add LLM message to history
+                chatHistory.push({ role: "model", content: message }); // Add LLM message to history with role "model"
             }
         } else if (message instanceof HTMLImageElement) {
             messageDiv.appendChild(message);
