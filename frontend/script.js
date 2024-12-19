@@ -84,11 +84,114 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             messageDiv.remove();
         });
+
+        if (!isUser) {
+            const regenerateButton = document.createElement('button');
+            regenerateButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            regenerateButton.classList.add('regenerate-button');
+            messageDiv.appendChild(regenerateButton);
+            regenerateButton.addEventListener('click', () => {
+                regenerateResponse(messageDiv);
+            });
+        }
         if (!messageDiv.parentNode) {
             chatWindow.appendChild(messageDiv);
         }
         chatWindow.scrollTop = chatWindow.scrollHeight;
         return messageDiv;
+    }
+
+    // Function to regenerate a response
+    async function regenerateResponse(messageDiv) {
+        const index = Array.from(chatWindow.children).indexOf(messageDiv);
+        if (index > -1) {
+            const message = previousResponses[index];
+            if (message) {
+                const userMessageDiv = addMessage(message.prompt);
+                chatHistory.push({ role: "user", content: message.prompt });
+                
+                const formData = new FormData();
+                formData.append('prompt', message.prompt);
+                formData.append('model', message.model);
+                formData.append('provider', message.provider)
+                formData.append('history', JSON.stringify(chatHistory));
+                if (message.image) {
+                    formData.append('image', message.image);
+                }
+                formData.append('system_message', message.systemMessage);
+                if (message.conversationId) {
+                    formData.append('conversation_id', message.conversationId);
+                }
+                
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/api/generate', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'text/event-stream'
+                        }
+                    });
+                    if (!response.ok) {
+                        const errorMsg = `HTTP error! status: ${response.status}`;
+                        console.error('Failed to send message:', errorMsg);
+                        addMessage(`Error generating response: ${errorMsg}`, false);
+                        return;
+                    }
+                    
+                    const reader = response.body.getReader();
+                    let partialResponse = '';
+                    let llmMessageDiv = null;
+                    
+                    while(true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            break;
+                        }
+                        const text = new TextDecoder().decode(value);
+                        const lines = text.split('\n').filter(line => line.startsWith(' '));
+                        
+                        for (const line of lines) {
+                            if (line.trim() === '') {
+                                continue;
+                            }
+                            try {
+                                const jsonString = line.substring(1);
+                                const data = JSON.parse(jsonString);
+                                partialResponse += data.response;
+                                if (!llmMessageDiv) {
+                                    llmMessageDiv = addMessage(partialResponse, false);
+                                } else {
+                                    addMessage(partialResponse, false, llmMessageDiv);
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e, line);
+                                // If parsing fails, still add the partial response
+                                if (!llmMessageDiv) {
+                                    llmMessageDiv = addMessage(partialResponse, false);
+                                } else {
+                                    addMessage(partialResponse, false, llmMessageDiv);
+                                }
+                            }
+                        }
+                    }
+                    lastResponse = partialResponse;
+                    addMessage(partialResponse, false, llmMessageDiv);
+                    chatHistory.push({ role: "model", content: partialResponse });
+                    previousResponses.push({
+                        prompt: message.prompt,
+                        response: partialResponse,
+                        conversationId: message.conversationId,
+                        model: message.model,
+                        provider: message.provider,
+                        systemMessage: message.systemMessage,
+                        image: message.image
+                    });
+                } catch (error) {
+                    console.error('Failed to send message:', error);
+                    addMessage(`Error generating response: ${error.message}`, false);
+                }
+            }
+        }
     }
 
     // Function to fetch system messages
