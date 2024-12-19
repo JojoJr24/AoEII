@@ -90,6 +90,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return messageDiv;
     }
 
+    // Function to fetch system messages
+    async function fetchSystemMessages() {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/system_messages');
+            if (!response.ok) {
+                console.error('Failed to fetch system messages:', response.statusText);
+                return;
+            }
+            const systemMessages = await response.json();
+            systemMessageSelect.innerHTML = '<option value="">None</option>';
+            systemMessages.forEach(message => {
+                const option = document.createElement('option');
+                option.value = message.id;
+                option.textContent = message.content.length > 50 ? message.content.substring(0, 50) + '...' : message.content;
+                systemMessageSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching system messages:', error);
+        }
+    }
+
     // Function to fetch available models for the selected provider
     async function fetchModels(provider) {
         try {
