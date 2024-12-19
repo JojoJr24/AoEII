@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('prompt', message);
             formData.append('model', selectedModel);
+            formData.append('provider', selectedProvider) // Send the selected provider
             formData.append('history', JSON.stringify(chatHistory)); // Send chat history
             if (uploadedImage) {
                 formData.append('image', uploadedImage);
