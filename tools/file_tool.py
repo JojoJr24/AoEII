@@ -18,12 +18,18 @@ def execute(file_path):
         if not os.path.exists(file_path):
             return f"Error: File not found at path: {file_path}"
         
+        file_size = os.path.getsize(file_path)
+        if file_size > 20 * 1024:  # 20KB limit
+            return f"File information: \n- Path: {file_path}\n- Size: {file_size} bytes\n- File is larger than 20KB."
+
         mime_type, _ = mimetypes.guess_type(file_path)
-        if mime_type and mime_type.startswith('text/'):
-            with open(file_path, 'r') as file:
-                return file.read()
+        if mime_type and mime_type and mime_type.startswith('text/'):
+            try:
+                with open(file_path, 'r') as file:
+                    return file.read()
+            except UnicodeDecodeError:
+                return f"File information: \n- Path: {file_path}\n- Size: {file_size} bytes\n- Mime Type: {mime_type}\n- File is not a valid text file."
         else:
-            file_size = os.path.getsize(file_path)
             return f"File information: \n- Path: {file_path}\n- Size: {file_size} bytes\n- Mime Type: {mime_type}"
     except Exception as e:
         return f"Error reading file: {e}"
