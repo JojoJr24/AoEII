@@ -6,6 +6,8 @@ from PIL import Image
 import io
 import os
 import json
+import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -52,6 +54,69 @@ else:
 # Default LLM provider and model
 selected_provider = "gemini"
 selected_model = "gemini-1.5-flash"
+
+# Database setup
+DATABASE = 'conversations.db'
+
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    with open('schema.sql', 'r') as f:
+        conn.executescript(f.read())
+    conn.close()
+
+def save_conversation(provider, model, system_message):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    timestamp = datetime.now().isoformat()
+    cursor.execute("INSERT INTO conversations (provider, model, system_message, created_at) VALUES (?, ?, ?, ?)",
+                   (provider, model, system_message, timestamp))
+    conversation_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return conversation_id
+
+def add_message_to_conversation(conversation_id, role, content):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    timestamp = datetime.now().isoformat()
+    cursor.execute("INSERT INTO messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, ?)",
+                   (conversation_id, role, content, timestamp))
+    conn.commit()
+    conn.close()
+
+def get_conversation(conversation_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM conversations WHERE id = ?", (conversation_id,))
+    conversation = cursor.fetchone()
+    if conversation:
+        cursor.execute("SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at", (conversation_id,))
+        messages = cursor.fetchall()
+        conn.close()
+        return dict(conversation), [dict(message) for message in messages]
+    conn.close()
+    return None, None
+
+def list_conversations():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, provider, model, created_at FROM conversations ORDER BY created_at DESC")
+    conversations = cursor.fetchall()
+    conn.close()
+    return [dict(conversation) for conversation in conversations]
+
+def delete_conversation(conversation_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM conversations WHERE id = ?", (conversation_id,))
+    cursor.execute("DELETE FROM messages WHERE conversation_id = ?", (conversation_id,))
+    conn.commit()
+    conn.close()
 
 # Function to get available models for the selected provider
 def get_available_models(provider_name):
@@ -100,8 +165,9 @@ def generate():
     image_file = request.files.get('image')
     history_str = data.get('history')
     system_message = data.get('system_message')
+    conversation_id = data.get('conversation_id')
     
-    debug_print(BLUE, f"Request  prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}'")
+    debug_print(BLUE, f"Request  prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}'")
     
     image = None
     if image_file:
@@ -124,14 +190,60 @@ def generate():
     if not prompt:
         debug_print(RED, "Error: Prompt is required")
         return jsonify({"response": "Prompt is required"}), 400
+    
+    if conversation_id:
+        conversation_id = int(conversation_id)
+        conversation, messages = get_conversation(conversation_id)
+        if messages:
+            history = []
+            for message in messages:
+                history.append({"role": message['role'], "content": message['content']})
+            debug_print(GREEN, f"Retrieved conversation {conversation_id} from database.")
+        else:
+            debug_print(YELLOW, f"Conversation {conversation_id} not found.")
+            history = []
+    else:
+        conversation_id = save_conversation(provider_name, model_name, system_message)
+        debug_print(GREEN, f"Created new conversation with id {conversation_id}")
+        history = []
+    
+    add_message_to_conversation(conversation_id, "user", prompt)
 
     def stream_response():
         debug_print(CYAN, "Starting response stream...")
+        full_response = ""
         for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message):
+            full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
+        add_message_to_conversation(conversation_id, "model", full_response)
         debug_print(CYAN, "Response stream finished.")
     
     return Response(stream_response(), mimetype='text/event-stream')
 
+@app.route('/api/conversations', methods=['GET'])
+def list_conversations_route():
+    debug_print(MAGENTA, "Received request for /api/conversations")
+    conversations = list_conversations()
+    return jsonify(conversations)
+
+@app.route('/api/conversations/<int:conversation_id>', methods=['GET'])
+def get_conversation_route(conversation_id):
+    debug_print(MAGENTA, f"Received request for /api/conversations/{conversation_id}")
+    conversation, messages = get_conversation(conversation_id)
+    if conversation:
+        return jsonify({"conversation": conversation, "messages": messages})
+    return jsonify({"message": "Conversation not found"}), 404
+
+@app.route('/api/conversations/<int:conversation_id>', methods=['DELETE'])
+def delete_conversation_route(conversation_id):
+    debug_print(MAGENTA, f"Received request to DELETE /api/conversations/{conversation_id}")
+    delete_conversation(conversation_id)
+    return jsonify({"message": f"Conversation {conversation_id} deleted"})
+
 if __name__ == '__main__':
+    # Initialize the database
+    if not os.path.exists(DATABASE):
+        debug_print(CYAN, "Initializing database...")
+        init_db()
+        debug_print(CYAN, "Database initialized.")
     app.run(debug=True, port=5000)

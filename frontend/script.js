@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetButton = document.getElementById('reset-button');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const systemMessageTextarea = document.getElementById('system-message');
+    const conversationSelect = document.getElementById('conversation-select');
+    const deleteConversationButton = document.getElementById('delete-conversation-button');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -22,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let uploadedImage = null;
     let chatHistory = []; // Store chat history
     let systemMessage = systemMessageTextarea.value;
+    let currentConversationId = null;
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -111,6 +114,50 @@ document.addEventListener('DOMContentLoaded', () => {
         llmStatus.textContent = `${selectedProvider}, ${selectedModel}`;
     }
 
+    // Function to load conversations
+    async function loadConversations() {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/conversations');
+            if (!response.ok) {
+                console.error('Failed to fetch conversations:', response.statusText);
+                return;
+            }
+            const conversations = await response.json();
+            conversationSelect.innerHTML = '<option value="">New Conversation</option>';
+            conversations.forEach(conversation => {
+                const option = document.createElement('option');
+                option.value = conversation.id;
+                option.textContent = `Conversation ${conversation.id} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})`;
+                conversationSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching conversations:', error);
+        }
+    }
+
+    // Function to load a specific conversation
+    async function loadConversation(conversationId) {
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/conversations/${conversationId}`);
+            if (!response.ok) {
+                console.error('Failed to fetch conversation:', response.statusText);
+                return;
+            }
+            const data = await response.json();
+            chatWindow.innerHTML = '';
+            chatHistory = [];
+            if (data && data.messages) {
+                data.messages.forEach(message => {
+                    addMessage(message.content, message.role === 'user');
+                });
+            }
+            currentConversationId = conversationId;
+            deleteConversationButton.style.display = 'inline-block';
+        } catch (error) {
+            console.error('Error fetching conversation:', error);
+        }
+    }
+
     // Event listener for provider change
     llmProvider.addEventListener('change', async () => {
         selectedProvider = llmProvider.value;
@@ -145,6 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 systemMessage = " ";
             }
             formData.append('system_message', systemMessage);
+            if (currentConversationId) {
+                formData.append('conversation_id', currentConversationId);
+            }
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/generate', {
@@ -254,6 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
     resetButton.addEventListener('click', () => {
         chatHistory = [];
         chatWindow.innerHTML = '';
+        currentConversationId = null;
+        conversationSelect.value = "";
+        deleteConversationButton.style.display = 'none';
     });
 
     // Event listener for sidebar toggle
@@ -261,7 +314,45 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.toggle('collapsed');
     });
 
-    // Initial fetch of models
+    // Event listener for conversation selection
+    conversationSelect.addEventListener('change', async () => {
+        const selectedConversationId = conversationSelect.value;
+        if (selectedConversationId) {
+            await loadConversation(selectedConversationId);
+        } else {
+            chatWindow.innerHTML = '';
+            chatHistory = [];
+            currentConversationId = null;
+            deleteConversationButton.style.display = 'none';
+        }
+    });
+
+    // Event listener for delete conversation button
+    deleteConversationButton.addEventListener('click', async () => {
+        if (currentConversationId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/conversations/${currentConversationId}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    console.log(`Conversation ${currentConversationId} deleted.`);
+                    chatWindow.innerHTML = '';
+                    chatHistory = [];
+                    currentConversationId = null;
+                    conversationSelect.value = "";
+                    deleteConversationButton.style.display = 'none';
+                    await loadConversations();
+                } else {
+                    console.error('Failed to delete conversation:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error deleting conversation:', error);
+            }
+        }
+    });
+
+    // Initial fetch of models and conversations
     fetchModels(selectedProvider);
     updateStatus();
+    loadConversations();
 });
