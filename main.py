@@ -19,7 +19,7 @@ MAGENTA = '\033[95m'
 CYAN = '\033[96m'
 RESET = '\033[0m'
 
-DEBUG = os.getenv("DEBUG", "").lower() in ("1", "true", "yes")
+DEBUG = True
 
 def debug_print(color, message):
     if DEBUG:
