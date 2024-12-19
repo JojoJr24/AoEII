@@ -30,16 +30,24 @@ debug_print(CYAN, "Initializing Gemini API...")
 gemini_api = GeminiAPI()
 debug_print(CYAN, "Gemini API initialized.")
 
+# Initialize the Ollama API
 debug_print(CYAN, "Initializing Ollama API...")
-ollama_api = OllamaAPI()
-debug_print(CYAN, "Ollama API initialized.")
+try:
+    ollama_api = OllamaAPI()
+    debug_print(CYAN, "Ollama API initialized.")
+except Exception as e:
+    debug_print(RED, f"Error initializing Ollama API: {e}")
+    ollama_api = None
 
 # Dictionary to hold available LLM providers
 llm_providers = {
     "gemini": gemini_api,
-    "ollama": ollama_api,
-    # Add other LLM providers here as needed
 }
+
+if ollama_api:
+    llm_providers["ollama"] = ollama_api
+else:
+    debug_print(YELLOW, "Ollama API not available, setting empty model list.")
 
 # Default LLM provider and model
 selected_provider = "gemini"
