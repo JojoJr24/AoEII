@@ -453,3 +453,35 @@ body.dark-mode {
     border-radius: 4px;
     font-size: 0.9em;
 }
+
+.active-tools-container {
+    border: 1px dashed #6c757d;
+    min-height: 50px;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.draggable-tool {
+    cursor: grab;
+}
+
+.active-tool-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #28a745;
+    color: #fff;
+    padding: 5px 10px;
+    margin: 2px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.delete-active-tool-button {
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 5px;
+    font-size: 0.9em;
+}

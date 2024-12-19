@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSystemMessageButton = document.getElementById('save-system-message-button');
     const deleteSystemMessageButton = document.getElementById('delete-system-message-button');
     const toolsContainer = document.getElementById('tools-container');
+    const activeToolsContainer = document.getElementById('active-tools-container');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -215,15 +216,41 @@ document.addEventListener('DOMContentLoaded', () => {
             toolsContainer.innerHTML = '';
             tools.forEach(tool => {
                 const toolTag = document.createElement('span');
-                toolTag.classList.add('tool-tag');
+                toolTag.classList.add('tool-tag', 'draggable-tool');
                 toolTag.textContent = tool.name;
                 toolTag.title = tool.description;
+                toolTag.draggable = true;
+                toolTag.addEventListener('dragstart', handleDragStart);
                 toolsContainer.appendChild(toolTag);
             });
         } catch (error) {
             console.error('Error fetching tools:', error);
         }
     }
+
+    function handleDragStart(event) {
+        event.dataTransfer.setData('text/plain', event.target.textContent);
+    }
+
+    activeToolsContainer.addEventListener('dragover', (event) => {
+        event.preventDefault();
+    });
+
+    activeToolsContainer.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const toolName = event.dataTransfer.getData('text/plain');
+        const toolTag = document.createElement('span');
+        toolTag.classList.add('tool-tag', 'active-tool-tag');
+        toolTag.textContent = toolName;
+        const deleteButton = document.createElement('button');
+        deleteButton.innerHTML = '<i class="fas fa-times"></i>';
+        deleteButton.classList.add('delete-active-tool-button');
+        deleteButton.addEventListener('click', () => {
+            toolTag.remove();
+        });
+        toolTag.appendChild(deleteButton);
+        activeToolsContainer.appendChild(toolTag);
+    });
 
     // Function to fetch system messages
     async function fetchSystemMessages() {
