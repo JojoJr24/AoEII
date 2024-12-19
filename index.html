@@ -12,6 +12,10 @@
 <body>
     <div class="container">
         <div class="sidebar">
+            <div class="dark-mode-toggle-container">
+                <label for="dark-mode-toggle">Dark Mode:</label>
+                <input type="checkbox" id="dark-mode-toggle">
+            </div>
             <h2>LLM Options</h2>
             <div class="form-group">
                 <label for="llm-provider">Provider:</label>
@@ -25,10 +29,6 @@
                 <select id="llm-model">
                     <!-- Models will be loaded here -->
                 </select>
-            </div>
-             <div class="form-group">
-                <label for="dark-mode-toggle">Dark Mode:</label>
-                <input type="checkbox" id="dark-mode-toggle">
             </div>
             <p id="llm-status">Proveedor seleccionado: Gemini, Modelo seleccionado: gemini-1.5-flash</p>
         </div>

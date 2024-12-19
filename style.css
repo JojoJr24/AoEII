@@ -36,7 +36,6 @@ body.dark-mode {
     color: #fff;
 }
 
-
 .sidebar h2 {
     margin-bottom: 20px;
     text-align: center;
@@ -83,6 +82,7 @@ body.dark-mode {
 .main-content h1 {
     margin-bottom: 20px;
     text-align: center;
+    font-size: 2em;
 }
 
 #chat-window {
@@ -187,4 +187,15 @@ body.dark-mode {
 
 .input-area button:hover {
     background-color: #2980b9;
+}
+
+.dark-mode-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.dark-mode-toggle-container label {
+    color: #fff;
+    margin-right: 5px;
 }
