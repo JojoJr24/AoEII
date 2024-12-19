@@ -19,9 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let uploadedImage = null;
 
     // Function to add a message to the chat window
-    function addMessage(message, isUser = true) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', isUser ? 'user-message' : 'llm-message');
+    function addMessage(message, isUser = true, messageDiv = null) {
+        if (!messageDiv) {
+            messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isUser ? 'user-message' : 'llm-message');
+        }
         
         if (typeof message === 'string') {
             if (isUser) {
@@ -50,8 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.appendChild(message);
         }
         
-        chatWindow.appendChild(messageDiv);
+        if (!messageDiv.parentNode) {
+            chatWindow.appendChild(messageDiv);
+        }
         chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll
+        return messageDiv;
     }
 
     // Function to fetch available models for the selected provider
@@ -138,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const reader = response.body.getReader();
                 let partialResponse = '';
+                let llmMessageDiv = null;
                 
                 while(true) {
                     const { done, value } = await reader.read();
@@ -155,11 +161,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             const jsonString = line.substring(1);
                             const data = JSON.parse(jsonString);
                             partialResponse += data.response;
-                            addMessage(partialResponse, false);
+                            if (!llmMessageDiv) {
+                                llmMessageDiv = addMessage(partialResponse, false);
+                            } else {
+                                addMessage(partialResponse, false, llmMessageDiv);
+                            }
                         } catch (e) {
                             console.error('Error parsing JSON:', e, line);
                             // If parsing fails, still add the partial response
-                            addMessage(partialResponse, false);
+                            if (!llmMessageDiv) {
+                                llmMessageDiv = addMessage(partialResponse, false);
+                            } else {
+                                addMessage(partialResponse, false, llmMessageDiv);
+                            }
                         }
                     }
                 }
