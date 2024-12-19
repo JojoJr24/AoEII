@@ -213,10 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => {
                     systemMessageTextarea.value = data.content;
+                    document.getElementById('system-message-name').value = data.name;
                 })
                 .catch(error => console.error('Error fetching system message:', error));
         } else {
             systemMessageTextarea.value = '';
+            document.getElementById('system-message-name').value = '';
         }
     });
 
