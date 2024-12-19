@@ -145,16 +145,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     }
                     const text = new TextDecoder().decode(value);
-                    const lines = text.split('\n').filter(line => line.startsWith(''));
+                    const lines = text.split('\n').filter(line => line.startsWith(' '));
                     
                     for (const line of lines) {
+                        if (line.trim() === '') {
+                            continue;
+                        }
                         try {
-                            const jsonString = line.substring(5);
+                            const jsonString = line.substring(1);
                             const data = JSON.parse(jsonString);
                             partialResponse += data.response;
                             addMessage(partialResponse, false);
                         } catch (e) {
                             console.error('Error parsing JSON:', e, line);
+                            // If parsing fails, still add the partial response
+                            addMessage(partialResponse, false);
                         }
                     }
                 }
