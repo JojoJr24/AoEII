@@ -144,14 +144,17 @@ def list_tools():
         if filename.endswith('.py'):
             module_name = filename[:-3]
             file_path = os.path.join(tools_dir, filename)
-            spec = importlib.util.spec_from_file_location(module_name, file_path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            if hasattr(module, 'get_tool_description'):
-                tools.append({
-                    'name': module_name,
-                    'description': module.get_tool_description()
-                })
+            try:
+                spec = importlib.util.spec_from_file_location(module_name, file_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, 'get_tool_description'):
+                    tools.append({
+                        'name': module_name,
+                        'description': module.get_tool_description()
+                    })
+            except Exception as e:
+                debug_print(RED, f"Error loading tool {module_name}: {e}")
     return tools
 
 def delete_system_message(system_message_id):
