@@ -31,13 +31,12 @@
             </div>
             <p id="llm-status">Gemini, gemini-1.5-flash</p>
             <div class="form-group">
-                <label for="conversation-select">Conversations:</label>
-                <select id="conversation-select">
-                    <option value="">New Conversation</option>
+                <label for="conversation-list">Conversations:</label>
+                <ul id="conversation-list">
                     <!-- Conversations will be loaded here -->
-                </select>
+                </ul>
             </div>
-            <button id="delete-conversation-button" style="display:none;">Delete Conversation</button>
+            <button id="delete-all-conversations-button">Delete All Conversations</button>
         </div>
         <div class="main-content">
             <div class="header">
@@ -58,8 +57,6 @@
                 </div>
                 <button id="send-button"><i class="fas fa-paper-plane"></i></button>
                 <button id="reset-button"><i class="fas fa-trash"></i></button>
-                <button id="regenerate-button"><i class="fas fa-sync"></i></button>
-                <button id="back-button"><i class="fas fa-arrow-left"></i></button>
             </div>
         </div>
         <div class="system-message-column">

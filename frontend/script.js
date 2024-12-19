@@ -15,10 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetButton = document.getElementById('reset-button');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const systemMessageTextarea = document.getElementById('system-message');
-    const conversationSelect = document.getElementById('conversation-select');
-    const deleteConversationButton = document.getElementById('delete-conversation-button');
-    const regenerateButton = document.getElementById('regenerate-button');
-    const backButton = document.getElementById('back-button');
+    const conversationList = document.getElementById('conversation-list');
+    const deleteAllConversationsButton = document.getElementById('delete-all-conversations-button');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -129,12 +127,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const conversations = await response.json();
-            conversationSelect.innerHTML = '<option value="">New Conversation</option>';
+            conversationList.innerHTML = '';
             conversations.forEach(conversation => {
-                const option = document.createElement('option');
-                option.value = conversation.id;
-                option.textContent = conversation.title ? `${conversation.title} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})` : `Conversation ${conversation.id} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})`;
-                conversationSelect.appendChild(option);
+                const listItem = document.createElement('li');
+                listItem.classList.add('conversation-list-item');
+                const title = conversation.title ? `${conversation.title} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})` : `Conversation ${conversation.id} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})`;
+                listItem.textContent = title;
+                listItem.addEventListener('click', () => loadConversation(conversation.id));
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteButton.classList.add('delete-conversation-button');
+                deleteButton.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent loading the conversation when deleting
+                    deleteConversation(conversation.id);
+                });
+                listItem.appendChild(deleteButton);
+                conversationList.appendChild(listItem);
             });
         } catch (error) {
             console.error('Error fetching conversations:', error);
@@ -158,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             currentConversationId = conversationId;
-            deleteConversationButton.style.display = 'inline-block';
         } catch (error) {
             console.error('Error fetching conversation:', error);
         }
@@ -338,8 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory = [];
         chatWindow.innerHTML = '';
         currentConversationId = null;
-        conversationSelect.value = "";
-        deleteConversationButton.style.display = 'none';
         firstMessage = true;
         previousResponses = [];
     });
@@ -349,197 +355,49 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.toggle('collapsed');
     });
 
-    // Event listener for conversation selection
-    conversationSelect.addEventListener('change', async () => {
-        const selectedConversationId = conversationSelect.value;
-        if (selectedConversationId) {
-            await loadConversation(selectedConversationId);
-            firstMessage = false;
-        } else {
-            chatWindow.innerHTML = '';
-            chatHistory = [];
-            currentConversationId = null;
-            deleteConversationButton.style.display = 'none';
-            firstMessage = true;
-        }
-    });
-
-    // Event listener for delete conversation button
-    deleteConversationButton.addEventListener('click', async () => {
-        if (currentConversationId) {
-            try {
-                const response = await fetch(`http://127.0.0.1:5000/api/conversations/${currentConversationId}`, {
-                    method: 'DELETE'
-                });
-                if (response.ok) {
-                    console.log(`Conversation ${currentConversationId} deleted.`);
+    // Function to delete a conversation
+    async function deleteConversation(conversationId) {
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/conversations/${conversationId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                console.log(`Conversation ${conversationId} deleted.`);
+                if (currentConversationId === conversationId) {
                     chatWindow.innerHTML = '';
                     chatHistory = [];
                     currentConversationId = null;
-                    conversationSelect.value = "";
-                    deleteConversationButton.style.display = 'none';
-                    await loadConversations();
                     firstMessage = true;
-                } else {
-                    console.error('Failed to delete conversation:', response.statusText);
+                    previousResponses = [];
                 }
-            } catch (error) {
-                console.error('Error deleting conversation:', error);
-            }
-        }
-    });
-
-    // Event listener for regenerate button
-    regenerateButton.addEventListener('click', async () => {
-        if (previousResponses.length > 0) {
-            const last = previousResponses[previousResponses.length - 1];
-            const { prompt, conversationId, model, provider, systemMessage, image } = last;
-            
-            // Remove the last message from the chat window
-            const lastMessage = chatWindow.lastElementChild;
-            if (lastMessage) {
-                chatWindow.removeChild(lastMessage);
-            }
-            
-            // Remove the last message from the chat history
-            if (chatHistory.length > 0) {
-                chatHistory.pop();
-            }
-            
-            const formData = new FormData();
-            formData.append('prompt', prompt);
-            formData.append('model', model);
-            formData.append('provider', provider)
-            formData.append('history', JSON.stringify(chatHistory));
-            if (image) {
-                formData.append('image', image);
-            }
-            if (systemMessage) {
-                formData.append('system_message', systemMessage);
-            }
-            if (conversationId) {
-                formData.append('conversation_id', conversationId);
-            }
-            
-            try {
-                const response = await fetch('http://127.0.0.1:5000/api/generate', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'text/event-stream'
-                    }
-                });
-                if (!response.ok) {
-                    const errorMsg = `HTTP error! status: ${response.status}`;
-                    console.error('Failed to regenerate response:', errorMsg);
-                    addMessage(`Error regenerating response: ${errorMsg}`, false);
-                    return;
-                }
-                
-                const reader = response.body.getReader();
-                let partialResponse = '';
-                let llmMessageDiv = null;
-                
-                while(true) {
-                    const { done, value } = await reader.read();
-                    if (done) {
-                        break;
-                    }
-                    const text = new TextDecoder().decode(value);
-                    const lines = text.split('\n').filter(line => line.startsWith(' '));
-                    
-                    for (const line of lines) {
-                        if (line.trim() === '') {
-                            continue;
-                        }
-                        try {
-                            const jsonString = line.substring(1);
-                            const data = JSON.parse(jsonString);
-                            partialResponse += data.response;
-                            if (!llmMessageDiv) {
-                                llmMessageDiv = addMessage(partialResponse, false);
-                            } else {
-                                addMessage(partialResponse, false, llmMessageDiv);
-                            }
-                        } catch (e) {
-                            console.error('Error parsing JSON:', e, line);
-                            // If parsing fails, still add the partial response
-                            if (!llmMessageDiv) {
-                                llmMessageDiv = addMessage(partialResponse, false);
-                            } else {
-                                addMessage(partialResponse, false, llmMessageDiv);
-                            }
-                        }
-                    }
-                }
-                lastResponse = partialResponse;
-                previousResponses[previousResponses.length - 1].response = partialResponse;
-            } catch (error) {
-                 console.error('Failed to regenerate response:', error);
-                 addMessage(`Error regenerating response: ${error.message}`, false);
-            }
-        } else {
-            chatWindow.innerHTML = '';
-            chatHistory = [];
-            previousResponses = [];
-        }
-    });
-
-    // Event listener for back button
-    backButton.addEventListener('click', async () => {
-        if (chatHistory.length > 0) {
-            // Remove the last two messages from the chat window
-            for (let i = 0; i < 2; i++) {
-                const lastMessage = chatWindow.lastElementChild;
-                if (lastMessage) {
-                    chatWindow.removeChild(lastMessage);
-                }
-                // Remove the last message from the chat history
-                if (chatHistory.length > 0) {
-                    chatHistory.pop();
-                }
-            }
-            
-            if (previousResponses.length > 0) {
-                previousResponses.pop();
-            }
-            
-            if (previousResponses.length > 0) {
-                const previous = previousResponses[previousResponses.length - 1];
-                
-                if (previous) {
-                    currentConversationId = previous.conversationId;
-                    
-                    try {
-                        const response = await fetch(`http://127.0.0.1:5000/api/conversations/${currentConversationId}`);
-                        if (!response.ok) {
-                            console.error('Failed to fetch conversation:', response.statusText);
-                            return;
-                        }
-                        const data = await response.json();
-                        chatWindow.innerHTML = '';
-                        chatHistory = [];
-                        if (data && data.messages) {
-                            data.messages.forEach(message => {
-                                addMessage(message.content, message.role === 'user');
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Error fetching conversation:', error);
-                    }
-                    
-                    addMessage(previous.response, false);
-                    lastResponse = previous.response;
-                }
+                await loadConversations();
             } else {
+                console.error('Failed to delete conversation:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error deleting conversation:', error);
+        }
+    }
+
+    // Event listener for delete all conversations button
+    deleteAllConversationsButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/conversations', {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                console.log('All conversations deleted.');
                 chatWindow.innerHTML = '';
                 chatHistory = [];
+                currentConversationId = null;
+                firstMessage = true;
                 previousResponses = [];
+                await loadConversations();
+            } else {
+                console.error('Failed to delete all conversations:', response.statusText);
             }
-        } else {
-            chatWindow.innerHTML = '';
-            chatHistory = [];
-            previousResponses = [];
+        } catch (error) {
+             console.error('Error deleting all conversations:', error);
         }
     });
 
