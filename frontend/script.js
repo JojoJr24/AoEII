@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const systemMessageTextarea = document.getElementById('system-message');
     const conversationList = document.getElementById('conversation-list');
     const deleteAllConversationsButton = document.getElementById('delete-all-conversations-button');
+    const systemMessageSelect = document.getElementById('system-message-select');
+    const saveSystemMessageButton = document.getElementById('save-system-message-button');
+    const deleteSystemMessageButton = document.getElementById('delete-system-message-button');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -29,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let conversationTitle = null;
     let lastResponse = null;
     let previousResponses = [];
+    let selectedSystemMessageId = null;
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -179,6 +183,21 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching conversation:', error);
         }
     }
+
+    // Event listener for system message select change
+    systemMessageSelect.addEventListener('change', () => {
+        selectedSystemMessageId = systemMessageSelect.value;
+        if (selectedSystemMessageId) {
+            fetch(`http://127.0.0.1:5000/api/system_messages/${selectedSystemMessageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    systemMessageTextarea.value = data.content;
+                })
+                .catch(error => console.error('Error fetching system message:', error));
+        } else {
+            systemMessageTextarea.value = '';
+        }
+    });
 
     // Event listener for provider change
     llmProvider.addEventListener('change', async () => {
@@ -352,6 +371,57 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleDarkMode(prefersDark);
     }
 
+    // Function to save a system message
+    async function saveSystemMessage() {
+        const content = systemMessageTextarea.value;
+        if (content) {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/system_messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: content })
+                });
+                if (response.ok) {
+                    console.log('System message saved.');
+                    fetchSystemMessages();
+                } else {
+                    console.error('Failed to save system message:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error saving system message:', error);
+            }
+        }
+    }
+
+    // Function to delete a system message
+    async function deleteSystemMessage() {
+        if (selectedSystemMessageId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/system_messages/${selectedSystemMessageId}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    console.log(`System message ${selectedSystemMessageId} deleted.`);
+                    systemMessageTextarea.value = '';
+                    selectedSystemMessageId = null;
+                    fetchSystemMessages();
+                } else {
+                    console.error('Failed to delete system message:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error deleting system message:', error);
+            }
+        }
+    }
+
+    // Event listener for save system message button
+    saveSystemMessageButton.addEventListener('click', saveSystemMessage);
+
+    // Event listener for delete system message button
+    deleteSystemMessageButton.addEventListener('click', deleteSystemMessage);
+
     // Event listener for reset button
     resetButton.addEventListener('click', () => {
         chatHistory = [];
@@ -413,8 +483,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initial fetch of models and conversations
+    // Initial fetch of models, system messages and conversations
     fetchModels(selectedProvider);
+    fetchSystemMessages();
     updateStatus();
     loadConversations();
     setInitialDarkMode();
