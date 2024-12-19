@@ -98,6 +98,14 @@ def get_conversation(conversation_id):
     conn.close()
     return None, None
 
+def list_conversations():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, provider, model, created_at FROM conversations ORDER BY created_at DESC")
+    conversations = cursor.fetchall()
+    conn.close()
+    return [dict(conversation) for conversation in conversations]
+
 def save_system_message(content):
     conn = get_db_connection()
     cursor = conn.cursor()
