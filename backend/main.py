@@ -193,7 +193,7 @@ def get_available_models(provider_name):
     return []
 
 # Function to generate responses using the selected LLM
-def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None):
+def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None, selected_tools=None):
     print("Hist",history)
     if not provider_name:
         provider_name = selected_provider
@@ -201,7 +201,7 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
     provider = llm_providers.get(provider_name)
     if provider:
         if model_name:
-            response = provider.generate_response(prompt, model_name, image, history, system_message)
+            response = provider.generate_response(prompt, model_name, image, history, system_message, selected_tools)
             debug_print(GREEN, f"Response generated successfully.")
             return response
         else:
@@ -230,8 +230,9 @@ def generate():
     history_str = data.get('history')
     system_message = data.get('system_message')
     conversation_id = data.get('conversation_id')
+    selected_tools = data.get('selected_tools')
         
-    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}'")
+    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}', selected_tools='{selected_tools}'")
     
     image = None
     if image_file:
@@ -275,7 +276,7 @@ def generate():
 
     def stream_response():
         full_response = ""
-        for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message):
+        for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message, selected_tools):
             full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
         add_message_to_conversation(conversation_id, "model", full_response)
