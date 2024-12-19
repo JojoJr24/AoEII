@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const llmProvider = document.getElementById('llm-provider');
     const llmModel = document.getElementById('llm-model');
     const llmStatus = document.getElementById('llm-status');
+    let availableModels = [];
     const imageUpload = document.getElementById('image-upload');
     const uploadButton = document.getElementById('upload-button');
     const darkModeToggle = document.getElementById('dark-mode-toggle');
@@ -123,26 +124,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const models = await response.json();
-            llmModel.innerHTML = ''; // Clear existing options
             if (models && models.length > 0) {
-                models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model;
-                    option.textContent = model;
-                    llmModel.appendChild(option);
-                });
+                availableModels = models;
                 selectedModel = models[0];
                 llmModel.value = selectedModel;
                 updateStatus();
             } else {
                  console.error('No models returned from the API.');
                  addMessage('No models available for this provider.', false);
-                 llmModel.innerHTML = '<option>No models available</option>';
+                 llmModel.value = 'No models available';
             }
         } catch (error) {
             console.error('Failed to fetch models:', error);
             addMessage(`Error loading models: ${error.message}`, false)
-            llmModel.innerHTML = '<option>Error loading models</option>';
+            llmModel.value = 'Error loading models';
         }
     }
 
@@ -229,10 +224,28 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatus();
     });
 
-    // Event listener for model change
-    llmModel.addEventListener('change', () => {
+    // Event listener for model input change
+    llmModel.addEventListener('input', () => {
         selectedModel = llmModel.value;
         updateStatus();
+    });
+
+    // Event listener for model input focus to show autocomplete
+    llmModel.addEventListener('focus', () => {
+        const datalistId = 'models-list';
+        let datalist = document.getElementById(datalistId);
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = datalistId;
+            document.body.appendChild(datalist);
+        }
+        datalist.innerHTML = '';
+        availableModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            datalist.appendChild(option);
+        });
+        llmModel.setAttribute('list', datalistId);
     });
 
     // Event listener for send button click
