@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedProvider = llmProvider.value;
     let selectedModel = llmModel.value;
     let uploadedImage = null;
+    let chatHistory = []; // Store chat history
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -28,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof message === 'string') {
             if (isUser) {
                 messageDiv.textContent = message;
+                chatHistory.push({ role: "user", content: message }); // Add user message to history
             } else {
                 // Parse markdown and highlight code blocks
                 messageDiv.innerHTML = marked.parse(message);
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pre.appendChild(copyButton);
                     hljs.highlightBlock(block);
                 });
+                chatHistory.push({ role: "llm", content: message }); // Add LLM message to history
             }
         } else if (message instanceof HTMLImageElement) {
             messageDiv.appendChild(message);
@@ -127,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('prompt', message);
             formData.append('model', selectedModel);
+            formData.append('history', JSON.stringify(chatHistory)); // Send chat history
             if (uploadedImage) {
                 formData.append('image', uploadedImage);
             }
