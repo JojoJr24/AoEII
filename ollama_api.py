@@ -58,7 +58,9 @@ class OllamaAPI:
                 messages.append({"role": "user", "content": prompt})
             
             # Extract just the model name
+            print(f"Model name before extraction: {model_name}")
             model_name = model_name.split(":")[-1] if ":" in model_name else model_name
+            print(f"Model name after extraction: {model_name}")
             response_stream = ollama.chat(model=model_name, messages=messages, stream=True)
             for chunk in response_stream:
                 yield chunk['message']['content']
