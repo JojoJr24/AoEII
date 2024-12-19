@@ -98,13 +98,49 @@ def get_conversation(conversation_id):
     conn.close()
     return None, None
 
-def list_conversations():
+def save_system_message(content):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    timestamp = datetime.now().isoformat()
+    cursor.execute("INSERT INTO system_messages (content, created_at) VALUES (?, ?)", (content, timestamp))
+    system_message_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return system_message_id
+
+def get_system_message(system_message_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM system_messages WHERE id = ?", (system_message_id,))
+    system_message = cursor.fetchone()
+    conn.close()
+    if system_message:
+        return dict(system_message)
+    return None
+
+def list_system_messages():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, provider, model, created_at FROM conversations ORDER BY created_at DESC")
     conversations = cursor.fetchall()
+    cursor.execute("SELECT id, content, created_at FROM system_messages ORDER BY created_at DESC")
+    system_messages = cursor.fetchall()
     conn.close()
-    return [dict(conversation) for conversation in conversations]
+    return [dict(system_message) for system_message in system_messages]
+
+def delete_system_message(system_message_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM system_messages WHERE id = ?", (system_message_id,))
+    conn.commit()
+    conn.close()
+
+def delete_all_system_messages():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM system_messages")
+    conn.commit()
+    conn.close()
 
 def delete_conversation(conversation_id):
     conn = get_db_connection()
@@ -196,7 +232,8 @@ def generate():
     if conversation_id:
         conversation_id = int(conversation_id)
         conversation, messages = get_conversation(conversation_id)
-        if messages:
+        if conversation:
+            system_message = conversation['system_message']
             history = []
             for message in messages:
                 history.append({"role": message['role'], "content": message['content']})
@@ -227,6 +264,37 @@ def list_conversations_route():
     debug_print(GREEN, f"Response: {conversations}")
     return jsonify(conversations)
 
+@app.route('/api/system_messages', methods=['GET'])
+def list_system_messages_route():
+    debug_print(MAGENTA, "Received request for /api/system_messages")
+    system_messages = list_system_messages()
+    debug_print(GREEN, f"Response: {system_messages}")
+    return jsonify(system_messages)
+
+@app.route('/api/system_messages/<int:system_message_id>', methods=['GET'])
+def get_system_message_route(system_message_id):
+    debug_print(MAGENTA, f"Received request for /api/system_messages/{system_message_id}")
+    system_message = get_system_message(system_message_id)
+    if system_message:
+        debug_print(GREEN, f"Response: {system_message}")
+        return jsonify(system_message)
+    debug_print(RED, f"Response: System message {system_message_id} not found")
+    return jsonify({"message": "System message not found"}), 404
+
+@app.route('/api/system_messages/<int:system_message_id>', methods=['DELETE'])
+def delete_system_message_route(system_message_id):
+    debug_print(MAGENTA, f"Received request to DELETE /api/system_messages/{system_message_id}")
+    delete_system_message(system_message_id)
+    debug_print(GREEN, f"Response: System message {system_message_id} deleted")
+    return jsonify({"message": f"System message {system_message_id} deleted"})
+
+@app.route('/api/system_messages', methods=['DELETE'])
+def delete_all_system_messages_route():
+    debug_print(MAGENTA, "Received request to DELETE all system messages")
+    delete_all_system_messages()
+    debug_print(GREEN, "Response: All system messages deleted")
+    return jsonify({"message": "All system messages deleted"})
+
 @app.route('/api/conversations/<int:conversation_id>', methods=['GET'])
 def get_conversation_route(conversation_id):
     debug_print(MAGENTA, f"Received request for /api/conversations/{conversation_id}")
@@ -240,6 +308,7 @@ def get_conversation_route(conversation_id):
 @app.route('/api/conversations/<int:conversation_id>', methods=['DELETE'])
 def delete_conversation_route(conversation_id):
     debug_print(MAGENTA, f"Received request to DELETE /api/conversations/{conversation_id}")
+    delete_conversation(conversation_id)
     debug_print(GREEN, f"Response: Conversation {conversation_id} deleted")
     return jsonify({"message": f"Conversation {conversation_id} deleted"})
 

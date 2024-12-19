@@ -14,3 +14,9 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TEXT NOT NULL,
     FOREIGN KEY (conversation_id) REFERENCES conversations(id)
 );
+
+CREATE TABLE IF NOT EXISTS system_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
