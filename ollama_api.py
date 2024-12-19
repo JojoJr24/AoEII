@@ -49,7 +49,10 @@ class OllamaAPI:
                 messages.append({"role": "system", "content": system_message})
             if history:
                 for message in history:
-                    messages.append({"role": message["role"], "content": message["content"]})
+                    if message["role"] == "model":
+                        messages.append({"role": "assistant", "content": message["content"]})
+                    else:
+                        messages.append({"role": message["role"], "content": message["content"]})
             
             if image:
                 # Convert PIL Image to bytes
