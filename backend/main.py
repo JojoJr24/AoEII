@@ -303,6 +303,19 @@ def delete_all_system_messages_route():
     debug_print(GREEN, "Response: All system messages deleted")
     return jsonify({"message": "All system messages deleted"})
 
+@app.route('/api/system_messages', methods=['POST'])
+def save_system_message_route():
+    debug_print(MAGENTA, "Received request to POST /api/system_messages")
+    data = request.get_json()
+    name = data.get('name')
+    content = data.get('content')
+    if not name or not content:
+        debug_print(RED, "Error: Name and content are required")
+        return jsonify({"message": "Name and content are required"}), 400
+    system_message_id = save_system_message(name, content)
+    debug_print(GREEN, f"Response: System message {system_message_id} saved")
+    return jsonify({"message": f"System message {system_message_id} saved", "id": system_message_id})
+
 @app.route('/api/conversations/<int:conversation_id>', methods=['GET'])
 def get_conversation_route(conversation_id):
     debug_print(MAGENTA, f"Received request for /api/conversations/{conversation_id}")
