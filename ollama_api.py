@@ -17,7 +17,7 @@ class OllamaAPI:
         """
         models = ollama.list()
         print(f"Ollama models response: {models}")
-        return [model['name'] for model in models['models']]
+        return [model.model for model in models['models']]
 
 
     def list_models(self) -> List[str]:
