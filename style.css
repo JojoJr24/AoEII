@@ -100,12 +100,34 @@ body {
     gap: 5px;
 }
 
-.input-area input[type="text"] {
+.input-with-upload {
+    display: flex;
     flex: 1;
-    padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    overflow: hidden; /* Ensure the button stays within the container */
 }
+
+.input-with-upload input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    outline: none; /* Remove the input's outline */
+}
+
+.input-with-upload button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #2ecc71;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 0; /* Remove the button's border radius */
+}
+
+.input-with-upload button:hover {
+    background-color: #27ae60;
+}
+
 
 .input-area button {
     padding: 10px 15px;
@@ -118,12 +140,4 @@ body {
 
 .input-area button:hover {
     background-color: #2980b9;
-}
-
-#upload-button {
-    background-color: #2ecc71;
-}
-
-#upload-button:hover {
-    background-color: #27ae60;
 }
