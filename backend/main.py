@@ -8,6 +8,7 @@ import os
 import json
 import sqlite3
 from datetime import datetime
+import importlib.util
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -135,6 +136,23 @@ def list_system_messages():
     system_messages = cursor.fetchall()
     conn.close()
     return [dict(system_message) for system_message in system_messages]
+
+def list_tools():
+    tools_dir = 'tools'
+    tools = []
+    for filename in os.listdir(tools_dir):
+        if filename.endswith('.py'):
+            module_name = filename[:-3]
+            file_path = os.path.join(tools_dir, filename)
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            if hasattr(module, 'get_tool_description'):
+                tools.append({
+                    'name': module_name,
+                    'description': module.get_tool_description()
+                })
+    return tools
 
 def delete_system_message(system_message_id):
     conn = get_db_connection()
@@ -302,6 +320,13 @@ def delete_all_system_messages_route():
     delete_all_system_messages()
     debug_print(GREEN, "Response: All system messages deleted")
     return jsonify({"message": "All system messages deleted"})
+
+@app.route('/api/tools', methods=['GET'])
+def list_tools_route():
+    debug_print(MAGENTA, "Received request for /api/tools")
+    tools = list_tools()
+    debug_print(GREEN, f"Response: {tools}")
+    return jsonify(tools)
 
 @app.route('/api/system_messages', methods=['POST'])
 def save_system_message_route():
