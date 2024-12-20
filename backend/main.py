@@ -13,6 +13,7 @@ import json
 import sqlite3
 from datetime import datetime
 import importlib.util
+import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -199,6 +200,10 @@ def list_tools():
             except Exception as e:
                 debug_print(RED, f"Error loading tool {module_name}: {e}")
     return tools
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
 
 def delete_system_message(system_message_id):
     conn = get_db_connection()
