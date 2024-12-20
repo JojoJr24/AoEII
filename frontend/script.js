@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedProvider = llmProvider.value;
     let selectedModel = llmModel.value;
     let uploadedImage = null;
-    let chatHistory = []; // Store chat history
+    let chatHistory = [];
     let systemMessage = systemMessageTextarea.value;
     let currentConversationId = null;
-    let firstMessage = true; // Flag to track if it's the first message in a new conversation
+    let firstMessage = true;
     let conversationTitle = null;
     let lastResponse = null;
     let previousResponses = [];
@@ -306,6 +306,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStatus() {
         llmStatus.textContent = `${selectedProvider}, ${selectedModel}`;
     }
+    
+    // Set initial status
+    updateStatus();
 
     // Function to load conversations
     async function loadConversations() {
