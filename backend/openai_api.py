@@ -70,9 +70,9 @@ class OpenAIAPI:
                 # Resize the image to 512x512
                 image = image.resize((512, 512))
                 
-                # Convert PIL Image to bytes
+                # Convert PIL Image to bytes, always save as PNG
                 image_bytes = io.BytesIO()
-                image.save(image_bytes, format=image.format if image.format else "PNG")
+                image.save(image_bytes, format="PNG")
                 image_bytes = image_bytes.getvalue()
                 base64_image = base64.b64encode(image_bytes).decode('utf-8')
                 messages.append({
