@@ -1,5 +1,7 @@
 import anthropic
 import os
+import anthropic
+import os
 from dotenv import load_dotenv
 from typing import List, Optional, Generator
 from PIL import Image
@@ -64,6 +66,10 @@ class ClaudeAPI:
         try:
             messages = []
             
+            # Add system message if provided
+            if system_message:
+                messages.append({"role": "system", "content": system_message})
+            
             # Add chat history if provided
             if history:
                 for message in history:
@@ -80,28 +86,24 @@ class ClaudeAPI:
                 # Convert PIL Image to bytes
                 image_bytes = io.BytesIO()
                 image.save(image_bytes, format=image.format or "PNG")
-                user_message["images"] = [{"type": "image", "data": image_bytes.getvalue()}]
+                user_message["attachments"] = [{"type": "image", "data": image_bytes.getvalue()}]
             
             messages.append(user_message)
             
-            # Create streaming response with system message as a separate parameter
-            kwargs = {
-                "model": model_name,
-                "messages": messages,
-                "max_tokens": 4096,
-                "stream": True
-            }
-            
-            # Add system message if provided
-            if system_message:
-                kwargs["system"] = system_message
-            
-            response_stream = self.client.messages.create(**kwargs)
+            # Create streaming response
+            stream = self.client.messages.create(
+                model=model_name,
+                max_tokens=4096,
+                messages=messages,
+                stream=True,
+            )
             
             # Yield response chunks
-            for chunk in response_stream:
-                if chunk.content:
-                    yield chunk.content[0].text
-                    
+            for event in stream:
+                if event.type == "message_start":
+                    continue
+                elif event.type == "content_block_delta":
+                    yield event.delta.text
+                
         except Exception as e:
             yield f"Error generating response: {e}"
