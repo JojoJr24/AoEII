@@ -30,7 +30,7 @@ def execute(file_path):
             return f"Error: File not found at path: {file_path}"
         
         file_size = os.path.getsize(file_path)
-        if file_size > 20 * 1024:  # 20KB limit
+        if file_size > 60 * 1024:  # 20KB limit
             return f"File information: \n- Path: {file_path}\n- Size: {file_size} bytes\n- File is larger than 20KB."
         
         try:
