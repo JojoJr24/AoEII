@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputWithUpload = document.querySelector('.input-with-upload');
     const formSelects = document.querySelectorAll('.form-group select');
     const resetButton = document.getElementById('reset-button');
+    const stopButton = document.getElementById('stop-button');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const systemMessageTextarea = document.getElementById('system-message');
     const conversationList = document.getElementById('conversation-list');
