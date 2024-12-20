@@ -47,6 +47,14 @@ except Exception as e:
     debug_print(RED, f"Error initializing OpenAI API: {e}")
     openai_api = None
 
+# Initialize the Claude API
+try:
+    claude_api = ClaudeAPI()
+    debug_print(BLUE, "Claude API initialized.")
+except Exception as e:
+    debug_print(RED, f"Error initializing Claude API: {e}")
+    claude_api = None
+
 # Dictionary to hold available LLM providers
 llm_providers = {
     "gemini": gemini_api,
@@ -61,6 +69,11 @@ if openai_api:
     llm_providers["openai"] = openai_api
 else:
     debug_print(BLUE, "OpenAI API not available, setting empty model list.")
+
+if claude_api:
+    llm_providers["claude"] = claude_api
+else:
+    debug_print(BLUE, "Claude API not available, setting empty model list.")
 
 # Default LLM provider and model
 selected_provider = "gemini"
