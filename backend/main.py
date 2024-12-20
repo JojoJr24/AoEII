@@ -38,6 +38,14 @@ except Exception as e:
     debug_print(RED, f"Error initializing Ollama API: {e}")
     ollama_api = None
 
+# Initialize the OpenAI API
+try:
+    openai_api = OpenAIAPI()
+    debug_print(BLUE, "OpenAI API initialized.")
+except Exception as e:
+    debug_print(RED, f"Error initializing OpenAI API: {e}")
+    openai_api = None
+
 # Dictionary to hold available LLM providers
 llm_providers = {
     "gemini": gemini_api,
@@ -47,6 +55,11 @@ if ollama_api:
     llm_providers["ollama"] = ollama_api
 else:
     debug_print(BLUE, "Ollama API not available, setting empty model list.")
+
+if openai_api:
+    llm_providers["openai"] = openai_api
+else:
+    debug_print(BLUE, "OpenAI API not available, setting empty model list.")
 
 # Default LLM provider and model
 selected_provider = "gemini"
