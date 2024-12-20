@@ -231,18 +231,27 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                     You have access to the following tools. You can use one or more of them, and you can use the same tool multiple times if needed:
                     {tool_descriptions}
                     
-                    Use the tools by calling them with the following format:
+                    Use the tools by calling them with the following format. You can call one or more tools in a single response:
                     ```tool_code
-                    {{
-                        "tool_name": "tool_name",
-                        "parameters": {{
-                            "param1": "value1",
-                            "param2": "value2"
-                        }}
-                    }}
+                    [
+                        {
+                            "tool_name": "tool_name_1",
+                            "parameters": {
+                                "param1": "value1",
+                                "param2": "value2"
+                            }
+                        },
+                        {
+                            "tool_name": "tool_name_2",
+                            "parameters": {
+                                "param3": "value3",
+                                "param4": "value4"
+                            }
+                        }
+                    ]
                     ```
                     
-                    After using the tool, continue with the conversation.
+                    After using the tool(s), continue with the conversation.
                     
                     Now, respond to the following prompt:
                     {prompt}
