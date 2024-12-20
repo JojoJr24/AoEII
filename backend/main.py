@@ -26,6 +26,7 @@ MAGENTA = '\033[95m'
 RESET = '\033[0m'
 
 DEBUG = True
+streaming = True
 
 def debug_print(color, message):
     if DEBUG:
@@ -453,8 +454,12 @@ def generate():
     add_message_to_conversation(conversation_id, "user", prompt)
 
     def stream_response():
+        global streaming
         full_response = ""
         for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message, selected_tools):
+            if not streaming:
+                debug_print(BLUE, "Streaming stopped.")
+                break
             full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
         add_message_to_conversation(conversation_id, "model", full_response)
@@ -543,6 +548,13 @@ def delete_all_conversations_route():
     delete_all_conversations()
     debug_print(GREEN, "Response: All conversations deleted")
     return jsonify({"message": "All conversations deleted"})
+
+@app.route('/api/stop', methods=['POST'])
+def stop_stream():
+    global streaming
+    streaming = False
+    debug_print(MAGENTA, "Received request to /api/stop")
+    return jsonify({"message": "Streaming stopped"})
 
 if __name__ == '__main__':
     # Initialize the database
