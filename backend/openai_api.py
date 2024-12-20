@@ -1,4 +1,3 @@
-import openai
 import os
 from dotenv import load_dotenv
 from typing import List, Optional, Generator
@@ -6,6 +5,7 @@ from PIL import Image
 import io
 import json
 import base64
+from openai import OpenAI
 
 load_dotenv()
 
@@ -15,7 +15,7 @@ class OpenAIAPI:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("No OPENAI_API_KEY found in environment variables.")
-        openai.api_key = api_key
+        self.client = OpenAI(api_key=api_key)
         self.available_models = self._list_available_models()
 
     def _list_available_models(self) -> List[str]:
@@ -26,7 +26,7 @@ class OpenAIAPI:
             List[str]: A list of available model names.
         """
         try:
-            models = openai.models.list()
+            models = self.client.models.list()
             return [model.id for model in models.data]
         except Exception as e:
             print(f"Error listing OpenAI models: {e}")
@@ -76,7 +76,7 @@ class OpenAIAPI:
 
                 # Upload the image file to OpenAI
                 with open(temp_image_path, "rb") as image_file:
-                    uploaded_file = openai.File.create(file=image_file, purpose='vision')
+                    uploaded_file = self.client.files.create(file=image_file, purpose='vision')
 
                 # Reference the uploaded image in the message
                 messages.append({
@@ -92,7 +92,7 @@ class OpenAIAPI:
             else:
                 messages.append({"role": "user", "content": prompt})
 
-            response_stream = openai.ChatCompletion.create(
+            response_stream = self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 stream=True,
