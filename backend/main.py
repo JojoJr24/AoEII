@@ -264,45 +264,54 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                 debug_print(BLUE, f"Tool response: {tool_response}")
                 
                 try:
-                    start_index = tool_response.find('{')
-                    end_index = tool_response.rfind('}')
+                    start_index = tool_response.find('[')
+                    end_index = tool_response.rfind(']')
                     if start_index != -1 and end_index != -1:
                         json_string = tool_response[start_index:end_index+1]
-                        tool_call = json.loads(json_string)
-                        tool_name = tool_call.get('tool_name')
-                        tool_params = tool_call.get('parameters', {})
+                        tool_calls = json.loads(json_string)
                         
-                        if tool_name:
-                            tool = next((tool for tool in tool_instances if tool['name'] == tool_name), None)
-                            if tool:
-                                debug_print(BLUE, f"Executing tool: {tool_name} with params: {tool_params}")
-                                tool_result = tool['execute'](**tool_params)
-                                debug_print(BLUE, f"Tool result: {tool_result}")
-                                prompt = f"""
-                                The tool {tool_name} was called with the following parameters:
-                                ```tool_params
-                                {tool_params}
-                                ```
-                                The tool response is:
-                                ```tool_response
-                                {tool_result}
-                                ```
-                                
-                                Now, respond to the following prompt:
-                                {prompt}
-                            """
-                        else:
-                            debug_print(RED, f"Error: Tool {tool_name} not found.")
-                            prompt = f"""
-                                Error: Tool {tool_name} not found.
-                                
-                                Now, respond to the following prompt:
-                                {prompt}
-                            """
-                    else:
-                        debug_print(RED, "Error: No tool name found in tool response.")
+                        tool_results = []
+                        for tool_call in tool_calls:
+                            tool_name = tool_call.get('tool_name')
+                            tool_params = tool_call.get('parameters', {})
+                            
+                            if tool_name:
+                                tool = next((tool for tool in tool_instances if tool['name'] == tool_name), None)
+                                if tool:
+                                    debug_print(BLUE, f"Executing tool: {tool_name} with params: {tool_params}")
+                                    tool_result = tool['execute'](**tool_params)
+                                    debug_print(BLUE, f"Tool result: {tool_result}")
+                                    tool_results.append({
+                                        "tool_name": tool_name,
+                                        "tool_params": tool_params,
+                                        "tool_result": tool_result
+                                    })
+                                else:
+                                    debug_print(RED, f"Error: Tool {tool_name} not found.")
+                                    tool_results.append({
+                                        "tool_name": tool_name,
+                                        "error": "Tool not found"
+                                    })
+                            else:
+                                debug_print(RED, "Error: No tool name found in tool call.")
+                                tool_results.append({
+                                    "error": "No tool name found in tool call."
+                                })
+                        
+                        tool_results_str = json.dumps(tool_results, indent=4)
                         prompt = f"""
-                            Error: No tool name found in tool response.
+                            The following tools were called:
+                            ```tool_calls
+                            {tool_results_str}
+                            ```
+                            
+                            Now, respond to the following prompt:
+                            {prompt}
+                        """
+                    else:
+                        debug_print(RED, "Error: No tool calls found in tool response.")
+                        prompt = f"""
+                            Error: No tool calls found in tool response.
                             
                             Now, respond to the following prompt:
                             {prompt}
