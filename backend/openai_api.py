@@ -65,35 +65,41 @@ class OpenAIAPI:
                         messages.append({"role": "assistant", "content": message["content"]})
                     else:
                         messages.append({"role": message["role"], "content": message["content"]})
-            
+
             if image:
                 # Resize the image to 512x512
                 image = image.resize((512, 512))
-                
-                # Convert PIL Image to bytes, always save as JPG
-                image_bytes = io.BytesIO()
-                image.save(image_bytes, format="JPEG")
-                image_bytes = image_bytes.getvalue()
-                base64_image = base64.b64encode(image_bytes).decode('utf-8')
-                img_str = f"image/jpeg;base64,{base64_image}"
+
+                # Save the image to a temporary file
+                temp_image_path = "temp_image.jpg"
+                image.save(temp_image_path, format="JPEG")
+
+                # Upload the image file to OpenAI
+                with open(temp_image_path, "rb") as image_file:
+                    uploaded_file = openai.File.create(file=image_file, purpose='vision')
+
+                # Reference the uploaded image in the message
                 messages.append({
                     "role": "user",
                     "content": [
                         {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": img_str, "detail": "low"}}
+                        {"type": "image_file", "image_file": {"file_id": uploaded_file.id}}
                     ]
                 })
+
+                # Clean up the temporary file
+                os.remove(temp_image_path)
             else:
                 messages.append({"role": "user", "content": prompt})
-            
-            response_stream = openai.chat.completions.create(
+
+            response_stream = openai.ChatCompletion.create(
                 model=model_name,
                 messages=messages,
                 stream=True,
             )
             for chunk in response_stream:
-                if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
+                if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.get('content'):
+                    yield chunk.choices[0].delta['content']
         except Exception as e:
             yield f"Error generating response: {e}"
 
