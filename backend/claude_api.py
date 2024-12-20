@@ -65,10 +65,9 @@ class ClaudeAPI:
         """
         try:
             messages = []
-            
             # Add system message if provided
             if system_message:
-                messages.append({"role": "system", "content": system_message})
+                messages.append({"role": "assistant", "content": system_message})
             
             # Add chat history if provided
             if history:
