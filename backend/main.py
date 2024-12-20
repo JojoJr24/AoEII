@@ -197,7 +197,6 @@ def get_available_models(provider_name):
 
 # Function to generate responses using the selected LLM
 def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None, selected_tools=None):
-    print("Hist",history)
     if not provider_name:
         provider_name = selected_provider
     debug_print(BLUE, f"Generating response with provider: {provider_name}, model: {model_name}, tools: {selected_tools}")
@@ -250,9 +249,6 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                         }
                     ]
                     ```
-                    
-                    After using the tool(s), continue with the conversation.
-                    
                     Now, respond to the following prompt:
                     {prompt}
                 """
