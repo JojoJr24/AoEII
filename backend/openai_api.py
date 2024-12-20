@@ -5,6 +5,7 @@ from typing import List, Optional, Generator
 from PIL import Image
 import io
 import json
+import base64
 
 load_dotenv()
 
@@ -70,8 +71,14 @@ class OpenAIAPI:
                 image_bytes = io.BytesIO()
                 image.save(image_bytes, format=image.format if image.format else "PNG")
                 image_bytes = image_bytes.getvalue()
-                
-                messages.append({"role": "user", "content": prompt, "images": [image_bytes]})
+                base64_image = base64.b64encode(image_bytes).decode('utf-8')
+                messages.append({
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": f"image/png;base64,{base64_image}"}}
+                    ]
+                })
             else:
                 messages.append({"role": "user", "content": prompt})
             
