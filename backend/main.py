@@ -448,7 +448,10 @@ def generate():
             debug_print(RED, f"Conversation {conversation_id} not found.")
             history = []
     else:
-        conversation_id = save_conversation(provider_name, model_name, system_message)
+        conversation_title = data.get('conversation_title', '')
+        if len(conversation_title) > 30:
+            conversation_title = conversation_title[:30]
+        conversation_id = save_conversation(provider_name, model_name, system_message, conversation_title)
         debug_print(GREEN, f"Created new conversation with id {conversation_id}")
     
     add_message_to_conversation(conversation_id, "user", prompt)

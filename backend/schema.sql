@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS conversations (
     provider TEXT NOT NULL,
     model TEXT NOT NULL,
     system_message TEXT,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    title TEXT
 );
 
 CREATE TABLE IF NOT EXISTS messages (
