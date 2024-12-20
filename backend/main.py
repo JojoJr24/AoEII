@@ -111,12 +111,12 @@ def init_db():
         conn.executescript(f.read())
     conn.close()
 
-def save_conversation(provider, model, system_message):
+def save_conversation(provider, model, system_message, title):
     conn = get_db_connection()
     cursor = conn.cursor()
     timestamp = datetime.now().isoformat()
-    cursor.execute("INSERT INTO conversations (provider, model, system_message, created_at) VALUES (?, ?, ?, ?)",
-                   (provider, model, system_message, timestamp))
+    cursor.execute("INSERT INTO conversations (provider, model, system_message, created_at, title) VALUES (?, ?, ?, ?, ?)",
+                   (provider, model, system_message, timestamp, title))
     conversation_id = cursor.lastrowid
     conn.commit()
     conn.close()
