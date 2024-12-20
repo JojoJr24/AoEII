@@ -100,6 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!messageDiv.parentNode) {
             chatWindow.appendChild(messageDiv);
         }
+        if (document.body.classList.contains('dark-mode')) {
+            messageDiv.classList.add('dark-mode');
+        }
         chatWindow.scrollTop = chatWindow.scrollHeight;
         return messageDiv;
     }
