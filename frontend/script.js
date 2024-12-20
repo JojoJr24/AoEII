@@ -323,8 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
             conversations.forEach(conversation => {
                 const listItem = document.createElement('li');
                 listItem.classList.add('conversation-list-item');
-                const title = conversation.title ? `${conversation.title} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})` : `Conversation ${conversation.id} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})`;
-                listItem.textContent = title;
+                const title = conversation.title ? conversation.title : `Conversation ${conversation.id}`;
+                listItem.textContent = `${title} (${conversation.provider}, ${conversation.model}, ${new Date(conversation.created_at).toLocaleString()})`;
                 listItem.addEventListener('click', () => loadConversation(conversation.id));
 
                 const deleteButton = document.createElement('button');
@@ -359,6 +359,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             currentConversationId = conversationId;
+            if (data && data.conversation && data.conversation.title) {
+                conversationTitle = data.conversation.title;
+            } else {
+                conversationTitle = `Conversation ${conversationId}`;
+            }
         } catch (error) {
             console.error('Error fetching conversation:', error);
         }
