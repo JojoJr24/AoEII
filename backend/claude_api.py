@@ -91,4 +91,5 @@ backend/main.py
 ```python
 <<<<<<< SEARCH
 from openai_api import OpenAIAPI
+from claude_api import ClaudeAPI
 from PIL import Image
