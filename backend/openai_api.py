@@ -75,11 +75,12 @@ class OpenAIAPI:
                 image.save(image_bytes, format="PNG")
                 image_bytes = image_bytes.getvalue()
                 base64_image = base64.b64encode(image_bytes).decode('utf-8')
+                img_str = f"image/png;base64,{base64_image}"
                 messages.append({
                     "role": "user",
                     "content": [
                         {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"image/png;base64,{base64_image}", "detail": "low"}}
+                        {"type": "image_url", "image_url": {"url": img_str, "detail": "low"}}
                     ]
                 })
             else:
