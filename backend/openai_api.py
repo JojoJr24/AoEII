@@ -67,6 +67,9 @@ class OpenAIAPI:
                         messages.append({"role": message["role"], "content": message["content"]})
             
             if image:
+                # Resize the image to 512x512
+                image = image.resize((512, 512))
+                
                 # Convert PIL Image to bytes
                 image_bytes = io.BytesIO()
                 image.save(image_bytes, format=image.format if image.format else "PNG")
