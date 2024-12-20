@@ -79,7 +79,7 @@ class OpenAIAPI:
                     "role": "user",
                     "content": [
                         {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"image/png;base64,{base64_image}"}}
+                        {"type": "image_url", "image_url": {"url": f"image/png;base64,{base64_image}", "detail": "low"}}
                     ]
                 })
             else:
