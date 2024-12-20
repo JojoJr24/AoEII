@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
+from backend.claude_api import ClaudeAPI
 from gemini_api import GeminiAPI
 from ollama_api import OllamaAPI
 from openai_api import OpenAIAPI
