@@ -56,6 +56,14 @@ except Exception as e:
     debug_print(RED, f"Error initializing Claude API: {e}")
     claude_api = None
 
+# Initialize the Groq API
+try:
+    groq_api = GroqAPI()
+    debug_print(BLUE, "Groq API initialized.")
+except Exception as e:
+    debug_print(RED, f"Error initializing Groq API: {e}")
+    groq_api = None
+
 # Dictionary to hold available LLM providers
 llm_providers = {
     "gemini": gemini_api,
@@ -75,6 +83,11 @@ if claude_api:
     llm_providers["claude"] = claude_api
 else:
     debug_print(BLUE, "Claude API not available, setting empty model list.")
+
+if groq_api:
+    llm_providers["groq"] = groq_api
+else:
+    debug_print(BLUE, "Groq API not available, setting empty model list.")
 
 # Default LLM provider and model
 selected_provider = "gemini"
