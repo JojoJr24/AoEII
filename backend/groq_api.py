@@ -85,7 +85,6 @@ class GroqAPI:
                     yield chunk.choices[0].message.content
         except Exception as e:
             yield f"Error generating response: {e}"
-```
 
 backend/main.py
 ```python
@@ -96,3 +95,4 @@ from backend.claude_api import ClaudeAPI
 from gemini_api import GeminiAPI
 from ollama_api import OllamaAPI
 from openai_api import OpenAIAPI
+from groq_api import GroqAPI
