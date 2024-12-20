@@ -631,6 +631,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for delete system message button
     deleteSystemMessageButton.addEventListener('click', deleteSystemMessage);
 
+    // Event listener for stop button
+    stopButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/stop', {
+                method: 'POST'
+            });
+            if (response.ok) {
+                console.log('Streaming stopped.');
+            } else {
+                console.error('Failed to stop streaming:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error stopping streaming:', error);
+        }
+    });
+
     // Event listener for reset button
     resetButton.addEventListener('click', () => {
         chatHistory = [];
