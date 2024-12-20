@@ -85,12 +85,5 @@ class OpenAIAPI:
                     yield chunk.choices[0].delta.content
         except Exception as e:
             yield f"Error generating response: {e}"
-```
 
-backend/main.py
-```python
-<<<<<<< SEARCH
-from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
-from gemini_api import GeminiAPI
-from ollama_api import OllamaAPI
+

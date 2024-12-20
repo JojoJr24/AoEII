@@ -86,13 +86,3 @@ class GroqAPI:
         except Exception as e:
             yield f"Error generating response: {e}"
 
-backend/main.py
-```python
-<<<<<<< SEARCH
-from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
-from backend.claude_api import ClaudeAPI
-from gemini_api import GeminiAPI
-from ollama_api import OllamaAPI
-from openai_api import OpenAIAPI
-from groq_api import GroqAPI

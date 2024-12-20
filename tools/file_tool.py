@@ -31,7 +31,7 @@ def execute(file_path):
         
         file_size = os.path.getsize(file_path)
         if file_size > 60 * 1024:  # 20KB limit
-            return f"File information: \n- Path: {file_path}\n- Size: {file_size} bytes\n- File is larger than 20KB."
+            return f"File information: \n- Path: {file_path}\n- Size: {file_size} bytes\n- File is larger than 60KB."
         
         try:
             with open(file_path, 'r') as file:
