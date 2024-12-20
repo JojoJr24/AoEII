@@ -228,7 +228,7 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                 
                 tool_descriptions = "\n".join([f"- {tool['name']}: {tool['description']}" for tool in tool_instances])
                 tool_prompt = f"""
-                    You have access to the following tools, use them if needed:
+                    You have access to the following tools. You can use one or more of them, and you can use the same tool multiple times if needed:
                     {tool_descriptions}
                     
                     Use the tools by calling them with the following format:
