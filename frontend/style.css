@@ -295,13 +295,15 @@ body.dark-mode {
     background-color: #495057;
 }
 
-.input-with-upload input[type="text"] {
+.input-with-upload textarea {
     flex: 1;
     padding: 10px;
     border: none;
     outline: none;
     background-color: transparent;
     color: inherit;
+    resize: vertical;
+    min-height: 80px;
 }
 
 .input-with-upload button {

@@ -2,9 +2,6 @@ import os
 from dotenv import load_dotenv
 from typing import List, Optional, Generator
 from PIL import Image
-import io
-import json
-import base64
 from openai import OpenAI
 
 load_dotenv()
@@ -98,8 +95,11 @@ class OpenAIAPI:
                 stream=True,
             )
             for chunk in response_stream:
-                if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.get('content'):
-                    yield chunk.choices[0].delta['content']
+                if chunk.choices and chunk.choices[0].delta:
+                    content = getattr(chunk.choices[0].delta, 'content', None)
+                    if content:
+                        yield content
+
         except Exception as e:
             yield f"Error generating response: {e}"
 
