@@ -46,7 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (typeof message === 'string') {
             if (isUser) {
-                messageDiv.textContent = message;
+                messageDiv.innerHTML = message.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>').replace(/  /g, '&nbsp; ');
+                messageDiv.style.whiteSpace = 'pre-wrap';
             } else {
                 // Parse markdown and highlight code blocks
                 messageDiv.innerHTML = marked.parse(message);
