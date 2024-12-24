@@ -12,6 +12,8 @@ RESET = '\033[0m'
 
 DEBUG = True
 streaming = True
+STREAM_START_DELAY = 0.1
+STREAM_YIELD_DELAY = 0.01
 
 def setup_logging(app):
    """Configures the logging for the Flask app."""

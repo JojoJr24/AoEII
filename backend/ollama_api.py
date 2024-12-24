@@ -74,10 +74,10 @@ class OllamaAPI:
             
             # Extract just the model name
             model_name = model_name.split(":")[0]
-            time.sleep(0.1)
+            time.sleep(STREAM_START_DELAY)
             response_stream = ollama.chat(model=model_name, messages=messages, stream=True, options={"num_ctx": 16384})
             for chunk in response_stream:
                 yield chunk['message']['content']
-                time.sleep(0.01)
+                time.sleep(STREAM_YIELD_DELAY)
         except Exception as e:
             yield f"Error generating response: {e}"

@@ -93,7 +93,7 @@ class ClaudeAPI:
             messages.append(user_message)
             
             # Create streaming response
-            time.sleep(0.1)
+            time.sleep(STREAM_START_DELAY)
             stream = self.client.messages.create(
                 model=model_name,
                 max_tokens=4096,
@@ -107,7 +107,7 @@ class ClaudeAPI:
                     continue
                 elif event.type == "content_block_delta":
                     yield event.delta.text
-                    time.sleep(0.01)
+                    time.sleep(STREAM_YIELD_DELAY)
                 
         except Exception as e:
             yield f"Error generating response: {e}"
