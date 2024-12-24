@@ -12,7 +12,6 @@ body {
 body.dark-mode {
     background-color: #212529;
     color: #fff;
-    overflow-y: auto;
 }
 
 .container {
@@ -188,13 +187,12 @@ body.dark-mode {
 }
 
 .conversation-list-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    height: 1000px;
     border: 1px solid #495057;
     border-radius: 4px;
     padding: 5px;
     margin-top: 5px;
+    overflow-y: auto;
 }
 
 .main-content {
