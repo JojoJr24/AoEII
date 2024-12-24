@@ -9,7 +9,7 @@ import importlib.util
 import os
 import json
 
-from utils import debug_print
+from utils import GREEN, debug_print
 
 # Initialize the Gemini API
 gemini_api = GeminiAPI()
@@ -140,37 +140,37 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             system_msg_for_thinking = (
                 "Eres un experto resolviendo problemas. A continuación se te mostrará "
                 "el problema y un resumen acumulado de tus reflexiones previas. "
-                "Piensa en voz alta (solo devuélveme el pensamiento), continuando la idea anterior, no proporciones la solución. "
+                "Piensa en voz alta (solo devuélveme el pensamiento) que pasos y detalles te pueden llevar a la solución. Si hay un pensamiento anterior continua con el, no proporciones la solución. "
                 "NO incluyas nada que no sea el contenido de tu pensamiento."
             )
             prompt_for_thinking = (
                 f"Problema: {prompt}\n\n"
                 f"Resumen previo: {resumen_acumulado}\n\n"
-                "Describe tu pensamiento aquí (sin dar solución), continuando la idea anterior:"
+                "Describe tu pensamiento aquí (sin dar solución):"
             )
          elif tipo_problema == 2 or tipo_problema == 3:
             system_msg_for_thinking = (
                 "Eres un experto resolviendo problemas. A continuación se te mostrará "
                 "el problema y un resumen acumulado de tus reflexiones previas. "
-                "Piensa en voz alta (solo devuélveme el pensamiento), buscando una idea alternativa a las ideas anteriores, no proporciones la solución. "
+                "Piensa en voz alta (solo devuélveme el pensamiento) que pasos y detalles te pueden llevar a la solución, Si hay un pensamiento anterior buscando una idea alternativa, no proporciones la solución. "
                 "NO incluyas nada que no sea el contenido de tu pensamiento."
             )
             prompt_for_thinking = (
                 f"Problema: {prompt}\n\n"
                 f"Resumen previo: {resumen_acumulado}\n\n"
-                "Describe tu pensamiento aquí (sin dar solución), buscando una idea alternativa a las ideas anteriores:"
+                "Describe tu pensamiento aquí (sin dar solución):"
             )
          elif tipo_problema == 4:
             system_msg_for_thinking = (
                 "Eres un experto resolviendo problemas. A continuación se te mostrará "
                 "el problema y un resumen acumulado de tus reflexiones previas. "
-                "Piensa en voz alta (solo devuélveme el pensamiento), eliminando la información innecesaria y concentrándote en las variables que realmente afectan al problema, no proporciones la solución. "
+                "Piensa en voz alta (solo devuélveme el pensamiento), ennumera que es un importante para resolver el problema y que hay que descartar, no proporciones la solución. "
                 "NO incluyas nada que no sea el contenido de tu pensamiento."
             )
             prompt_for_thinking = (
                 f"Problema: {prompt}\n\n"
                 f"Resumen previo: {resumen_acumulado}\n\n"
-                "Describe tu pensamiento aquí (sin dar solución), eliminando la información innecesaria y concentrándote en las variables que realmente afectan al problema:"
+                "Describe tu pensamiento aquí (sin dar solución):"
             )
          else:
             system_msg_for_thinking = (
@@ -196,14 +196,13 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
              system_message=system_msg_for_thinking
          ):
              pensamiento_response += chunk
-
          # ----------------------------------------------------------
          # Paso 7: Invocar a Ollama para que resuma los puntos clave
          #         del pensamiento anterior.
          # ----------------------------------------------------------
          system_msg_for_summary = (
              "Eres un experto en análisis. Se te proporciona un pensamiento anterior. "
-             "Devuelve solamente un resumen breve y conciso de los puntos más importantes "
+             "Comprime el pensamiento a la menor cantidad de palabras que mantengan la idea "
              "de ese pensamiento. No incluyas nada más."
          )
          prompt_for_summary = (
@@ -222,6 +221,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
              system_message=system_msg_for_summary
          ):
              resumen_response += chunk
+         debug_print(GREEN, resumen_response)
 
          # ----------------------------------------------------------
          # Paso 8: Sumar el resumen al pensamiento acumulado y
