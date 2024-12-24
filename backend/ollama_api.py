@@ -9,6 +9,7 @@ from utils import retry_with_exponential_backoff, STREAM_START_DELAY, STREAM_YIE
 class OllamaAPI:
     def __init__(self):
         self.available_models = self._list_available_models()
+        self._current_stream = None
 
     @retry_with_exponential_backoff()
     def _list_available_models(self) -> List[str]:
@@ -35,6 +36,10 @@ class OllamaAPI:
             List[str]: A list of available model names.
         """
         return self.available_models
+
+    def stop_stream(self):
+        """Stops the current stream."""
+        self._current_stream = None
 
     @retry_with_exponential_backoff()
     def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None, history: Optional[List[dict]] = None, system_message: Optional[str] = None) -> Generator[str, None, None]:
@@ -75,9 +80,12 @@ class OllamaAPI:
             # Extract just the model name
             model_name = model_name.split(":")[0]
             time.sleep(STREAM_START_DELAY)
-            response_stream = ollama.chat(model=model_name, messages=messages, stream=True, options={"num_ctx": 16384})
-            for chunk in response_stream:
+            self._current_stream = ollama.chat(model=model_name, messages=messages, stream=True, options={"num_ctx": 16384})
+            for chunk in self._current_stream:
+                if self._current_stream is None:
+                    break
                 yield chunk['message']['content']
                 time.sleep(STREAM_YIELD_DELAY)
+            self._current_stream = None
         except Exception as e:
             yield f"Error generating response: {e}"
