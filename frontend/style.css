@@ -418,6 +418,27 @@ body.dark-mode {
     min-width: 50px;
 }
 
+.system-message-group {
+    border: 1px solid #6c757d;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.tools-group {
+    border: 1px solid #6c757d;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.think-group {
+    border: 1px solid #6c757d;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
 .system-message-column h2 {
     margin-bottom: 20px;
     text-align: center;
