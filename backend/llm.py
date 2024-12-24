@@ -130,7 +130,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
         if start_index != -1 and end_index != -1:
             json_string = classification_response[start_index:end_index+1]
             parsed_json = json.loads(json_string)
-            dificultad = parsed_json.get("dificultad", dificultad)
+            dificultad = dificultad if dificultad !=0 else parsed_json.get("dificultad", dificultad)
             tipo_problema = parsed_json.get("tipo_problema", tipo_problema)
             estrategias_comunes = parsed_json.get("estrategias_comunes", [])
     except json.JSONDecodeError:
