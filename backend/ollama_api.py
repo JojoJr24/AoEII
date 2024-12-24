@@ -70,7 +70,7 @@ class OllamaAPI:
             
             # Extract just the model name
             model_name = model_name.split(":")[0]
-            response_stream = ollama.chat(model=model_name, messages=messages, stream=True)
+            response_stream = ollama.chat(model=model_name, messages=messages, stream=True, options={"num_ctx": 16384})
             for chunk in response_stream:
                 yield chunk['message']['content']
         except Exception as e:
