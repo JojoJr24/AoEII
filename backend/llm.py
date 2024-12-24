@@ -1,3 +1,4 @@
+import time
 from claude_api import ClaudeAPI
 from gemini_api import GeminiAPI
 from ollama_api import OllamaAPI
@@ -43,11 +44,11 @@ try:
     groq_api = GroqAPI()
     debug_print(True, "Groq API initialized.")
 except Exception as e:
-    debug_print(True, f"Error initializing Groq API: {e}")
+    debug_print(True, f"Error initializing G, model_name=None, provider_name=Noneroq API: {e}")
     groq_api = None
 
 
-def think(prompt: str, depth: int) -> Generator[str, None, None]:
+def think(prompt: str, depth: int, selected_model=None, selected_provider=None) -> Generator[str, None, None]:
      """
     Programa principal que:
     1) Recibe un prompt como parámetro.
@@ -62,7 +63,6 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
     6) Al finalizar el loop, con el problema original más el resumen final, se obtiene
        la respuesta definitiva de Ollama.
     """
-     global selected_provider, selected_model
      # Importar el módulo think.py
      think_dir = '../think'
      think_file = 'think.py'
@@ -71,8 +71,9 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      think_module = importlib.util.module_from_spec(spec)
      spec.loader.exec_module(think_module)
      
-     ollama_api = think_module.OllamaAPI()
+     provider = llm_providers.get(selected_provider)
 
+     
      # ------------------------------------------------------------------------
      # Paso 2: Si la profundidad (depth) es distinta de 0, se usa como dificultad.
      # ------------------------------------------------------------------------
@@ -85,7 +86,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      system_msg_for_complexity = (
          "Por favor, analiza el siguiente problema y devuelve ÚNICAMENTE un JSON "
          "con los campos 'complejidad' y 'tipo_problema'. "
-         "'complejidad' debe ser un número entero donde 1 es demasiado sencillo y 10 es muy complejo. "
+         "'complejidad' debe ser un número entero donde 1 es demasiado sencillo y 12 es muy complejo. "
          "'tipo_problema' debe ser un número entero: 1 para problemas que requieren pensarlo en secuencia, "
          "2 para problemas que parece que les falta información por lo que hay que pensar fuera de la caja para hacer explicita información escondida, "
          "3 para problemas a los que le falta información por lo que hay que pensar que se le puede agregar para poder encontrar una solución, "
@@ -95,7 +96,6 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      
      # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
      complexity_response = ""
-     provider = llm_providers.get(selected_provider)
      if not provider:
          yield "Error: Provider not found"
          return
@@ -128,12 +128,10 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      # ------------------------------------------------------------------------
      # Paso 6: Entrar en un loop que itera en función de la dificultad.
      # ------------------------------------------------------------------------
-     pensamiento_actual = ""
      resumen_acumulado = ""
 
      for i in range(dificultad):
          print(f"\n--- Iteración de razonamiento #{i+1} ---")
-
          # ----------------------------------------------------------
          # Paso 7: Invocar a Ollama para que piense sobre el problema,
          #         sin dar la solución, solo el pensamiento.
@@ -439,6 +437,6 @@ def generate_think_response(prompt, depth, model_name=None, provider_name=None):
         provider_name = selected_provider
     debug_print(True, f"Generating think response with model: {model_name}, provider: {provider_name}, depth: {depth}")
     
-    response = think(prompt, depth)
+    response = think(prompt, depth, selected_model=model_name, selected_provider=provider_name)
     debug_print(True, f"Think response generated successfully.")
     return response
