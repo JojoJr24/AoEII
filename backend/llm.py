@@ -77,7 +77,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      # Paso 2: Si la profundidad (depth) es distinta de 0, se usa como dificultad.
      # ------------------------------------------------------------------------
      if depth != 0:
-         print(f"Profundidad establecida por el usuario: {dificultad}")
+         print(f"Profundidad establecida por el usuario: {depth}")
          
      # ------------------------------------------------------------------------
      # Paso 3 y 4: Solicitar a Ollama que devuelva SOLO un JSON con la complejidad.
