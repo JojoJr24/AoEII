@@ -234,8 +234,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
         model_name=selected_model,
         system_message=system_msg_for_final_solution
     ):
-        print(f"Chunk recibido: {chunk.strip()}")
-        yield chunk.strip()
+        yield chunk
 
 
 
