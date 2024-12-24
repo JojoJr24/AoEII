@@ -32,9 +32,13 @@ def setup_logging(app):
 
    app.logger = logger
 
+import inspect
+
 def debug_print(debug, message):
     if DEBUG and debug:
-        print(f"{BLUE}{message}{RESET}")
+        caller_frame = inspect.currentframe().f_back
+        caller_function = caller_frame.f_code.co_name
+        print(f"{BLUE}[{caller_function}] {message}{RESET}")
 
 def stop_stream_global():
     global streaming
