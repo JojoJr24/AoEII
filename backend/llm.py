@@ -117,7 +117,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          if start_index != -1 and end_index != -1:
             json_string = complexity_response[start_index:end_index+1]
             parsed_json = json.loads(json_string)
-            dificultad = parsed_json.get("complejidad", 1)
+            dificultad = dificultad if dificultad != 0 else parsed_json.get("complejidad", 1)
             tipo_problema = parsed_json.get("tipo_problema", 1)
      except json.JSONDecodeError as e:
          print("Error al decodificar el JSON de complejidad y tipo de problema. Se usará dificultad = 1 y tipo_problema = 1.",complexity_response)
