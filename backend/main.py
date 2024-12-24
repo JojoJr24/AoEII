@@ -560,7 +560,7 @@ def generate_think_response(prompt, depth, model_name=None, provider_name=None):
         provider_name = selected_provider
     debug_print(BLUE, f"Generating think response with model: {model_name}, provider: {provider_name}, depth: {depth}")
     
-    response = think(prompt, depth, model_name, provider_name)
+    response = think(prompt, depth)
     debug_print(GREEN, f"Think response generated successfully.")
     return response
 
