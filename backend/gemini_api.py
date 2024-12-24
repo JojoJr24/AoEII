@@ -97,5 +97,6 @@ class GeminiAPI:
             )
             for chunk in response_stream:
                 yield chunk.text
+                time.sleep(0.01)
         except Exception as e:
             yield f"Error generating response: {e}"

@@ -78,6 +78,7 @@ class GroqAPI:
             else:
                 messages.append({"role": "user", "content": prompt})
             
+            time.sleep(0.1)
             response_stream = self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
@@ -86,6 +87,7 @@ class GroqAPI:
             for chunk in response_stream:
                 if chunk.choices and chunk.choices[0].message and chunk.choices[0].message.content:
                     yield chunk.choices[0].message.content
+                    time.sleep(0.01)
         except Exception as e:
             yield f"Error generating response: {e}"
 

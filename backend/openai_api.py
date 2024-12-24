@@ -102,7 +102,6 @@ class OpenAIAPI:
                     content = getattr(chunk.choices[0].delta, 'content', None)
                     if content:
                         yield content
-
         except Exception as e:
             yield f"Error generating response: {e}"
 
