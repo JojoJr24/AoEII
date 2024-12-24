@@ -186,6 +186,15 @@ body.dark-mode {
     color: #fff;
 }
 
+.conversation-list-container {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #495057;
+    border-radius: 4px;
+    padding: 5px;
+    margin-top: 5px;
+}
+
 .main-content {
     flex: 1;
     padding: 20px;
