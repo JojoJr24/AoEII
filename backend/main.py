@@ -111,7 +111,11 @@ def think(prompt: str, model_name: str) -> Generator[str, None, None]:
     
     # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
     complexity_response = ""
-    for chunk in ollama_api.generate_response(
+    provider = llm_providers.get(selected_provider)
+    if not provider:
+        yield "Error: Provider not found"
+        return
+    for chunk in provider.generate_response(
         prompt=prompt,
         model_name=model_name,
         system_message=system_msg_for_complexity
@@ -157,7 +161,11 @@ def think(prompt: str, model_name: str) -> Generator[str, None, None]:
         )
 
         pensamiento_response = ""
-        for chunk in ollama_api.generate_response(
+        provider = llm_providers.get(selected_provider)
+        if not provider:
+            yield "Error: Provider not found"
+            return
+        for chunk in provider.generate_response(
             prompt=prompt_for_thinking,
             model_name=model_name,
             system_message=system_msg_for_thinking
@@ -179,7 +187,11 @@ def think(prompt: str, model_name: str) -> Generator[str, None, None]:
         )
 
         resumen_response = ""
-        for chunk in ollama_api.generate_response(
+        provider = llm_providers.get(selected_provider)
+        if not provider:
+            yield "Error: Provider not found"
+            return
+        for chunk in provider.generate_response(
             prompt=prompt_for_summary,
             model_name=model_name,
             system_message=system_msg_for_summary
@@ -208,7 +220,11 @@ def think(prompt: str, model_name: str) -> Generator[str, None, None]:
     )
 
     respuesta_final = ""
-    for chunk in ollama_api.generate_response(
+    provider = llm_providers.get(selected_provider)
+    if not provider:
+        yield "Error: Provider not found"
+        return
+    for chunk in provider.generate_response(
         prompt=prompt_for_final,
         model_name=model_name,
         system_message=system_msg_for_final
