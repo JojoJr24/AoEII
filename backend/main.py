@@ -420,8 +420,7 @@ def get_available_models(provider_name):
 
 # Function to generate responses using the selected LLM
 def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None, selected_tools=None):
-    if not provider_name:
-        provider_name = selected_provider
+    
     debug_print(BLUE, f"Generating response with provider: {provider_name}, model: {model_name}, tools: {selected_tools}")
     
     provider = llm_providers.get(provider_name)
@@ -554,10 +553,14 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
         debug_print(RED, "Error: LLM provider not found")
         return "Error: LLM provider not found"
 
-def generate_think_response(prompt, depth):
-    debug_print(BLUE, f"Generating think response with model: {selected_model}, depth: {depth}")
+def generate_think_response(prompt, depth, model_name=None, provider_name=None):
+    if not model_name:
+        model_name = selected_model
+    if not provider_name:
+        provider_name = selected_provider
+    debug_print(BLUE, f"Generating think response with model: {model_name}, provider: {provider_name}, depth: {depth}")
     
-    response = think(prompt, depth)
+    response = think(prompt, depth, model_name, provider_name)
     debug_print(GREEN, f"Think response generated successfully.")
     return response
 
@@ -574,8 +577,12 @@ def generate():
     global selected_provider, selected_model
     data = request.form
     prompt = data.get('prompt')
-    model_name = data.get('model', selected_model)
-    provider_name = data.get('provider', selected_provider)
+    model_name = data.get('model')
+    provider_name = data.get('provider')
+    if not model_name:
+        model_name = selected_model
+    if not provider_name:
+        provider_name = selected_provider
     image_file = request.files.get('image')
     history_str = data.get('history')
     system_message = data.get('system_message')
@@ -636,7 +643,7 @@ def generate():
         debug_print(GREEN, f"Created new conversation with id {conversation_id}")
     
     add_message_to_conversation(conversation_id, "user", prompt)
-
+    
     def stream_response():
         global streaming
         full_response = ""
@@ -658,11 +665,15 @@ def think_route():
     global selected_provider, selected_model
     data = request.form
     prompt = data.get('prompt')
-    model_name = data.get('model', selected_model)
-    provider_name = data.get('provider', selected_provider)
+    model_name = data.get('model')
+    provider_name = data.get('provider')
+    if not model_name:
+        model_name = selected_model
+    if not provider_name:
+        provider_name = selected_provider
     depth = int(data.get('think_depth', 0))
     
-    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', depth='{depth}'")
+    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', depth='{depth}'")
 
     if not prompt:
         debug_print(RED, "Error: Prompt is required")
@@ -671,7 +682,7 @@ def think_route():
     def stream_response():
         global streaming
         full_response = ""
-        for chunk in generate_think_response(prompt,  depth):
+        for chunk in generate_think_response(prompt,  depth, model_name, provider_name):
             if not streaming:
                 debug_print(BLUE, "Streaming stopped.")
                 break
