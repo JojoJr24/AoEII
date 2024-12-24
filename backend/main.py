@@ -75,18 +75,19 @@ except Exception as e:
     debug_print(RED, f"Error initializing Groq API: {e}")
     groq_api = None
 
-def think(prompt: str, model_name: str) -> Generator[str, None, None]:
+def think(prompt: str, model_name: str, depth: int) -> Generator[str, None, None]:
     """
     Programa principal que:
     1) Recibe un prompt como parámetro.
-    2) Envía el prompt a Ollama para que devuelva un JSON con la complejidad (dificultad).
-    3) Parsea la dificultad del JSON.
-    4) Entra en un bucle (loop) de iteraciones proporcional a la dificultad.
+    2) Si la profundidad (depth) es distinta de 0, se usa como dificultad.
+    3) Si la profundidad es 0, se envía el prompt a Ollama para que devuelva un JSON con la complejidad (dificultad).
+    4) Parsea la dificultad del JSON.
+    5) Entra en un bucle (loop) de iteraciones proporcional a la dificultad.
        - En cada iteración:
          a) Invoca a Ollama para obtener un "pensamiento" (sin solución).
          b) Invoca a Ollama para resumir los puntos claves del pensamiento.
          c) Suma ese resumen al pensamiento y continúa con la siguiente iteración.
-    5) Al finalizar el loop, con el problema original más el resumen final, se obtiene
+    6) Al finalizar el loop, con el problema original más el resumen final, se obtiene
        la respuesta definitiva de Ollama.
     """
     
@@ -101,42 +102,49 @@ def think(prompt: str, model_name: str) -> Generator[str, None, None]:
     ollama_api = think_module.OllamaAPI()
 
     # ------------------------------------------------------------------------
-    # Paso 2 y 3: Solicitar a Ollama que devuelva SOLO un JSON con la complejidad.
+    # Paso 2: Si la profundidad (depth) es distinta de 0, se usa como dificultad.
     # ------------------------------------------------------------------------
-    system_msg_for_complexity = (
-        "Por favor, analiza el siguiente problema y devuelve ÚNICAMENTE un JSON "
-        "con el campo 'complejidad' que indique (en un número entero) "
-        "cuán difícil es el problema. No incluyas nada más que el JSON."
-    )
-    
-    # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
-    complexity_response = ""
-    provider = llm_providers.get(selected_provider)
-    if not provider:
-        yield "Error: Provider not found"
-        return
-    for chunk in provider.generate_response(
-        prompt=prompt,
-        model_name=model_name,
-        system_message=system_msg_for_complexity
-    ):
-        complexity_response += chunk
+    if depth != 0:
+        dificultad = depth
+        print(f"Profundidad establecida por el usuario: {dificultad}")
+    else:
+        # ------------------------------------------------------------------------
+        # Paso 3 y 4: Solicitar a Ollama que devuelva SOLO un JSON con la complejidad.
+        # ------------------------------------------------------------------------
+        system_msg_for_complexity = (
+            "Por favor, analiza el siguiente problema y devuelve ÚNICAMENTE un JSON "
+            "con el campo 'complejidad' que indique (en un número entero) "
+            "cuán difícil es el problema. No incluyas nada más que el JSON."
+        )
+        
+        # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
+        complexity_response = ""
+        provider = llm_providers.get(selected_provider)
+        if not provider:
+            yield "Error: Provider not found"
+            return
+        for chunk in provider.generate_response(
+            prompt=prompt,
+            model_name=model_name,
+            system_message=system_msg_for_complexity
+        ):
+            complexity_response += chunk
+
+        # ------------------------------------------------------------------------
+        # Paso 5: Parsear la dificultad del JSON.
+        # ------------------------------------------------------------------------
+        dificultad = 1  # Valor por defecto si no se puede parsear
+        try:
+            # Se espera algo como: {"complejidad": 5}
+            parsed_json = json.loads(complexity_response)
+            dificultad = parsed_json.get("complejidad", 1)
+        except json.JSONDecodeError as e:
+            print("Error al decodificar el JSON de complejidad. Se usará dificultad = 1.")
+        
+        print(f"Dificultad detectada: {dificultad}")
 
     # ------------------------------------------------------------------------
-    # Paso 4: Parsear la dificultad del JSON.
-    # ------------------------------------------------------------------------
-    dificultad = 1  # Valor por defecto si no se puede parsear
-    try:
-        # Se espera algo como: {"complejidad": 5}
-        parsed_json = json.loads(complexity_response)
-        dificultad = parsed_json.get("complejidad", 1)
-    except json.JSONDecodeError as e:
-        print("Error al decodificar el JSON de complejidad. Se usará dificultad = 1.")
-    
-    print(f"Dificultad detectada: {dificultad}")
-
-    # ------------------------------------------------------------------------
-    # Paso 5: Entrar en un loop que itera en función de la dificultad.
+    # Paso 6: Entrar en un loop que itera en función de la dificultad.
     # ------------------------------------------------------------------------
     pensamiento_actual = ""
     resumen_acumulado = ""
@@ -145,7 +153,7 @@ def think(prompt: str, model_name: str) -> Generator[str, None, None]:
         print(f"\n--- Iteración de razonamiento #{i+1} ---")
 
         # ----------------------------------------------------------
-        # Paso 6: Invocar a Ollama para que piense sobre el problema,
+        # Paso 7: Invocar a Ollama para que piense sobre el problema,
         #         sin dar la solución, solo el pensamiento.
         # ----------------------------------------------------------
         system_msg_for_thinking = (
@@ -205,7 +213,7 @@ def think(prompt: str, model_name: str) -> Generator[str, None, None]:
         resumen_acumulado += f"\n- {resumen_response.strip()}"
 
     # ------------------------------------------------------------------------
-    # Paso 9: Con el problema más el resumen final de los pensamientos,
+    # Paso 10: Con el problema más el resumen final de los pensamientos,
     #         invocar a Ollama para que dé la respuesta final.
     # ------------------------------------------------------------------------
     system_msg_for_final = (
@@ -545,14 +553,10 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
         debug_print(RED, "Error: LLM provider not found")
         return "Error: LLM provider not found"
 
-def generate_think_response(prompt, model_name):
-    debug_print(BLUE, f"Generating think response with model: {model_name}")
+def generate_think_response(prompt, model_name, depth):
+    debug_print(BLUE, f"Generating think response with model: {model_name}, depth: {depth}")
     
-    response = think(prompt, model_name)
-def generate_think_response(prompt, model_name):
-    debug_print(BLUE, f"Generating think response with model: {model_name}")
-    
-    response = think(prompt, model_name)
+    response = think(prompt, model_name, depth)
     debug_print(GREEN, f"Think response generated successfully.")
     return response
 
@@ -651,8 +655,9 @@ def think_route():
     data = request.form
     prompt = data.get('prompt')
     model_name = data.get('model', selected_model)
+    depth = int(data.get('think_depth', 0))
     
-    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}'")
+    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', depth='{depth}'")
 
     if not prompt:
         debug_print(RED, "Error: Prompt is required")
@@ -661,7 +666,7 @@ def think_route():
     def stream_response():
         global streaming
         full_response = ""
-        for chunk in generate_think_response(prompt, model_name):
+        for chunk in generate_think_response(prompt, model_name, depth):
             if not streaming:
                 debug_print(BLUE, "Streaming stopped.")
                 break
