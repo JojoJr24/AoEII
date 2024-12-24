@@ -3,11 +3,14 @@ from typing import List, Optional, Generator
 from PIL import Image
 import io
 import json
+import time
+from utils import retry_with_exponential_backoff
 
 class OllamaAPI:
     def __init__(self):
         self.available_models = self._list_available_models()
 
+    @retry_with_exponential_backoff()
     def _list_available_models(self) -> List[str]:
         """
         Lists available models from Ollama API.
@@ -33,6 +36,7 @@ class OllamaAPI:
         """
         return self.available_models
 
+    @retry_with_exponential_backoff()
     def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None, history: Optional[List[dict]] = None, system_message: Optional[str] = None) -> Generator[str, None, None]:
         """
         Generates a response using the specified Ollama model, yielding chunks of the response.
@@ -70,8 +74,10 @@ class OllamaAPI:
             
             # Extract just the model name
             model_name = model_name.split(":")[0]
+            time.sleep(0.1)
             response_stream = ollama.chat(model=model_name, messages=messages, stream=True, options={"num_ctx": 16384})
             for chunk in response_stream:
                 yield chunk['message']['content']
+                time.sleep(0.01)
         except Exception as e:
             yield f"Error generating response: {e}"
