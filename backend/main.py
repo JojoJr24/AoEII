@@ -5,6 +5,7 @@ from gemini_api import GeminiAPI
 from ollama_api import OllamaAPI
 from openai_api import OpenAIAPI
 from groq_api import GroqAPI
+from think_api import think
 
 from PIL import Image
 import io
@@ -380,6 +381,13 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
         debug_print(RED, "Error: LLM provider not found")
         return "Error: LLM provider not found"
 
+def generate_think_response(prompt, model_name):
+    debug_print(BLUE, f"Generating think response with model: {model_name}")
+    
+    response = think(prompt, model_name)
+    debug_print(GREEN, f"Think response generated successfully.")
+    return response
+
 @app.route('/api/models', methods=['GET'])
 def list_models():
     debug_print(MAGENTA, "Received request for /api/models")
@@ -466,6 +474,33 @@ def generate():
             full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
         add_message_to_conversation(conversation_id, "model", full_response)
+        debug_print(GREEN, f"Response: {full_response}")
+    
+    return Response(stream_response(), mimetype='text/event-stream')
+
+@app.route('/api/think', methods=['POST'])
+def think_route():
+    debug_print(MAGENTA, "Received request for /api/think")
+    global selected_provider, selected_model
+    data = request.form
+    prompt = data.get('prompt')
+    model_name = data.get('model', selected_model)
+    
+    debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}'")
+
+    if not prompt:
+        debug_print(RED, "Error: Prompt is required")
+        return jsonify({"response": "Prompt is required"}), 400
+    
+    def stream_response():
+        global streaming
+        full_response = ""
+        for chunk in generate_think_response(prompt, model_name):
+            if not streaming:
+                debug_print(BLUE, "Streaming stopped.")
+                break
+            full_response += chunk
+            yield f" {json.dumps({'response': chunk})}\n\n"
         debug_print(GREEN, f"Response: {full_response}")
     
     return Response(stream_response(), mimetype='text/event-stream')
