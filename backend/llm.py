@@ -133,17 +133,32 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          # Paso 7: Invocar a Ollama para que piense sobre el problema,
          #         sin dar la solución, solo el pensamiento.
          # ----------------------------------------------------------
-         system_msg_for_thinking = (
-             "Eres un experto resolviendo problemas. A continuación se te mostrará "
-             "el problema y un resumen acumulado de tus reflexiones previas. "
-             "Piensa profundamente en voz alta (solo devuélveme el pensamiento) en forma de una tormenta de ideas. Destaca los detalles y suma nuevos pensamientos que no se hayan tenido en cuenta. Se creativo . Si las ideas anteriores son negativas suma nuevos conceptos"
-             "NO incluyas nada que no sea el contenido de tu pensamiento."
-         )
-         prompt_for_thinking = (
-             f"Problema: {prompt}\n\n"
-             f"Resumen previo: {resumen_acumulado}\n\n"
-             "Describe tu pensamiento aquí (sin dar solución):"
-         )
+         if i == 0:
+            system_msg_for_thinking = (
+                "Eres un experto resolviendo problemas. A continuación se te mostrará "
+                "el problema. Piensa profundamente en voz alta (solo devuélveme el pensamiento) en forma de una tormenta de ideas. "
+                "Destaca los detalles y suma nuevos pensamientos que no se hayan tenido en cuenta. Se creativo. "
+                "NO incluyas nada que no sea el contenido de tu pensamiento."
+            )
+            prompt_for_thinking = (
+                f"Problema: {prompt}\n\n"
+                "Describe tu pensamiento aquí (sin dar solución):"
+            )
+         else:
+            system_msg_for_thinking = (
+                "Eres un experto resolviendo problemas. A continuación se te mostrará "
+                "el problema, un resumen acumulado de tus reflexiones previas y tu pensamiento anterior. "
+                "Analiza qué puede estar mal en el pensamiento anterior y da una mejor solución. "
+                "Piensa profundamente en voz alta (solo devuélveme el pensamiento) en forma de una tormenta de ideas. "
+                "Destaca los detalles y suma nuevos pensamientos que no se hayan tenido en cuenta. Se creativo. "
+                "NO incluyas nada que no sea el contenido de tu pensamiento."
+            )
+            prompt_for_thinking = (
+                f"Problema: {prompt}\n\n"
+                f"Resumen previo: {resumen_acumulado}\n\n"
+                f"Pensamiento anterior: {pensamientos_anteriores[-1]}\n\n"
+                "Describe tu pensamiento aquí (sin dar solución):"
+            )
 
          pensamiento_response = ""
          provider = llm_providers.get(selected_provider)
