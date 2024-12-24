@@ -85,9 +85,12 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          # ------------------------------------------------------------------------
          system_msg_for_complexity = (
              "Por favor, analiza el siguiente problema y devuelve ÚNICAMENTE un JSON "
-             "con el campo 'complejidad' que indique ,en un número entero donde 1 es demasiado sencillo y 10 es muy complejo, "
-             "cuán difícil es el problema. No incluyas nada más que el JSON."
-             "Ejemplo del JSON {\"complejidad\": 3}"
+             "con los campos 'complejidad' y 'tipo_problema'. "
+             "'complejidad' debe ser un número entero donde 1 es demasiado sencillo y 10 es muy complejo. "
+             "'tipo_problema' debe ser un número entero: 1 para problemas que requieren pensarlo en secuencia, "
+             "2 para problemas que parece que les falta información por lo que hay que pensar fuera de la caja para hacer explicita información escondida, "
+             "y 3 para problemas a los que le falta información por lo que hay que pensar que se le puede agregar para poder encontrar una solución. "
+             "No incluyas nada más que el JSON. Ejemplo del JSON: {\"complejidad\": 3, \"tipo_problema\": 1}"
          )
          
          # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
@@ -104,21 +107,23 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
              complexity_response += chunk
 
          # ------------------------------------------------------------------------
-         # Paso 5: Parsear la dificultad del JSON.
+         # Paso 5: Parsear la dificultad y el tipo de problema del JSON.
          # ------------------------------------------------------------------------
          dificultad = 1  # Valor por defecto si no se puede parsear
+         tipo_problema = 1 # Valor por defecto si no se puede parsear
          try:
-             # Se espera algo como: {"complejidad": 5}
+             # Se espera algo como: {"complejidad": 5, "tipo_problema": 1}
              start_index = complexity_response.find('{')
              end_index = complexity_response.rfind('}')
              if start_index != -1 and end_index != -1:
                 json_string = complexity_response[start_index:end_index+1]
                 parsed_json = json.loads(json_string)
                 dificultad = parsed_json.get("complejidad", 1)
+                tipo_problema = parsed_json.get("tipo_problema", 1)
          except json.JSONDecodeError as e:
-             print("Error al decodificar el JSON de complejidad. Se usará dificultad = 1.",complexity_response)
+             print("Error al decodificar el JSON de complejidad y tipo de problema. Se usará dificultad = 1 y tipo_problema = 1.",complexity_response)
          
-         print(f"Dificultad detectada: {dificultad}")
+         print(f"Dificultad detectada: {dificultad}, Tipo de problema detectado: {tipo_problema}")
 
      # ------------------------------------------------------------------------
      # Paso 6: Entrar en un loop que itera en función de la dificultad.
