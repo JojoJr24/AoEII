@@ -49,214 +49,196 @@ except Exception as e:
 
 
 def think(prompt: str, depth: int, selected_model=None, selected_provider=None) -> Generator[str, None, None]:
-     """
-    Programa principal que:
-    1) Recibe un prompt como parámetro.
-    2) Si la profundidad (depth) es distinta de 0, se usa como dificultad.
-    3) Si la profundidad es 0, se envía el prompt a Ollama para que devuelva un JSON con la complejidad (dificultad).
-    4) Parsea la dificultad del JSON.
-    5) Entra en un bucle (loop) de iteraciones proporcional a la dificultad.
-       - En cada iteración:
-         a) Invoca a Ollama para obtener un "pensamiento" (sin solución).
-         b) Invoca a Ollama para resumir los puntos claves del pensamiento.
-         c) Suma ese resumen al pensamiento y continúa con la siguiente iteración.
-    6) Al finalizar el loop, con el problema original más el resumen final, se obtiene
-       la respuesta definitiva de Ollama.
     """
-     # Importar el módulo think.py
-     think_dir = '../think'
-     think_file = 'think.py'
-     think_path = os.path.join(think_dir, think_file)
-     spec = importlib.util.spec_from_file_location("think", think_path)
-     think_module = importlib.util.module_from_spec(spec)
-     spec.loader.exec_module(think_module)
-     
-     provider = llm_providers.get(selected_provider)
+    Programa que:
+    1) Recibe un prompt describiendo un problema.
+    2) Si la profundidad (depth) es distinta de 0, se usa como dificultad.
+    3) Si la profundidad es 0, solicita al modelo LLM (Ollama o similar) que clasifique el problema y devuelva un JSON con:
+       - "dificultad": Nivel de complejidad (entero de 1 a 10).
+       - "tipo_problema": Categoría del problema (entero de 1 a 4).
+       - "estrategias_comunes": Lista de estrategias relevantes para resolverlo.
+    """
+    import json
+    import os
+    import importlib.util
 
-     
-     # ------------------------------------------------------------------------
-     # Paso 2: Si la profundidad (depth) es distinta de 0, se usa como dificultad.
-     # ------------------------------------------------------------------------
-     if depth != 0:
-         print(f"Profundidad establecida por el usuario: {depth}")
-         
-     # ------------------------------------------------------------------------
-     # Paso 3 y 4: Solicitar a Ollama que devuelva SOLO un JSON con la complejidad.
-     # ------------------------------------------------------------------------
-     system_msg_for_complexity = (
-         "Por favor, analiza el siguiente problema y devuelve ÚNICAMENTE un JSON "
-         "con los campos 'complejidad' y 'tipo_problema'. "
-         "'complejidad' debe ser un número entero donde 1 es demasiado sencillo y 12 es muy complejo. "
-         "'tipo_problema' debe ser un número entero: 1 para problemas que requieren pensarlo en secuencia, "
-         "2 para problemas que parece que les falta información por lo que hay que pensar fuera de la caja para hacer explicita información escondida, "
-         "3 para problemas a los que le falta información por lo que hay que pensar que se le puede agregar para poder encontrar una solución, "
-         "y 4 para problemas que suman información innecesaria para confundir. "
-         "No incluyas nada más que el JSON. Ejemplo del JSON: {\"complejidad\": 3, \"tipo_problema\": 1}"
-     )
-     
-     # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
-     complexity_response = ""
-     if not provider:
-         yield "Error: Provider not found"
-         return
-     for chunk in provider.generate_response(
-         prompt=prompt,
-         model_name=selected_model,
-         system_message=system_msg_for_complexity
-     ):
-         complexity_response += chunk
+    provider = llm_providers.get(selected_provider)
 
-     # ------------------------------------------------------------------------
-     # Paso 5: Parsear la dificultad y el tipo de problema del JSON.
-     # ------------------------------------------------------------------------
-     dificultad = depth  # Valor por defecto si no se puede parsear
-     tipo_problema = 1 # Valor por defecto si no se puede parsear
-     try:
-         # Se espera algo como: {"complejidad": 5, "tipo_problema": 1}
-         start_index = complexity_response.find('{')
-         end_index = complexity_response.rfind('}')
-         if start_index != -1 and end_index != -1:
-            json_string = complexity_response[start_index:end_index+1]
+    if depth != 0:
+        print(f"Profundidad establecida por el usuario: {depth}")
+
+    # Mensaje al sistema para clasificación del problema
+    system_msg_for_classification = (
+        "Eres un experto en resolución de problemas. A continuación, se te proporcionará una descripción del problema. "
+        "Por favor, analiza el problema y responde ÚNICAMENTE con un JSON con los campos: \"dificultad\", \"tipo_problema\" y \"estrategias_comunes\". "
+        "- \"dificultad\": Un número entero entre 1 (muy sencillo) y 10 (extremadamente complejo).\n"
+        "- \"tipo_problema\": Número entero que clasifica el problema:\n"
+        "  1: Problema secuencial (requiere pensar paso a paso).\n"
+        "  2: Problema con información oculta (necesita hacer explícita información implícita).\n"
+        "  3: Problema con información faltante (requiere agregar datos faltantes para solucionarlo).\n"
+        "  4: Problema con información distractora (incluye datos irrelevantes que confunden).\n"
+        "Clasificación completa de problemas:\n"
+        "  1. Problemas bien definidos:\n"
+        "     - Características: Los objetivos, las restricciones y los métodos de resolución están claramente especificados.\n"
+        "     - Ejemplo: Resolver un rompecabezas matemático.\n"
+        "     - Estrategias comunes: Algoritmos, heurísticas específicas para el dominio.\n"
+        "  2. Problemas mal definidos:\n"
+        "     - Características: Los objetivos son vagos, las restricciones son ambiguas y no hay una solución única o clara.\n"
+        "     - Ejemplo: ¿Cómo reducir la pobreza en una ciudad?\n"
+        "     - Estrategias comunes: Definición del problema, lluvia de ideas, enfoques creativos.\n"
+        "  3. Problemas convergentes:\n"
+        "     - Características: Tienen una solución específica o limitada.\n"
+        "     - Ejemplo: Un problema de física con una respuesta exacta.\n"
+        "     - Estrategias comunes: Pensamiento lógico, uso de principios bien establecidos.\n"
+        "  4. Problemas divergentes:\n"
+        "     - Características: Admiten múltiples soluciones posibles.\n"
+        "     - Ejemplo: Diseñar un logotipo para una empresa.\n"
+        "     - Estrategias comunes: Pensamiento creativo, métodos de diseño iterativos.\n"
+        "  5. Problemas de razonamiento inductivo:\n"
+        "     - Características: Requieren identificar patrones o generalizaciones a partir de datos específicos.\n"
+        "     - Ejemplo: Predecir tendencias a partir de datos de ventas.\n"
+        "     - Estrategias comunes: Análisis de datos, inferencias basadas en ejemplos.\n"
+        "  6. Problemas de razonamiento deductivo:\n"
+        "     - Características: Implican aplicar principios generales a casos específicos.\n"
+        "     - Ejemplo: Resolver un silogismo lógico.\n"
+        "     - Estrategias comunes: Aplicación de reglas lógicas, diagramas para visualizar relaciones.\n"
+        "- \"estrategias_comunes\": Lista de estrategias comunes para abordar este tipo de problemas.\n"
+        "Ejemplo de respuesta: {\"dificultad\": 5, \"tipo_problema\": 2, \"estrategias_comunes\": [\"pensamiento lateral\", \"dividir en subproblemas\"]}"
+    )
+
+    classification_response = ""
+    if not provider:
+        yield "Error: Provider not found"
+        return
+    
+    for chunk in provider.generate_response(
+        prompt=prompt,
+        model_name=selected_model,
+        system_message=system_msg_for_classification
+    ):
+        classification_response += chunk
+
+    # Parsear la respuesta del modelo
+    dificultad = depth  # Valor por defecto si no se puede parsear
+    tipo_problema = 1  # Valor por defecto
+    estrategias_comunes = []
+
+    try:
+        # Buscar JSON en la respuesta
+        start_index = classification_response.find('{')
+        end_index = classification_response.rfind('}')
+        if start_index != -1 and end_index != -1:
+            json_string = classification_response[start_index:end_index+1]
             parsed_json = json.loads(json_string)
-            dificultad = dificultad if dificultad != 0 else parsed_json.get("complejidad", 1)
-            tipo_problema = parsed_json.get("tipo_problema", 1)
-     except json.JSONDecodeError as e:
-         print("Error al decodificar el JSON de complejidad y tipo de problema. Se usará dificultad = 1 y tipo_problema = 1.",complexity_response)
-     
-     print(f"Dificultad detectada: {dificultad}, Tipo de problema detectado: {tipo_problema}")
+            dificultad = parsed_json.get("dificultad", dificultad)
+            tipo_problema = parsed_json.get("tipo_problema", tipo_problema)
+            estrategias_comunes = parsed_json.get("estrategias_comunes", [])
+    except json.JSONDecodeError:
+        print("Error al interpretar el JSON de clasificación.", classification_response)
 
-     # ------------------------------------------------------------------------
-     # Paso 6: Entrar en un loop que itera en función de la dificultad.
-     # ------------------------------------------------------------------------
-     resumen_acumulado = ""
+    print(f"Dificultad detectada: {dificultad}, Tipo de problema detectado: {tipo_problema}")
+    print(f"Estrategias comunes sugeridas: {estrategias_comunes}")
 
-     for i in range(dificultad):
-         print(f"\n--- Iteración de razonamiento #{i+1} ---")
-         # ----------------------------------------------------------
-         # Paso 7: Invocar a Ollama para que piense sobre el problema,
-         #         sin dar la solución, solo el pensamiento.
-         # ----------------------------------------------------------
-         if tipo_problema == 1:
-            system_msg_for_thinking = (
-                "Eres un experto resolviendo problemas. A continuación se te mostrará "
-                "el problema y un resumen acumulado de tus reflexiones previas. "
-                "Piensa en voz alta (solo devuélveme el pensamiento) que pasos y detalles te pueden llevar a la solución. Si hay un pensamiento anterior continua con el, no proporciones la solución. "
-                "NO incluyas nada que no sea el contenido de tu pensamiento."
+    # Loop doble: iterar por cada estrategia y dentro de cada estrategia iterar en función de la dificultad
+    resultados_por_estrategia = {}
+
+    for estrategia in estrategias_comunes:
+        print(f"Iniciando iteraciones para la estrategia: {estrategia}")
+        resumen_acumulado = ""
+        for i in range(dificultad):
+            print(f"Iteración {i + 1} de {dificultad} usando la estrategia: {estrategia}")
+
+            # Generar reflexión basada en estrategia y dificultad
+            system_msg_for_iteration = (
+                f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
+                "A continuación, analiza el problema paso a paso usando esta estrategia. "
+                "Proporciona una reflexión sobre cómo abordarlo, y una posible solución."
             )
-            prompt_for_thinking = (
+
+            prompt_for_iteration = (
                 f"Problema: {prompt}\n\n"
-                f"Resumen previo: {resumen_acumulado}\n\n"
-                "Describe tu pensamiento aquí (sin dar solución):"
-            )
-         elif tipo_problema == 2 or tipo_problema == 3:
-            system_msg_for_thinking = (
-                "Eres un experto resolviendo problemas. A continuación se te mostrará "
-                "el problema y un resumen acumulado de tus reflexiones previas. "
-                "Piensa en voz alta (solo devuélveme el pensamiento) que pasos y detalles te pueden llevar a la solución, Si hay un pensamiento anterior buscando una idea alternativa, no proporciones la solución. "
-                "NO incluyas nada que no sea el contenido de tu pensamiento."
-            )
-            prompt_for_thinking = (
-                f"Problema: {prompt}\n\n"
-                f"Resumen previo: {resumen_acumulado}\n\n"
-                "Describe tu pensamiento aquí (sin dar solución):"
-            )
-         elif tipo_problema == 4:
-            system_msg_for_thinking = (
-                "Eres un experto resolviendo problemas. A continuación se te mostrará "
-                "el problema y un resumen acumulado de tus reflexiones previas. "
-                "Piensa en voz alta (solo devuélveme el pensamiento), ennumera que es un importante para resolver el problema y que hay que descartar, no proporciones la solución. "
-                "NO incluyas nada que no sea el contenido de tu pensamiento."
-            )
-            prompt_for_thinking = (
-                f"Problema: {prompt}\n\n"
-                f"Resumen previo: {resumen_acumulado}\n\n"
-                "Describe tu pensamiento aquí (sin dar solución):"
-            )
-         else:
-            system_msg_for_thinking = (
-                "Eres un experto resolviendo problemas. A continuación se te mostrará "
-                "el problema y un resumen acumulado de tus reflexiones previas. "
-                "Piensa en voz alta (solo devuélveme el pensamiento), no proporciones la solución. "
-                "NO incluyas nada que no sea el contenido de tu pensamiento."
-            )
-            prompt_for_thinking = (
-                f"Problema: {prompt}\n\n"
-                f"Resumen previo: {resumen_acumulado}\n\n"
-                "Describe tu pensamiento aquí (sin dar solución):"
+                f"Reflexión usando la estrategia {estrategia}:"
             )
 
-         pensamiento_response = ""
-         provider = llm_providers.get(selected_provider)
-         if not provider:
-             yield "Error: Provider not found"
-             return
-         for chunk in provider.generate_response(
-             prompt=prompt_for_thinking,
-             model_name=selected_model,
-             system_message=system_msg_for_thinking
-         ):
-             pensamiento_response += chunk
-         # ----------------------------------------------------------
-         # Paso 7: Invocar a Ollama para que resuma los puntos clave
-         #         del pensamiento anterior.
-         # ----------------------------------------------------------
-         system_msg_for_summary = (
-             "Eres un experto en análisis. Se te proporciona un pensamiento anterior. "
-             "Comprime el pensamiento a la menor cantidad de palabras que mantengan la idea "
-             "de ese pensamiento. No incluyas nada más."
-         )
-         prompt_for_summary = (
-             f"Pensamiento anterior: {pensamiento_response}\n\n"
-             "Redacta un resumen breve de los puntos clave:"
-         )
+            iteration_response = ""
+            print("Enviando prompt al modelo para reflexión iterativa...")
+            for chunk in provider.generate_response(
+                prompt=prompt_for_iteration,
+                model_name=selected_model,
+                system_message=system_msg_for_iteration
+            ):
+                iteration_response += chunk
 
-         resumen_response = ""
-         provider = llm_providers.get(selected_provider)
-         if not provider:
-             yield "Error: Provider not found"
-             return
-         for chunk in provider.generate_response(
-             prompt=prompt_for_summary,
-             model_name=selected_model,
-             system_message=system_msg_for_summary
-         ):
-             resumen_response += chunk
-         debug_print(GREEN, resumen_response)
+            print(f"Respuesta obtenida para la iteración {i + 1}: {iteration_response.strip()}")
+            resumen_acumulado += f"\n- Iteración {i + 1}: {iteration_response.strip()}"
 
-         # ----------------------------------------------------------
-         # Paso 8: Sumar el resumen al pensamiento acumulado y
-         #         continuar con la siguiente iteración.
-         # ----------------------------------------------------------
-         resumen_acumulado += f"\n- {resumen_response.strip()}"
+        print(f"Finalizadas las iteraciones para la estrategia: {estrategia}. Generando evaluación...")
+        # Una vez terminadas las iteraciones para una estrategia, evaluar el resumen acumulado
+        system_msg_for_evaluation = (
+            "Eres un experto en análisis estratégico. A continuación, se te proporciona un resumen acumulado "
+            "de reflexiones generadas por una estrategia. Evalúa la efectividad de estas reflexiones y "
+            "proporciona una respuesta sobre si esta estrategia es la mejor o si necesitas proponer una nueva estrategia."
+        )
 
-     # ------------------------------------------------------------------------
-     # Paso 10: Con el problema más el resumen final de los pensamientos,
-     #         invocar a Ollama para que dé la respuesta final.
-     # ------------------------------------------------------------------------
-     system_msg_for_final = (
-         "Ahora eres un experto resolviendo este tipo de problemas. "
-         "Con base en el problema original y el resumen final de tu razonamiento, "
-         "proporciona la solución final y justifícala brevemente."
-     )
-     prompt_for_final = (
-         f"Problema: {prompt}\n\n"
-         f"Resumen final de razonamientos: {resumen_acumulado}\n\n"
-         "Dame la respuesta final al problema:"
-     )
+        prompt_for_evaluation = (
+            f"Problema: {prompt}\n\n"
+            f"Resumen acumulado para la estrategia {estrategia}: {resumen_acumulado}\n\n"
+            "Evalúa la efectividad de esta estrategia y justifica tu conclusión:"
+        )
 
-     respuesta_final = ""
-     provider = llm_providers.get(selected_provider)
-     if not provider:
-         yield "Error: Provider not found"
-         return
-     for chunk in provider.generate_response(
-         prompt=prompt_for_final,
-         model_name=selected_model,
-         system_message=system_msg_for_final
-     ):
-         respuesta_final += chunk
+        evaluation_response = ""
+        print("Enviando resumen acumulado al modelo para evaluación...")
+        for chunk in provider.generate_response(
+            prompt=prompt_for_evaluation,
+            model_name=selected_model,
+            system_message=system_msg_for_evaluation
+        ):
+            evaluation_response += chunk
 
-     yield respuesta_final
+        print(f"Evaluación obtenida para la estrategia {estrategia}: {evaluation_response.strip()}")
+        resultados_por_estrategia[estrategia] = {
+            "resumen": resumen_acumulado,
+            "evaluacion": evaluation_response.strip()
+        }
+
+    print("Todas las estrategias procesadas. Preparando solución final...")
+
+    # Concatenar problema original y resultados de todas las estrategias
+    final_summary = (
+        f"Problema original: {prompt}\n\n"
+        f"Resultados por estrategia:\n"
+    )
+
+    for estrategia, datos in resultados_por_estrategia.items():
+        final_summary += (
+            f"\nEstrategia: {estrategia}\n"
+            f"Resumen acumulado: {datos['resumen']}\n"
+            f"Evaluación: {datos['evaluacion']}\n"
+        )
+
+    # Solicitar al modelo que genere la solución final
+    system_msg_for_final_solution = (
+        "Eres un experto resolviendo problemas complejos. Se te proporciona un problema original junto con "
+        "los resultados de diferentes estrategias utilizadas para abordarlo. Con base en esta información, "
+        "proporciona la mejor solución posible al problema y justifícala brevemente."
+    )
+
+    prompt_for_final_solution = (
+        f"{final_summary}\n\n"
+        "Proporciona la solución final al problema con justificación:"
+    )
+
+    print("Enviando datos al modelo para generar la solución final...")
+    for chunk in provider.generate_response(
+        prompt=prompt_for_final_solution,
+        model_name=selected_model,
+        system_message=system_msg_for_final_solution
+    ):
+        print(f"Chunk recibido: {chunk.strip()}")
+        yield chunk.strip()
+
+
+
 
 # Dictionary to hold available LLM providers
 llm_providers = {
