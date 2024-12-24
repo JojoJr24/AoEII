@@ -138,17 +138,42 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          # Paso 7: Invocar a Ollama para que piense sobre el problema,
          #         sin dar la solución, solo el pensamiento.
          # ----------------------------------------------------------
-         system_msg_for_thinking = (
-             "Eres un experto resolviendo problemas. A continuación se te mostrará "
-             "el problema y un resumen acumulado de tus reflexiones previas. "
-             "Piensa en voz alta (solo devuélveme el pensamiento), no proporciones la solución. "
-             "NO incluyas nada que no sea el contenido de tu pensamiento."
-         )
-         prompt_for_thinking = (
-             f"Problema: {prompt}\n\n"
-             f"Resumen previo: {resumen_acumulado}\n\n"
-             "Describe tu pensamiento aquí (sin dar solución):"
-         )
+         if tipo_problema == 1:
+            system_msg_for_thinking = (
+                "Eres un experto resolviendo problemas. A continuación se te mostrará "
+                "el problema y un resumen acumulado de tus reflexiones previas. "
+                "Piensa en voz alta (solo devuélveme el pensamiento), continuando la idea anterior, no proporciones la solución. "
+                "NO incluyas nada que no sea el contenido de tu pensamiento."
+            )
+            prompt_for_thinking = (
+                f"Problema: {prompt}\n\n"
+                f"Resumen previo: {resumen_acumulado}\n\n"
+                "Describe tu pensamiento aquí (sin dar solución), continuando la idea anterior:"
+            )
+         elif tipo_problema == 2 or tipo_problema == 3:
+            system_msg_for_thinking = (
+                "Eres un experto resolviendo problemas. A continuación se te mostrará "
+                "el problema y un resumen acumulado de tus reflexiones previas. "
+                "Piensa en voz alta (solo devuélveme el pensamiento), buscando una idea alternativa a las ideas anteriores, no proporciones la solución. "
+                "NO incluyas nada que no sea el contenido de tu pensamiento."
+            )
+            prompt_for_thinking = (
+                f"Problema: {prompt}\n\n"
+                f"Resumen previo: {resumen_acumulado}\n\n"
+                "Describe tu pensamiento aquí (sin dar solución), buscando una idea alternativa a las ideas anteriores:"
+            )
+         else:
+            system_msg_for_thinking = (
+                "Eres un experto resolviendo problemas. A continuación se te mostrará "
+                "el problema y un resumen acumulado de tus reflexiones previas. "
+                "Piensa en voz alta (solo devuélveme el pensamiento), no proporciones la solución. "
+                "NO incluyas nada que no sea el contenido de tu pensamiento."
+            )
+            prompt_for_thinking = (
+                f"Problema: {prompt}\n\n"
+                f"Resumen previo: {resumen_acumulado}\n\n"
+                "Describe tu pensamiento aquí (sin dar solución):"
+            )
 
          pensamiento_response = ""
          provider = llm_providers.get(selected_provider)
