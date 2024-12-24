@@ -2,6 +2,7 @@ import time
 from claude_api import ClaudeAPI
 from gemini_api import GeminiAPI
 from ollama_api import OllamaAPI
+from utils import GREEN, RED, BLUE, MAGENTA, RESET
 from openai_api import OpenAIAPI
 from groq_api import GroqAPI
 from typing import Generator
