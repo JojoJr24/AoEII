@@ -468,8 +468,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('conversation_title', conversationTitle);
             }
 
+            let apiUrl = 'http://127.0.0.1:5000/api/generate';
+            if (thinkToggle.checked) {
+                apiUrl = 'http://127.0.0.1:5000/api/think';
+            }
+
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/generate', {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -536,6 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     firstMessage = false;
                     loadConversations();
                 }
+            
             } catch (error) {
                 console.error('Failed to send message:', error);
                 addMessage(`Error generating response: ${error.message}`, false);
