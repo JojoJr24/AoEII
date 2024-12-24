@@ -5,6 +5,7 @@ from PIL import Image
 import io
 import json
 from groq import Groq
+from utils import retry_with_exponential_backoff
 
 load_dotenv()
 

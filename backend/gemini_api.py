@@ -5,6 +5,7 @@ from typing import List, Optional, Generator
 from PIL import Image
 import io
 import json
+from utils import retry_with_exponential_backoff
 
 load_dotenv()
 

@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from typing import List, Optional, Generator
 from PIL import Image
 from openai import OpenAI
+from utils import retry_with_exponential_backoff
 
 load_dotenv()
 
