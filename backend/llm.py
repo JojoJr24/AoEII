@@ -65,7 +65,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     provider = llm_providers.get(selected_provider)
 
     if depth != 0:
-        print(f"Profundidad establecida por el usuario: {depth}")
+        print(f"{GREEN}Profundidad establecida por el usuario: {depth}{RESET}")
 
     # Mensaje al sistema para clasificación del problema
     system_msg_for_classification = (
@@ -134,19 +134,19 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             tipo_problema = parsed_json.get("tipo_problema", tipo_problema)
             estrategias_comunes = parsed_json.get("estrategias_comunes", [])
     except json.JSONDecodeError:
-        print("Error al interpretar el JSON de clasificación.", classification_response)
+        print(f"{RED}Error al interpretar el JSON de clasificación.{RESET}", classification_response)
 
-    print(f"Dificultad detectada: {dificultad}, Tipo de problema detectado: {tipo_problema}")
-    print(f"Estrategias comunes sugeridas: {estrategias_comunes}")
+    print(f"{BLUE}Dificultad detectada: {dificultad}, Tipo de problema detectado: {tipo_problema}{RESET}")
+    print(f"{BLUE}Estrategias comunes sugeridas: {estrategias_comunes}{RESET}")
 
     # Loop doble: iterar por cada estrategia y dentro de cada estrategia iterar en función de la dificultad
     resultados_por_estrategia = {}
 
     for estrategia in estrategias_comunes:
-        print(f"Iniciando iteraciones para la estrategia: {estrategia}")
+        print(f"{MAGENTA}Iniciando iteraciones para la estrategia: {estrategia}{RESET}")
         resumen_acumulado = ""
         for i in range(dificultad):
-            print(f"Iteración {i + 1} de {dificultad} usando la estrategia: {estrategia}")
+            print(f"{MAGENTA}Iteración {i + 1} de {dificultad} usando la estrategia: {estrategia}{RESET}")
 
             # Generar reflexión basada en estrategia y dificultad
             system_msg_for_iteration = (
@@ -169,10 +169,10 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             ):
                 iteration_response += chunk
 
-            print(f"Respuesta obtenida para la iteración {i + 1}: {iteration_response.strip()}")
+            print(f"{GREEN}Respuesta obtenida para la iteración {i + 1}: {iteration_response.strip()}{RESET}")
             resumen_acumulado += f"\n- Iteración {i + 1}: {iteration_response.strip()}"
 
-        print(f"Finalizadas las iteraciones para la estrategia: {estrategia}. Generando evaluación...")
+        print(f"{MAGENTA}Finalizadas las iteraciones para la estrategia: {estrategia}. Generando evaluación...{RESET}")
         # Una vez terminadas las iteraciones para una estrategia, evaluar el resumen acumulado
         system_msg_for_evaluation = (
             "Eres un experto en análisis estratégico. A continuación, se te proporciona un resumen acumulado "
@@ -195,13 +195,13 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
         ):
             evaluation_response += chunk
 
-        print(f"Evaluación obtenida para la estrategia {estrategia}: {evaluation_response.strip()}")
+        print(f"{GREEN}Evaluación obtenida para la estrategia {estrategia}: {evaluation_response.strip()}{RESET}")
         resultados_por_estrategia[estrategia] = {
             "resumen": resumen_acumulado,
             "evaluacion": evaluation_response.strip()
         }
 
-    print("Todas las estrategias procesadas. Preparando solución final...")
+    print(f"{BLUE}Todas las estrategias procesadas. Preparando solución final...{RESET}")
 
     # Concatenar problema original y resultados de todas las estrategias
     final_summary = (
@@ -228,7 +228,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
         "Proporciona la solución final al problema con justificación:"
     )
 
-    print("Enviando datos al modelo para generar la solución final...")
+    print(f"{MAGENTA}Enviando datos al modelo para generar la solución final...{RESET}")
     for chunk in provider.generate_response(
         prompt=prompt_for_final_solution,
         model_name=selected_model,
