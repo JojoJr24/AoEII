@@ -75,7 +75,7 @@ except Exception as e:
     debug_print(RED, f"Error initializing Groq API: {e}")
     groq_api = None
 
-def think(prompt: str, model_name: str, depth: int) -> Generator[str, None, None]:
+def think(prompt: str, depth: int) -> Generator[str, None, None]:
     """
     Programa principal que:
     1) Recibe un prompt como parámetro.
@@ -90,7 +90,8 @@ def think(prompt: str, model_name: str, depth: int) -> Generator[str, None, None
     6) Al finalizar el loop, con el problema original más el resumen final, se obtiene
        la respuesta definitiva de Ollama.
     """
-    
+    global selected_provider, selected_model
+
     # Importar el módulo think.py
     think_dir = '../think'
     think_file = 'think.py'
@@ -125,7 +126,7 @@ def think(prompt: str, model_name: str, depth: int) -> Generator[str, None, None
             return
         for chunk in provider.generate_response(
             prompt=prompt,
-            model_name=model_name,
+            model_name=selected_model,
             system_message=system_msg_for_complexity
         ):
             complexity_response += chunk
@@ -175,7 +176,7 @@ def think(prompt: str, model_name: str, depth: int) -> Generator[str, None, None
             return
         for chunk in provider.generate_response(
             prompt=prompt_for_thinking,
-            model_name=model_name,
+            model_name=selected_model,
             system_message=system_msg_for_thinking
         ):
             pensamiento_response += chunk
@@ -201,7 +202,7 @@ def think(prompt: str, model_name: str, depth: int) -> Generator[str, None, None
             return
         for chunk in provider.generate_response(
             prompt=prompt_for_summary,
-            model_name=model_name,
+            model_name=selected_model,
             system_message=system_msg_for_summary
         ):
             resumen_response += chunk
@@ -234,7 +235,7 @@ def think(prompt: str, model_name: str, depth: int) -> Generator[str, None, None
         return
     for chunk in provider.generate_response(
         prompt=prompt_for_final,
-        model_name=model_name,
+        model_name=selected_model,
         system_message=system_msg_for_final
     ):
         respuesta_final += chunk
@@ -553,10 +554,10 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
         debug_print(RED, "Error: LLM provider not found")
         return "Error: LLM provider not found"
 
-def generate_think_response(prompt, model_name, depth):
-    debug_print(BLUE, f"Generating think response with model: {model_name}, depth: {depth}")
+def generate_think_response(prompt, depth):
+    debug_print(BLUE, f"Generating think response with model: {selected_model}, depth: {depth}")
     
-    response = think(prompt, model_name, depth)
+    response = think(prompt, depth)
     debug_print(GREEN, f"Think response generated successfully.")
     return response
 
@@ -647,6 +648,9 @@ def generate():
             yield f" {json.dumps({'response': chunk})}\n\n"
         add_message_to_conversation(conversation_id, "model", full_response)
         debug_print(GREEN, f"Response: {full_response}")
+    
+    return Response(stream_response(), mimetype='text/event-stream')
+
 
 @app.route('/api/think', methods=['POST'])
 def think_route():
@@ -655,6 +659,7 @@ def think_route():
     data = request.form
     prompt = data.get('prompt')
     model_name = data.get('model', selected_model)
+    provider_name = data.get('provider', selected_provider)
     depth = int(data.get('think_depth', 0))
     
     debug_print(BLUE, f"Request: prompt='{prompt}', model='{model_name}', depth='{depth}'")
@@ -666,7 +671,7 @@ def think_route():
     def stream_response():
         global streaming
         full_response = ""
-        for chunk in generate_think_response(prompt, model_name, depth):
+        for chunk in generate_think_response(prompt,  depth):
             if not streaming:
                 debug_print(BLUE, "Streaming stopped.")
                 break
