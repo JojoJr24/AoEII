@@ -6,7 +6,7 @@ import io
 import importlib.util
 import os
 
-def think(prompt: str, model_name: str = "llama2") -> Generator[str, None, None]:
+def think(prompt: str, model_name: str) -> Generator[str, None, None]:
     """
     Programa principal que:
     1) Recibe un prompt como parámetro.
