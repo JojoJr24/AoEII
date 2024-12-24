@@ -91,7 +91,7 @@ class OpenAIAPI:
                 os.remove(temp_image_path)
             else:
                 messages.append({"role": "user", "content": prompt})
-
+            time.sleep(0.1)
             response_stream = self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
@@ -102,6 +102,7 @@ class OpenAIAPI:
                     content = getattr(chunk.choices[0].delta, 'content', None)
                     if content:
                         yield content
+                        time.sleep(0.01)
         except Exception as e:
             yield f"Error generating response: {e}"
 
