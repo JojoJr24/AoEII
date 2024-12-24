@@ -153,12 +153,14 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             system_msg_for_iteration = (
                 f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
                 "A continuación, analiza el problema paso a paso usando esta estrategia. "
-                "Proporciona una reflexión sobre cómo abordarlo, y una posible solución."
+                "Proporciona una reflexión sobre cómo abordarlo y una posible solución."
             )
 
             prompt_for_iteration = (
                 f"Problema: {prompt}\n\n"
+                f"Pensamientos previos: {resumen_acumulado}\n\n"
                 f"Reflexión usando la estrategia {estrategia}:"
+                "Los pensamientos previos son incorrectos, escribe una nueva reflexión y posible solución"
             )
 
             iteration_response = ""
@@ -177,14 +179,14 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
         # Una vez terminadas las iteraciones para una estrategia, evaluar el resumen acumulado
         system_msg_for_evaluation = (
             "Eres un experto en análisis estratégico. A continuación, se te proporciona un resumen acumulado "
-            "de reflexiones generadas por una estrategia. Evalúa la efectividad de estas reflexiones y "
-            "proporciona una respuesta sobre si esta estrategia es la mejor o si necesitas proponer una nueva estrategia."
+            "de reflexiones generadas por una estrategia. Evalúa la calidad de las posibles soluciones al problema original y "
+            "combinalas para obtener la mejor solucion posible."
         )
 
         prompt_for_evaluation = (
             f"Problema: {prompt}\n\n"
             f"Resumen acumulado para la estrategia {estrategia}: {resumen_acumulado}\n\n"
-            "Evalúa la efectividad de esta estrategia y justifica tu conclusión:"
+            "Escribe la mejor solución posible que sale usar la estrategia:"
         )
 
         evaluation_response = ""
@@ -205,10 +207,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     print(f"{BLUE}Todas las estrategias procesadas. Preparando solución final...{RESET}")
 
     # Concatenar problema original y resultados de todas las estrategias
-    final_summary = (
-        f"Problema original: {prompt}\n\n"
-        f"Resultados por estrategia:\n"
-    )
+    final_summary = ""
 
     for estrategia, datos in resultados_por_estrategia.items():
         final_summary += (
@@ -216,17 +215,19 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             f"Resumen acumulado: {datos['resumen']}\n"
             f"Evaluación: {datos['evaluacion']}\n"
         )
+    debug_print(GREEN,f"Final summary {final_summary}")
 
     # Solicitar al modelo que genere la solución final
     system_msg_for_final_solution = (
-        "Eres un experto resolviendo problemas complejos. Se te proporciona un problema original junto con "
-        "los resultados de diferentes estrategias utilizadas para abordarlo. Con base en esta información, "
-        "proporciona la mejor solución posible al problema y justifícala brevemente."
+        "Eres un experto resolviendo problemas complejos. Se te proporciona un problema junto con "
+        "todo lo que pensaste para resolverlo. Con base en esta información, "
+        "escribe la solución final del problema."
     )
 
     prompt_for_final_solution = (
-        f"{final_summary}\n\n"
-        "Proporciona la solución final al problema con justificación:"
+        f"Problema : {prompt}\n\n"
+        f"Esto es lo que pensaste al analizar el problema : {final_summary} .\n\n"
+        "Esta es la solución al problema:"
     )
 
     print(f"{MAGENTA}Enviando datos al modelo para generar la solución final...{RESET}")
