@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteSystemMessageButton = document.getElementById('delete-system-message-button');
     const toolsContainer = document.getElementById('tools-container');
     const activeToolsContainer = document.getElementById('active-tools-container');
+    const thinkToggle = document.getElementById('think-toggle');
+    const thinkDepth = document.getElementById('think-depth');
+    const thinkDepthMessage = document.getElementById('think-depth-message');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -391,6 +394,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Event listener for think depth change
+    thinkDepth.addEventListener('change', () => {
+        if (thinkDepth.value === '0') {
+            thinkDepthMessage.textContent = 'La profundidad se determinará automaticamente';
+        } else {
+            thinkDepthMessage.textContent = '';
+        }
+    });
+
     // Event listener for provider change
     llmProvider.addEventListener('change', async () => {
         selectedProvider = llmProvider.value;
@@ -449,6 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const activeTools = Array.from(activeToolsContainer.querySelectorAll('.active-tool-tag')).map(tool => tool.textContent);
             formData.append('selected_tools', JSON.stringify(activeTools));
+            formData.append('think', thinkToggle.checked);
+            formData.append('think_depth', thinkDepth.value);
             if (firstMessage) {
                 conversationTitle = message;
                 formData.append('conversation_title', conversationTitle);
