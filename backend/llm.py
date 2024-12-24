@@ -88,7 +88,8 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          "'complejidad' debe ser un número entero donde 1 es demasiado sencillo y 10 es muy complejo. "
          "'tipo_problema' debe ser un número entero: 1 para problemas que requieren pensarlo en secuencia, "
          "2 para problemas que parece que les falta información por lo que hay que pensar fuera de la caja para hacer explicita información escondida, "
-         "y 3 para problemas a los que le falta información por lo que hay que pensar que se le puede agregar para poder encontrar una solución. "
+         "3 para problemas a los que le falta información por lo que hay que pensar que se le puede agregar para poder encontrar una solución, "
+         "y 4 para problemas que suman información innecesaria para confundir. "
          "No incluyas nada más que el JSON. Ejemplo del JSON: {\"complejidad\": 3, \"tipo_problema\": 1}"
      )
      
