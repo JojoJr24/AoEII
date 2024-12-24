@@ -85,8 +85,9 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          # ------------------------------------------------------------------------
          system_msg_for_complexity = (
              "Por favor, analiza el siguiente problema y devuelve ÚNICAMENTE un JSON "
-             "con el campo 'complejidad' que indique (en un número entero) "
+             "con el campo 'complejidad' que indique ,en un número entero donde 1 es demasiado sencillo y 10 es muy complejo, "
              "cuán difícil es el problema. No incluyas nada más que el JSON."
+             "Ejemplo del JSON {\"complejidad\": 3}"
          )
          
          # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
@@ -108,10 +109,14 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          dificultad = 1  # Valor por defecto si no se puede parsear
          try:
              # Se espera algo como: {"complejidad": 5}
-             parsed_json = json.loads(complexity_response)
-             dificultad = parsed_json.get("complejidad", 1)
+             start_index = complexity_response.find('{')
+             end_index = complexity_response.rfind('}')
+             if start_index != -1 and end_index != -1:
+                json_string = complexity_response[start_index:end_index+1]
+                parsed_json = json.loads(json_string)
+                dificultad = parsed_json.get("complejidad", 1)
          except json.JSONDecodeError as e:
-             print("Error al decodificar el JSON de complejidad. Se usará dificultad = 1.")
+             print("Error al decodificar el JSON de complejidad. Se usará dificultad = 1.",complexity_response)
          
          print(f"Dificultad detectada: {dificultad}")
 
