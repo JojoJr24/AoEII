@@ -17,6 +17,7 @@ class GroqAPI:
         self.client = Groq(api_key=api_key)
         self.available_models = self._list_available_models()
 
+    @retry_with_exponential_backoff()
     def _list_available_models(self) -> List[str]:
         """
         Lists available models from Groq API.
@@ -40,6 +41,7 @@ class GroqAPI:
         """
         return self.available_models
 
+    @retry_with_exponential_backoff()
     def generate_response(self, prompt: str, model_name: str, image: Optional[Image.Image] = None, history: Optional[List[dict]] = None, system_message: Optional[str] = None) -> Generator[str, None, None]:
         """
         Generates a response using the specified Groq model, yielding chunks of the response.

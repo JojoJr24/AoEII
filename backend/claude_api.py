@@ -19,6 +19,7 @@ class ClaudeAPI:
         self.client = anthropic.Anthropic(api_key=api_key)
         self.available_models = self._list_available_models()
     
+    @retry_with_exponential_backoff()
     def _list_available_models(self) -> List[str]:
         """
         Private method to fetch available models from Anthropic API.
@@ -42,6 +43,7 @@ class ClaudeAPI:
         """
         return self.available_models
     
+    @retry_with_exponential_backoff()
     def generate_response(
         self,
         prompt: str,

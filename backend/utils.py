@@ -1,5 +1,7 @@
 import logging
 import sys
+import time
+from functools import wraps
 
 # ANSI escape codes for colors
 RED = '\033[91m'
@@ -43,3 +45,31 @@ def debug_print(debug, message):
 def stop_stream_global():
     global streaming
     streaming = False
+
+def retry_with_exponential_backoff(max_retries=3, base_delay=1):
+    """
+    Decorator to retry a function with exponential backoff.
+
+    Args:
+        max_retries (int): Maximum number of retries.
+        base_delay (int): Base delay in seconds.
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            retries = 0
+            while retries <= max_retries:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if "429" in str(e):
+                        delay = base_delay * (2 ** retries)
+                        debug_print(True, f"Rate limit hit. Retrying in {delay} seconds... (Attempt {retries + 1}/{max_retries + 1})")
+                        time.sleep(delay)
+                        retries += 1
+                    else:
+                        raise
+            debug_print(True, f"Max retries exceeded for function {func.__name__}")
+            raise Exception(f"Max retries exceeded after {max_retries} attempts.")
+        return wrapper
+    return decorator
