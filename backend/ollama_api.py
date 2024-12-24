@@ -1,10 +1,10 @@
+import time
 import ollama
 from typing import List, Optional, Generator
 from PIL import Image
 import io
 import json
-import time
-from utils import retry_with_exponential_backoff
+from utils import retry_with_exponential_backoff, STREAM_START_DELAY, STREAM_YIELD_DELAY
 
 class OllamaAPI:
     def __init__(self):

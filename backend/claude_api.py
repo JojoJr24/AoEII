@@ -1,4 +1,5 @@
 import anthropic
+import time
 import os
 import anthropic
 import os
@@ -6,7 +7,7 @@ from dotenv import load_dotenv
 from typing import List, Optional, Generator
 from PIL import Image
 import io
-from utils import retry_with_exponential_backoff
+from utils import retry_with_exponential_backoff, STREAM_START_DELAY, STREAM_YIELD_DELAY
 
 load_dotenv()
 
