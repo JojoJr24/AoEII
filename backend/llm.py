@@ -46,7 +46,6 @@ except Exception as e:
     debug_print(True, f"Error initializing Groq API: {e}")
     groq_api = None
 
-
 def think(prompt: str, depth: int) -> Generator[str, None, None]:
      """
     Programa principal que:
@@ -70,7 +69,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      spec = importlib.util.spec_from_file_location("think", think_path)
      think_module = importlib.util.module_from_spec(spec)
      spec.loader.exec_module(think_module)
-     
+
      ollama_api = think_module.OllamaAPI()
 
      # ------------------------------------------------------------------------
@@ -89,7 +88,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
              "cuán difícil es el problema. No incluyas nada más que el JSON."
              "Ejemplo del JSON {\"complejidad\": 3}"
          )
-         
+
          # Generamos la respuesta del modelo pidiendo solo el JSON con la complejidad
          complexity_response = ""
          provider = llm_providers.get(selected_provider)
@@ -117,7 +116,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
                 dificultad = parsed_json.get("complejidad", 1)
          except json.JSONDecodeError as e:
              print("Error al decodificar el JSON de complejidad. Se usará dificultad = 1.",complexity_response)
-         
+
          print(f"Dificultad detectada: {dificultad}")
 
      # ------------------------------------------------------------------------
@@ -125,6 +124,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      # ------------------------------------------------------------------------
      pensamiento_actual = ""
      resumen_acumulado = ""
+     pensamientos_anteriores = []
 
      for i in range(dificultad):
          print(f"\n--- Iteración de razonamiento #{i+1} ---")
@@ -136,7 +136,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
          system_msg_for_thinking = (
              "Eres un experto resolviendo problemas. A continuación se te mostrará "
              "el problema y un resumen acumulado de tus reflexiones previas. "
-             "Piensa en voz alta (solo devuélveme el pensamiento), no proporciones la solución. "
+             "Piensa profundamente en voz alta (solo devuélveme el pensamiento) en forma de una tormenta de ideas. Destaca los detalles y suma nuevos pensamientos que no se hayan tenido en cuenta. Se creativo . Si las ideas anteriores son negativas suma nuevos conceptos"
              "NO incluyas nada que no sea el contenido de tu pensamiento."
          )
          prompt_for_thinking = (
@@ -156,19 +156,21 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
              system_message=system_msg_for_thinking
          ):
              pensamiento_response += chunk
+         pensamientos_anteriores.append(pensamiento_response)
 
          # ----------------------------------------------------------
          # Paso 7: Invocar a Ollama para que resuma los puntos clave
          #         del pensamiento anterior.
          # ----------------------------------------------------------
          system_msg_for_summary = (
-             "Eres un experto en análisis. Se te proporciona un pensamiento anterior. "
-             "Devuelve solamente un resumen breve y conciso de los puntos más importantes "
-             "de ese pensamiento. No incluyas nada más."
+             "Eres un experto en análisis. Se te proporciona un pensamiento actual y una lista de pensamientos anteriores. "
+             "Comprime el nuevo pensamiento en una lista de puntos clave. A cada item le vas a dar un puntaje por lo relevante que sea"
+             "No incluyas nada más."
          )
          prompt_for_summary = (
-             f"Pensamiento anterior: {pensamiento_response}\n\n"
-             "Redacta un resumen breve de los puntos clave:"
+             f"Pensamiento actual: {pensamiento_response}\n\n"
+             f"Pensamientos anteriores: {pensamientos_anteriores[:-1]}\n\n"
+             "Comprime el pensamiento actual sin repetir los detalles que ya existen en los pensamientos anteriores:"
          )
 
          resumen_response = ""
@@ -182,6 +184,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
              system_message=system_msg_for_summary
          ):
              resumen_response += chunk
+         print(resumen_response)
 
          # ----------------------------------------------------------
          # Paso 8: Sumar el resumen al pensamiento acumulado y
@@ -200,7 +203,7 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
      )
      prompt_for_final = (
          f"Problema: {prompt}\n\n"
-         f"Resumen final de razonamientos: {resumen_acumulado}\n\n"
+         f"Resumen final de razonamientos y relevancia: {resumen_acumulado}\n\n"
          "Dame la respuesta final al problema:"
      )
 
@@ -277,14 +280,13 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                             debug_print(True, f"Error: Tool {tool_name} does not have 'execute' or 'get_tool_description' functions.")
                     except Exception as e:
                         debug_print(True, f"Error loading tool {tool_name}: {e}")
-                
+
                 tool_descriptions = "\n".join([f"- {tool['name']}: {tool['description']}" for tool in tool_instances])
                 tool_prompt = f"""
                     You have access to the following tools. You can use one or more of them, and you can use the same tool multiple times if needed:
                     {tool_descriptions}
-                    
+
                     Use the tools by calling them with the following format. You can call one or more tools in a single response:
-                    
 
 tool_code
                     [
@@ -304,29 +306,28 @@ tool_code
                         }}
                     ]
 
-
                     Now, respond to the following prompt:
                     {prompt}
                 """
-                
+
                 tool_response_generator = provider.generate_response(tool_prompt, model_name, image, None, system_message)
                 tool_response = ""
                 for chunk in tool_response_generator:
                     tool_response += chunk
                 debug_print(True, f"Tool response: {tool_response}")
-                
+
                 try:
                     start_index = tool_response.find('[')
                     end_index = tool_response.rfind(']')
                     if start_index != -1 and end_index != -1:
                         json_string = tool_response[start_index:end_index+1]
                         tool_calls = json.loads(json_string)
-                        
+
                         tool_results = []
                         for tool_call in tool_calls:
                             tool_name = tool_call.get('tool_name')
                             tool_params = tool_call.get('parameters', {})
-                            
+
                             if tool_name:
                                 tool = next((tool for tool in tool_instances if tool['name'] == tool_name), None)
                                 if tool:
@@ -349,17 +350,14 @@ tool_code
                                 tool_results.append({
                                     "error": "No tool name found in tool call."
                                 })
-                        
+
                         tool_results_str = json.dumps(tool_results, indent=4)
                         prompt = f"""
                             The following tools were called:
-                            
 
 tool_calls
                             {tool_results_str}
 
-
-                            
                             Now, respond to the following prompt:
                             {prompt}
                         """
@@ -367,7 +365,7 @@ tool_calls
                         debug_print(True, "Error: No tool calls found in tool response.")
                         prompt = f"""
                             Error: No tool calls found in tool response.
-                            
+
                             Now, respond to the following prompt:
                             {prompt}
                         """
@@ -375,11 +373,11 @@ tool_calls
                     debug_print(True, "Error decoding tool response.")
                     prompt = f"""
                         Error decoding tool response.
-                        
+
                         Now, respond to the following prompt:
                         {prompt}
                     """
-            
+
             response = provider.generate_response(prompt, model_name, image, history, system_message)
             debug_print(True, f"Response generated successfully.")
             return response
@@ -396,7 +394,7 @@ def generate_think_response(prompt, depth, model_name=None, provider_name=None):
     if not provider_name:
         provider_name = selected_provider
     debug_print(True, f"Generating think response with model: {model_name}, provider: {provider_name}, depth: {depth}")
-    
+
     response = think(prompt, depth)
     debug_print(True, f"Think response generated successfully.")
     return response
