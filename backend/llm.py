@@ -162,6 +162,18 @@ def think(prompt: str, depth: int) -> Generator[str, None, None]:
                 f"Resumen previo: {resumen_acumulado}\n\n"
                 "Describe tu pensamiento aquí (sin dar solución), buscando una idea alternativa a las ideas anteriores:"
             )
+         elif tipo_problema == 4:
+            system_msg_for_thinking = (
+                "Eres un experto resolviendo problemas. A continuación se te mostrará "
+                "el problema y un resumen acumulado de tus reflexiones previas. "
+                "Piensa en voz alta (solo devuélveme el pensamiento), eliminando la información innecesaria y concentrándote en las variables que realmente afectan al problema, no proporciones la solución. "
+                "NO incluyas nada que no sea el contenido de tu pensamiento."
+            )
+            prompt_for_thinking = (
+                f"Problema: {prompt}\n\n"
+                f"Resumen previo: {resumen_acumulado}\n\n"
+                "Describe tu pensamiento aquí (sin dar solución), eliminando la información innecesaria y concentrándote en las variables que realmente afectan al problema:"
+            )
          else:
             system_msg_for_thinking = (
                 "Eres un experto resolviendo problemas. A continuación se te mostrará "
