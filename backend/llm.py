@@ -50,19 +50,6 @@ except Exception as e:
 
 
 def think(prompt: str, depth: int, selected_model=None, selected_provider=None) -> Generator[str, None, None]:
-    """
-    Programa que:
-    1) Recibe un prompt describiendo un problema.
-    2) Si la profundidad (depth) es distinta de 0, se usa como dificultad.
-    3) Si la profundidad es 0, solicita al modelo LLM (Ollama o similar) que clasifique el problema y devuelva un JSON con:
-       - "dificultad": Nivel de complejidad (entero de 1 a 10).
-       - "tipo_problema": Categoría del problema (entero de 1 a 4).
-       - "estrategias_comunes": Lista de estrategias relevantes para resolverlo.
-    """
-    import json
-    import os
-    import importlib.util
-
     provider = llm_providers.get(selected_provider)
 
     if depth != 0:
@@ -72,12 +59,8 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     system_msg_for_classification = (
         "Eres un experto en resolución de problemas. A continuación, se te proporcionará una descripción del problema. "
         "Por favor, analiza el problema y responde ÚNICAMENTE con un JSON con los campos: \"dificultad\", \"tipo_problema\" y \"estrategias_comunes\". "
-        "- \"dificultad\": Un número entero entre 1 (muy sencillo) y 10 (extremadamente complejo).\n"
+        "- \"dificultad\": Un número entero entre 1 (muy sencillo) y 5 (extremadamente complejo).\n"
         "- \"tipo_problema\": Número entero que clasifica el problema:\n"
-        "  1: Problema secuencial (requiere pensar paso a paso).\n"
-        "  2: Problema con información oculta (necesita hacer explícita información implícita).\n"
-        "  3: Problema con información faltante (requiere agregar datos faltantes para solucionarlo).\n"
-        "  4: Problema con información distractora (incluye datos irrelevantes que confunden).\n"
         "Clasificación completa de problemas:\n"
         "  1. Problemas bien definidos:\n"
         "     - Características: Los objetivos, las restricciones y los métodos de resolución están claramente especificados.\n"
@@ -111,132 +94,136 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     if not provider:
         yield "Error: Provider not found"
         return
-    
-    for chunk in provider.generate_response(
-        prompt=prompt,
-        model_name=selected_model,
-        system_message=system_msg_for_classification
-    ):
-        classification_response += chunk
 
-    # Parsear la respuesta del modelo
-    dificultad = depth  # Valor por defecto si no se puede parsear
-    tipo_problema = 1  # Valor por defecto
-    estrategias_comunes = []
+    retries = 3
+    for _ in range(retries):
+        debug_print(BLUE,f"Intentando obtener clasificación del problema, intento {_ + 1} de {retries}.")
+        try:
+            for chunk in provider.generate_response(
+                prompt=prompt,
+                model_name=selected_model,
+                system_message=system_msg_for_classification
+            ):
+                classification_response += chunk
 
-    try:
-        # Buscar JSON en la respuesta
-        start_index = classification_response.find('{')
-        end_index = classification_response.rfind('}')
-        if start_index != -1 and end_index != -1:
-            json_string = classification_response[start_index:end_index+1]
-            parsed_json = json.loads(json_string)
-            dificultad = dificultad if dificultad !=0 else parsed_json.get("dificultad", dificultad)
-            tipo_problema = parsed_json.get("tipo_problema", tipo_problema)
-            estrategias_comunes = parsed_json.get("estrategias_comunes", [])
-    except json.JSONDecodeError:
-        print(f"{RED}Error al interpretar el JSON de clasificación.{RESET}", classification_response)
+            start_index = classification_response.find('{')
+            end_index = classification_response.rfind('}')
+            if start_index != -1 and end_index != -1:
+                json_string = classification_response[start_index:end_index+1]
+                parsed_json = json.loads(json_string)
+                debug_print(BLUE,f"Clasificación obtenida exitosamente: {parsed_json}")
+                break
+        except json.JSONDecodeError:
+            debug_print(BLUE,f"Error al parsear JSON en el intento {_ + 1}.")
+            if _ == retries - 1:
+                yield "Error: Failed to parse JSON after multiple retries"
+                return
 
-    print(f"{BLUE}Dificultad detectada: {dificultad}, Tipo de problema detectado: {tipo_problema}{RESET}")
-    print(f"{BLUE}Estrategias comunes sugeridas: {estrategias_comunes}{RESET}")
+    dificultad = depth if depth != 0 else parsed_json.get("dificultad", 1)
+    tipo_problema = parsed_json.get("tipo_problema", 1)
+    estrategias_comunes = parsed_json.get("estrategias_comunes", [])
+    debug_print(BLUE,f"Dificultad: {dificultad}, Tipo de problema: {tipo_problema}, Estrategias: {estrategias_comunes}")
 
-    # Loop doble: iterar por cada estrategia y dentro de cada estrategia iterar en función de la dificultad
     resultados_por_estrategia = {}
 
     for estrategia in estrategias_comunes:
-        print(f"{MAGENTA}Iniciando iteraciones para la estrategia: {estrategia}{RESET}")
+        debug_print(BLUE,f"Procesando estrategia: {estrategia}")
+        steps_response = ""
+        for _ in range(retries):
+            debug_print(BLUE,f"Intentando obtener pasos para la estrategia '{estrategia}', intento {_ + 1} de {retries}.")
+            try:
+                system_msg_for_steps = (
+                    f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
+                    "Por favor, proporciona una lista de titulos de pasos claros para abordar el problema usando esta estrategia. "
+                    "Escribe cada paso en una nueva línea y NADA MÁS.\n"
+                    "Ejemplo:\n"
+                    "Paso 1: Sumar los dos primeros números\n"
+                    "Paso 2: Restar el tercer número\n"
+                    "Paso 3: Dividir el resultado del paso 1 al del paso 2\n"
+                )
+                prompt_for_steps = (
+                    f"Problema: {prompt}\n\n"
+                    f"Genera una lista de pasos para resolverlo usando la estrategia {estrategia}:"
+                )
+
+                for chunk in provider.generate_response(
+                    prompt=prompt_for_steps,
+                    model_name=selected_model,
+                    system_message=system_msg_for_steps
+                ):
+                    steps_response += chunk
+
+                pasos_para_estrategia = [line.strip() for line in steps_response.strip().split("\n") if line.strip()]
+                debug_print(BLUE,f"Pasos obtenidos: {pasos_para_estrategia}")
+                break
+            except Exception as e:
+                debug_print(BLUE,f"Error al procesar pasos en el intento {_ + 1}: {e}")
+                if _ == retries - 1:
+                    pasos_para_estrategia = []
+
         resumen_acumulado = ""
-        for i in range(dificultad):
-            print(f"{MAGENTA}Iteración {i + 1} de {dificultad} usando la estrategia: {estrategia}{RESET}")
-
-            # Generar reflexión basada en estrategia y dificultad
-            system_msg_for_iteration = (
-                f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
-                "A continuación, analiza el problema paso a paso usando esta estrategia. "
-                "Proporciona una reflexión sobre cómo abordarlo y una posible solución."
-            )
-
-            prompt_for_iteration = (
-                f"Problema: {prompt}\n\n"
-                f"Pensamientos previos: {resumen_acumulado}\n\n"
-                f"Reflexión usando la estrategia {estrategia}:"
-                "Los pensamientos previos son incorrectos, escribe una nueva reflexión y posible solución"
-            )
-
-            iteration_response = ""
-            print("Enviando prompt al modelo para reflexión iterativa...")
+        for paso in pasos_para_estrategia:
+            debug_print(BLUE,f"Procesando paso: {paso}")
+            step_solution_response = ""
             for chunk in provider.generate_response(
-                prompt=prompt_for_iteration,
+                prompt=f"Problema: {prompt}\n\nPaso actual: {paso}\n\nSolución para este paso:",
                 model_name=selected_model,
-                system_message=system_msg_for_iteration
+                system_message=(
+                    f"Eres un experto resolviendo problemas.\nLos pasos anteriores resueltos son: {resumen_acumulado} .\n "
+                    "Proporciona una solución detallada para este paso."
+                )
             ):
-                iteration_response += chunk
-
-            print(f"{GREEN}Respuesta obtenida para la iteración {i + 1}: {iteration_response.strip()}{RESET}")
-            resumen_acumulado += f"\n- Iteración {i + 1}: {iteration_response.strip()}"
-
-        print(f"{MAGENTA}Finalizadas las iteraciones para la estrategia: {estrategia}. Generando evaluación...{RESET}")
-        # Una vez terminadas las iteraciones para una estrategia, evaluar el resumen acumulado
-        system_msg_for_evaluation = (
-            "Eres un experto en análisis estratégico. A continuación, se te proporciona un resumen acumulado "
-            "de reflexiones generadas por una estrategia. Evalúa la calidad de las posibles soluciones al problema original y "
-            "combinalas para obtener la mejor solucion posible."
-        )
-
-        prompt_for_evaluation = (
-            f"Problema: {prompt}\n\n"
-            f"Resumen acumulado para la estrategia {estrategia}: {resumen_acumulado}\n\n"
-            "Escribe la mejor solución posible que sale usar la estrategia:"
-        )
+                step_solution_response += chunk
+            debug_print(BLUE,f"Solución para el paso '{paso}': {step_solution_response.strip()}")
+            resumen_acumulado += f"\n- Paso: {paso}: {step_solution_response.strip()}"
 
         evaluation_response = ""
-        print("Enviando resumen acumulado al modelo para evaluación...")
+        debug_print(BLUE,f"Generando evaluación para la estrategia: {estrategia}")
         for chunk in provider.generate_response(
-            prompt=prompt_for_evaluation,
+            prompt=(
+                f"Problema: {prompt}\n\nDetalle de razonamiento para la estrategia {estrategia}: {resumen_acumulado}\n\n"
+                "Escribe la mejor solución posible que surge al usar la estrategia:"
+            ),
             model_name=selected_model,
-            system_message=system_msg_for_evaluation
+            system_message=(
+                "Eres un experto en análisis estratégico. A continuación, se te proporciona un resumen acumulado "
+                "de soluciones generadas para una estrategia. Evalúa la calidad de las posibles soluciones al problema original y "
+                "combínalas para obtener la mejor solución posible."
+            )
         ):
             evaluation_response += chunk
+        debug_print(BLUE,f"Evaluación para la estrategia '{estrategia}': {evaluation_response.strip()}")
 
-        print(f"{GREEN}Evaluación obtenida para la estrategia {estrategia}: {evaluation_response.strip()}{RESET}")
         resultados_por_estrategia[estrategia] = {
             "resumen": resumen_acumulado,
             "evaluacion": evaluation_response.strip()
         }
 
-    print(f"{BLUE}Todas las estrategias procesadas. Preparando solución final...{RESET}")
-
-    # Concatenar problema original y resultados de todas las estrategias
     final_summary = ""
-
+    debug_print(BLUE,"Generando resumen final...")
     for estrategia, datos in resultados_por_estrategia.items():
         final_summary += (
             f"\nEstrategia: {estrategia}\n"
             f"Resumen acumulado: {datos['resumen']}\n"
             f"Evaluación: {datos['evaluacion']}\n"
         )
-    debug_print(GREEN,f"Final summary {final_summary}")
 
-    # Solicitar al modelo que genere la solución final
-    system_msg_for_final_solution = (
-        "Eres un experto resolviendo problemas complejos. Se te proporciona un problema junto con "
-        "todo lo que pensaste para resolverlo. Con base en esta información, "
-        "escribe la solución final del problema."
-    )
-
-    prompt_for_final_solution = (
-        f"Problema : {prompt}\n\n"
-        f"Esto es lo que pensaste al analizar el problema : {final_summary} .\n\n"
-        "Esta es la solución al problema:"
-    )
-
-    print(f"{MAGENTA}Enviando datos al modelo para generar la solución final...{RESET}")
+    debug_print(BLUE,"Generando solución final...")
     for chunk in provider.generate_response(
-        prompt=prompt_for_final_solution,
+        prompt=(
+            f"Problema : {prompt}\n\n"
+            f"Esto es lo que pensaste al analizar el problema : {final_summary} .\n\n"
+            "Esta es la solución al problema:"
+        ),
         model_name=selected_model,
-        system_message=system_msg_for_final_solution
+        system_message=(
+            "Eres un experto resolviendo problemas complejos. Se te proporciona un problema junto con "
+            "todo lo que pensaste para resolverlo. Con base en esta información, "
+            "Analiza cuál de todas las propuestas soluciona el problema y escríbela como la solución final."
+        )
     ):
         yield chunk
+
 
 
 
@@ -336,7 +323,6 @@ tool_code
                 tool_response = ""
                 for chunk in tool_response_generator:
                     tool_response += chunk
-                debug_print(True, f"Tool response: {tool_response}")
                 
                 try:
                     start_index = tool_response.find('[')
