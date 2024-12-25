@@ -86,8 +86,8 @@ class GroqAPI:
                 stream=True,
             )
             for chunk in response_stream:
-                if chunk.choices and chunk.choices[0].message and chunk.choices[0].message.content:
-                    yield chunk.choices[0].message.content
+                if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
                     time.sleep(STREAM_YIELD_DELAY)
         except Exception as e:
             yield f"Error generating response: {e}"
