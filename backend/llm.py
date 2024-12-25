@@ -134,8 +134,8 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             try:
                 system_msg_for_steps = (
                     f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
-                    "Por favor, proporciona una lista de titulos de pasos claros para abordar el problema usando esta estrategia. "
-                    "Escribe cada paso en una nueva línea y NADA MÁS.\n"
+                    "Por favor, proporciona una lista de titulos CONCISOS de pasos claros para abordar el problema usando esta estrategia. "
+                    "Escribe cada paso en una nueva línea con la menor cantidad de palabras posibles y NADA MÁS.\n"
                     "Ejemplo:\n"
                     "Paso 1: Sumar los dos primeros números\n"
                     "Paso 2: Restar el tercer número\n"
