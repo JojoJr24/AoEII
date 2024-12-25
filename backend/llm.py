@@ -136,6 +136,8 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
                     f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
                     "Por favor, proporciona una lista de titulos CONCISOS de pasos claros para abordar el problema usando esta estrategia. "
                     "Escribe cada paso en una nueva línea con la menor cantidad de palabras posibles y NADA MÁS.\n"
+                    f"En una escala del 1 al 10 tenés que dividir este problema con un detalle de {dificultad}"
+                    "El nivel de detalle define la granularidad de los pasos que vas a tener que pensar. Por lo tanto la cantidad de pasos es proporcional al detalle"
                     "Ejemplo:\n"
                     "Paso 1: Sumar los dos primeros números\n"
                     "Paso 2: Restar el tercer número\n"

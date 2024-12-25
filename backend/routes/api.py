@@ -99,7 +99,6 @@ def generate():
             full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
         add_message_to_conversation(conversation_id, "model", full_response)
-        debug_print(True, f"Response: {full_response}")
 
     return Response(stream_response(), mimetype='text/event-stream')
 
@@ -133,7 +132,6 @@ def think_route():
                 break
             full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
-        debug_print(True, f"Response: {full_response}")
 
     return Response(stream_response(), mimetype='text/event-stream')
 
@@ -141,14 +139,12 @@ def think_route():
 def list_conversations_route():
     debug_print(True, "Received request for /api/conversations")
     conversations = list_conversations()
-    debug_print(True, f"Response: {conversations}")
     return jsonify(conversations)
 
 @api_bp.route('/system_messages', methods=['GET'])
 def list_system_messages_route():
     debug_print(True, "Received request for /api/system_messages")
     system_messages = list_system_messages()
-    debug_print(True, f"Response: {system_messages}")
     return jsonify(system_messages)
 
 @api_bp.route('/system_messages/<int:system_message_id>', methods=['GET'])
@@ -156,7 +152,6 @@ def get_system_message_route(system_message_id):
     debug_print(True, f"Received request for /api/system_messages/{system_message_id}")
     system_message = get_system_message(system_message_id)
     if system_message:
-        debug_print(True, f"Response: {system_message}")
         return jsonify(system_message)
     debug_print(True, f"Response: System message {system_message_id} not found")
     return jsonify({"message": "System message not found"}), 404
@@ -179,7 +174,6 @@ def delete_all_system_messages_route():
 def list_tools_route():
     debug_print(True, "Received request for /api/tools")
     tools = list_tools()
-    debug_print(True, f"Response: {tools}")
     return jsonify(tools)
 
 @api_bp.route('/system_messages', methods=['POST'])
@@ -200,7 +194,6 @@ def get_conversation_route(conversation_id):
     debug_print(True, f"Received request for /api/conversations/{conversation_id}")
     conversation, messages = get_conversation(conversation_id)
     if conversation:
-        debug_print(True, f"Response: {conversation}, {messages}")
         return jsonify({"conversation": conversation, "messages": messages})
     debug_print(True, f"Response: Conversation {conversation_id} not found")
     return jsonify({"message": "Conversation not found"}), 404
