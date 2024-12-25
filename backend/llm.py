@@ -14,12 +14,12 @@ from utils import GREEN, debug_print
 
 # Initialize the Gemini API
 gemini_api = GeminiAPI()
-debug_print(GREEN, "Gemini API initialized.")
+debug_print(BLUE, "Gemini API initialized.")
 
 # Initialize the Ollama API
 try:
     ollama_api = OllamaAPI()
-    debug_print(GREEN, "Ollama API initialized.")
+    debug_print(BLUE, "Ollama API initialized.")
 except Exception as e:
     debug_print(MAGENTA, f"Error initializing Ollama API: {e}")
     ollama_api = None
@@ -27,7 +27,7 @@ except Exception as e:
 # Initialize the OpenAI API
 try:
     openai_api = OpenAIAPI()
-    debug_print(GREEN, "OpenAI API initialized.")
+    debug_print(BLUE, "OpenAI API initialized.")
 except Exception as e:
     debug_print(MAGENTA, f"Error initializing OpenAI API: {e}")
     openai_api = None
@@ -35,7 +35,7 @@ except Exception as e:
 # Initialize the Claude API
 try:
     claude_api = ClaudeAPI()
-    debug_print(GREEN, "Claude API initialized.")
+    debug_print(BLUE, "Claude API initialized.")
 except Exception as e:
     debug_print(MAGENTA, f"Error initializing Claude API: {e}")
     claude_api = None
@@ -43,7 +43,7 @@ except Exception as e:
 # Initialize the Groq API
 try:
     groq_api = GroqAPI()
-    debug_print(GREEN, "Groq API initialized.")
+    debug_print(BLUE, "Groq API initialized.")
 except Exception as e:
     debug_print(MAGENTA, f"Error initializing G, model_name=None, provider_name=Noneroq API: {e}")
     groq_api = None
