@@ -14,38 +14,38 @@ from utils import GREEN, debug_print
 
 # Initialize the Gemini API
 gemini_api = GeminiAPI()
-debug_print(True, "Gemini API initialized.")
+debug_print(GREEN, "Gemini API initialized.")
 
 # Initialize the Ollama API
 try:
     ollama_api = OllamaAPI()
-    debug_print(True, "Ollama API initialized.")
+    debug_print(GREEN, "Ollama API initialized.")
 except Exception as e:
-    debug_print(True, f"Error initializing Ollama API: {e}")
+    debug_print(MAGENTA, f"Error initializing Ollama API: {e}")
     ollama_api = None
 
 # Initialize the OpenAI API
 try:
     openai_api = OpenAIAPI()
-    debug_print(True, "OpenAI API initialized.")
+    debug_print(GREEN, "OpenAI API initialized.")
 except Exception as e:
-    debug_print(True, f"Error initializing OpenAI API: {e}")
+    debug_print(MAGENTA, f"Error initializing OpenAI API: {e}")
     openai_api = None
 
 # Initialize the Claude API
 try:
     claude_api = ClaudeAPI()
-    debug_print(True, "Claude API initialized.")
+    debug_print(GREEN, "Claude API initialized.")
 except Exception as e:
-    debug_print(True, f"Error initializing Claude API: {e}")
+    debug_print(MAGENTA, f"Error initializing Claude API: {e}")
     claude_api = None
 
 # Initialize the Groq API
 try:
     groq_api = GroqAPI()
-    debug_print(True, "Groq API initialized.")
+    debug_print(GREEN, "Groq API initialized.")
 except Exception as e:
-    debug_print(True, f"Error initializing G, model_name=None, provider_name=Noneroq API: {e}")
+    debug_print(MAGENTA, f"Error initializing G, model_name=None, provider_name=Noneroq API: {e}")
     groq_api = None
 
 
@@ -111,10 +111,10 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             if start_index != -1 and end_index != -1:
                 json_string = classification_response[start_index:end_index+1]
                 parsed_json = json.loads(json_string)
-                debug_print(BLUE,f"Clasificación obtenida exitosamente: {parsed_json}")
+                debug_print(GREEN,f"Clasificación obtenida exitosamente: {parsed_json}")
                 break
         except json.JSONDecodeError:
-            debug_print(BLUE,f"Error al parsear JSON en el intento {_ + 1}.")
+            debug_print(MAGENTA,f"Error al parsear JSON en el intento {_ + 1}.")
             if _ == retries - 1:
                 yield "Error: Failed to parse JSON after multiple retries"
                 return
@@ -154,10 +154,10 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
                     steps_response += chunk
 
                 pasos_para_estrategia = [line.strip() for line in steps_response.strip().split("\n") if line.strip()]
-                debug_print(BLUE,f"Pasos obtenidos: {pasos_para_estrategia}")
+                debug_print(GREEN,f"Pasos obtenidos: {pasos_para_estrategia}")
                 break
             except Exception as e:
-                debug_print(BLUE,f"Error al procesar pasos en el intento {_ + 1}: {e}")
+                debug_print(MAGENTA,f"Error al procesar pasos en el intento {_ + 1}: {e}")
                 if _ == retries - 1:
                     pasos_para_estrategia = []
 
@@ -174,7 +174,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
                 )
             ):
                 step_solution_response += chunk
-            debug_print(BLUE,f"Solución para el paso '{paso}': {step_solution_response.strip()}")
+            debug_print(GREEN,f"Solución para el paso '{paso}': {step_solution_response.strip()}")
             resumen_acumulado += f"\n- Paso: {paso}: {step_solution_response.strip()}"
 
         evaluation_response = ""
@@ -192,7 +192,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             )
         ):
             evaluation_response += chunk
-        debug_print(BLUE,f"Evaluación para la estrategia '{estrategia}': {evaluation_response.strip()}")
+        debug_print(GREEN,f"Evaluación para la estrategia '{estrategia}': {evaluation_response.strip()}")
 
         resultados_por_estrategia[estrategia] = {
             "resumen": resumen_acumulado,
@@ -262,7 +262,7 @@ selected_model = "gemini-1.5-flash"
 # Function to generate responses using the selected LLM
 def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None, selected_tools=None):
 
-    debug_print(True, f"Generating response with provider: {provider_name}, model: {model_name}, tools: {selected_tools}")
+    debug_print(BLUE, f"Generating response with provider: {provider_name}, model: {model_name}, tools: {selected_tools}")
 
     provider = llm_providers.get(provider_name)
     if provider:
@@ -284,9 +284,9 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                                 'execute': module.execute
                             })
                         else:
-                            debug_print(True, f"Error: Tool {tool_name} does not have 'execute' or 'get_tool_description' functions.")
+                            debug_print(MAGENTA, f"Error: Tool {tool_name} does not have 'execute' or 'get_tool_description' functions.")
                     except Exception as e:
-                        debug_print(True, f"Error loading tool {tool_name}: {e}")
+                        debug_print(MAGENTA, f"Error loading tool {tool_name}: {e}")
                 
                 tool_descriptions = "\n".join([f"- {tool['name']}: {tool['description']}" for tool in tool_instances])
                 tool_prompt = f"""
@@ -339,22 +339,22 @@ tool_code
                             if tool_name:
                                 tool = next((tool for tool in tool_instances if tool['name'] == tool_name), None)
                                 if tool:
-                                    debug_print(True, f"Executing tool: {tool_name} with params: {tool_params}")
+                                    debug_print(BLUE, f"Executing tool: {tool_name} with params: {tool_params}")
                                     tool_result = tool['execute'](**tool_params)
-                                    debug_print(True, f"Tool result: {tool_result}")
+                                    debug_print(GREEN, f"Tool result: {tool_result}")
                                     tool_results.append({
                                         "tool_name": tool_name,
                                         "tool_params": tool_params,
                                         "tool_result": tool_result
                                     })
                                 else:
-                                    debug_print(True, f"Error: Tool {tool_name} not found.")
+                                    debug_print(MAGENTA, f"Error: Tool {tool_name} not found.")
                                     tool_results.append({
                                         "tool_name": tool_name,
                                         "error": "Tool not found"
                                     })
                             else:
-                                debug_print(True, "Error: No tool name found in tool call.")
+                                debug_print(MAGENTA, "Error: No tool name found in tool call.")
                                 tool_results.append({
                                     "error": "No tool name found in tool call."
                                 })
@@ -373,7 +373,7 @@ tool_calls
                             {prompt}
                         """
                     else:
-                        debug_print(True, "Error: No tool calls found in tool response.")
+                        debug_print(MAGENTA, "Error: No tool calls found in tool response.")
                         prompt = f"""
                             Error: No tool calls found in tool response.
                             
@@ -381,7 +381,7 @@ tool_calls
                             {prompt}
                         """
                 except json.JSONDecodeError:
-                    debug_print(True, "Error decoding tool response.")
+                    debug_print(MAGENTA, "Error decoding tool response.")
                     prompt = f"""
                         Error decoding tool response.
                         
@@ -390,13 +390,13 @@ tool_calls
                     """
             
             response = provider.generate_response(prompt, model_name, image, history, system_message)
-            debug_print(True, f"Response generated successfully.")
+            debug_print(GREEN, f"Response generated successfully.")
             return response
         else:
-            debug_print(True, "Error: No model selected for the provider.")
+            debug_print(MAGENTA, "Error: No model selected for the provider.")
             return "Error: No model selected for the provider."
     else:
-        debug_print(True, "Error: LLM provider not found")
+        debug_print(MAGENTA, "Error: LLM provider not found")
         return "Error: LLM provider not found"
 
 def generate_think_response(prompt, depth, model_name=None, provider_name=None):
@@ -404,8 +404,8 @@ def generate_think_response(prompt, depth, model_name=None, provider_name=None):
         model_name = selected_model
     if not provider_name:
         provider_name = selected_provider
-    debug_print(True, f"Generating think response with model: {model_name}, provider: {provider_name}, depth: {depth}")
+    debug_print(BLUE, f"Generating think response with model: {model_name}, provider: {provider_name}, depth: {depth}")
     
     response = think(prompt, depth, selected_model=model_name, selected_provider=provider_name)
-    debug_print(True, f"Think response generated successfully.")
+    debug_print(GREEN, f"Think response generated successfully.")
     return response
