@@ -97,7 +97,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
 
     retries = 3
     for _ in range(retries):
-        debug_print(BLUE,f"Intentando obtener clasificación del problema, intento {_ + 1} de {retries}.")
+        debug_print(BLUE, f"Intentando obtener clasificación del problema, intento {_ + 1} de {retries}.")
         try:
             for chunk in provider.generate_response(
                 prompt=prompt,
@@ -111,10 +111,10 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
             if start_index != -1 and end_index != -1:
                 json_string = classification_response[start_index:end_index+1]
                 parsed_json = json.loads(json_string)
-                debug_print(GREEN,f"Clasificación obtenida exitosamente: {parsed_json}")
+                debug_print(GREEN, f"Clasificación obtenida exitosamente: {parsed_json}")
                 break
         except json.JSONDecodeError:
-            debug_print(MAGENTA,f"Error al parsear JSON en el intento {_ + 1}.")
+            debug_print(MAGENTA, f"Error al parsear JSON en el intento {_ + 1}.")
             if _ == retries - 1:
                 yield "Error: Failed to parse JSON after multiple retries"
                 return
@@ -122,15 +122,15 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     dificultad = depth if depth != 0 else parsed_json.get("dificultad", 1)
     tipo_problema = parsed_json.get("tipo_problema", 1)
     estrategias_comunes = parsed_json.get("estrategias_comunes", [])
-    debug_print(BLUE,f"Dificultad: {dificultad}, Tipo de problema: {tipo_problema}, Estrategias: {estrategias_comunes}")
+    debug_print(BLUE, f"Dificultad: {dificultad}, Tipo de problema: {tipo_problema}, Estrategias: {estrategias_comunes}")
 
     resultados_por_estrategia = {}
 
     for estrategia in estrategias_comunes:
-        debug_print(BLUE,f"Procesando estrategia: {estrategia}")
+        debug_print(BLUE, f"Procesando estrategia: {estrategia}")
         steps_response = ""
         for _ in range(retries):
-            debug_print(BLUE,f"Intentando obtener pasos para la estrategia '{estrategia}', intento {_ + 1} de {retries}.")
+            debug_print(BLUE, f"Intentando obtener pasos para la estrategia '{estrategia}', intento {_ + 1} de {retries}.")
             try:
                 system_msg_for_steps = (
                     f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
@@ -154,16 +154,16 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
                     steps_response += chunk
 
                 pasos_para_estrategia = [line.strip() for line in steps_response.strip().split("\n") if line.strip()]
-                debug_print(GREEN,f"Pasos obtenidos: {pasos_para_estrategia}")
+                debug_print(GREEN, f"Pasos obtenidos: {pasos_para_estrategia}")
                 break
             except Exception as e:
-                debug_print(MAGENTA,f"Error al procesar pasos en el intento {_ + 1}: {e}")
+                debug_print(MAGENTA, f"Error al procesar pasos en el intento {_ + 1}: {e}")
                 if _ == retries - 1:
                     pasos_para_estrategia = []
 
         resumen_acumulado = ""
         for paso in pasos_para_estrategia:
-            debug_print(BLUE,f"Procesando paso: {paso}")
+            debug_print(BLUE, f"Procesando paso: {paso}")
             step_solution_response = ""
             for chunk in provider.generate_response(
                 prompt=f"Problema: {prompt}\n\nPaso actual: {paso}\n\nSolución para este paso:",
@@ -174,7 +174,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
                 )
             ):
                 step_solution_response += chunk
-            debug_print(GREEN,f"Solución para el paso '{paso}': {step_solution_response.strip()}")
+            debug_print(GREEN, f"Solución para el paso '{paso}': {step_solution_response.strip()}")
             resumen_acumulado += f"\n- Paso: {paso}: {step_solution_response.strip()}"
 
         evaluation_response = ""
