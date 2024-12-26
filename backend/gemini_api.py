@@ -73,8 +73,18 @@ class GeminiAPI:
             if prompt:
                 parts.append(prompt)
             if image:
+                mime_type = "image/jpeg"
+                if image.format:
+                    if image.format.lower() == "png":
+                        mime_type = "image/png"
+                    elif image.format.lower() == "webp":
+                        mime_type = "image/webp"
+                    elif image.format.lower() == "heic":
+                        mime_type = "image/heic"
+                    elif image.format.lower() == "heif":
+                        mime_type = "image/heif"
                 image_part = {
-                    "mime_type": f'image/{image.format.lower() if image.format else "jpg"}',
+                    "mime_type": mime_type,
                     "data": base64.b64encode(image.tobytes()).decode('utf-8')
                 }
                 parts.append(image_part)
