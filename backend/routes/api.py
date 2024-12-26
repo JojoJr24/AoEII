@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify, Response
 from llm import generate_response, generate_think_response, llm_providers, selected_model, selected_provider
 from db import get_conversation, save_conversation, add_message_to_conversation, list_conversations, list_system_messages, get_system_message, save_system_message, delete_system_message, delete_all_system_messages, delete_conversation, delete_all_conversations
 from utils import debug_print, streaming, stop_stream_global
-from tools import list_tools, webscraper_tool
+from tools import list_tools
+from tools import webscraper_tool
 import json
 from PIL import Image
 import io
