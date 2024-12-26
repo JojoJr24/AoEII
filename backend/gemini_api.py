@@ -71,12 +71,11 @@ class GeminiAPI:
             parts = []
             if prompt:
                 parts.append(prompt)
-            
             if image:
-                image_part = genai.Part.from_file(
-                    io.BytesIO(image.tobytes()),
-                    mime_type=f'image/{image.format.lower() if image.format else "png"}'
-                )
+                image_part = {
+                    "mime_type": f'image/{image.format.lower() if image.format else "png"}',
+                    "data": image.tobytes()
+                }
                 parts.append(image_part)
             
             if parts:
