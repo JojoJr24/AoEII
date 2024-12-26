@@ -227,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolTag.classList.add('tool-tag', 'draggable-tool');
                 toolTag.textContent = tool.name;
                 toolTag.title = tool.description;
+                
                 toolTag.draggable = true;
                 toolTag.addEventListener('dragstart', handleDragStart);
                 toolsContainer.appendChild(toolTag);
