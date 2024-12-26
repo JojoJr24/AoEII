@@ -7,7 +7,7 @@ def get_tool_description():
     This tool fetches the content of a given URL and extracts the text from the HTML.
     It accepts a JSON object with the following format:
     {
-        "tool_name": "web_scraper",
+        "tool_name": "webscraper_tool",
         "parameters": {
             "url": "https://example.com"
         }
