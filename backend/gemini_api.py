@@ -6,6 +6,7 @@ from typing import List, Optional, Generator
 from PIL import Image
 import io
 import json
+import base64
 from utils import retry_with_exponential_backoff, STREAM_START_DELAY, STREAM_YIELD_DELAY
 
 load_dotenv()
@@ -74,7 +75,7 @@ class GeminiAPI:
             if image:
                 image_part = {
                     "mime_type": f'image/{image.format.lower() if image.format else "png"}',
-                    "data": image.tobytes()
+                    "data": base64.b64encode(image.tobytes()).decode('utf-8')
                 }
                 parts.append(image_part)
             
