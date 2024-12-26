@@ -73,18 +73,11 @@ class GeminiAPI:
                 parts.append(prompt)
             
             if image:
-                # Convert PIL Image to bytes
-                image_bytes = io.BytesIO()
-                image.save(image_bytes, format=image.format if image.format else "PNG")
-                image_bytes = image_bytes.getvalue()
-                
-                # Upload the file
-                file_upload = genai.upload_file(
-                    path=image_bytes,
+                image_part = genai.Part.from_file(
+                    io.BytesIO(image.tobytes()),
                     mime_type=f'image/{image.format.lower() if image.format else "png"}'
                 )
-                
-                parts.append(file_upload)
+                parts.append(image_part)
             
             if parts:
                 contents.append({"role": "user", "parts": parts})
