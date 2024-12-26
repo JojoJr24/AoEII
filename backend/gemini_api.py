@@ -74,6 +74,8 @@ class GeminiAPI:
                 parts.append(prompt)
             if image:
                 mime_type = "image/jpeg"
+                if image.format and image.format.lower() == "png":
+                    image = image.convert("RGB")
                 if image.format:
                     if image.format.lower() == "png":
                         mime_type = "image/png"
