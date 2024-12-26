@@ -281,7 +281,7 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
                         spec.loader.exec_module(module)
                         if hasattr(module, 'execute') and hasattr(module, 'get_tool_description'):
                             tool_instances.append({
-                                'name': tool_name,
+                                'name': os.path.splitext(filename)[0],
                                 'description': module.get_tool_description(),
                                 'execute': module.execute
                             })
