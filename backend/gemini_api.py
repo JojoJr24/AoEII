@@ -74,7 +74,7 @@ class GeminiAPI:
                 parts.append(prompt)
             if image:
                 image_part = {
-                    "mime_type": f'image/{image.format.lower() if image.format else "png"}',
+                    "mime_type": f'image/{image.format.lower() if image.format else "jpg"}',
                     "data": base64.b64encode(image.tobytes()).decode('utf-8')
                 }
                 parts.append(image_part)
@@ -89,9 +89,7 @@ class GeminiAPI:
                 contents=contents,
                 stream=True,
             )
-            time.sleep(STREAM_START_DELAY)
             for chunk in response_stream:
                 yield chunk.text
-                time.sleep(STREAM_YIELD_DELAY)
         except Exception as e:
             yield f"Error generating response: {e}"
