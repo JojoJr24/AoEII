@@ -78,7 +78,6 @@ class OllamaAPI:
                 messages.append({"role": "user", "content": prompt})
             
             # Extract just the model name
-            model_name = model_name.split(":")[0]
             self._current_stream = ollama.chat(model=model_name, messages=messages, stream=True, options={"num_ctx": 16384})
             for chunk in self._current_stream:
                 if self._current_stream is None:

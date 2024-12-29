@@ -3,7 +3,6 @@ from llm import generate_response, generate_think_response, llm_providers, selec
 from db import get_conversation, save_conversation, add_message_to_conversation, list_conversations, list_system_messages, get_system_message, save_system_message, delete_system_message, delete_all_system_messages, delete_conversation, delete_all_conversations
 from utils import debug_print, streaming, stop_stream_global
 from tools import list_tools
-from tools.webscraper_tool import webscraper_tool
 import json
 from PIL import Image
 import io
@@ -175,7 +174,6 @@ def delete_all_system_messages_route():
 def list_tools_route():
     debug_print(True, "Received request for /api/tools")
     tools = list_tools()
-    tools.append(webscraper_tool.get_tool_description())
     return jsonify(tools)
 
 @api_bp.route('/system_messages', methods=['POST'])
