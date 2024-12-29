@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastResponse = null;
     let previousResponses = [];
     let selectedSystemMessageId = null;
+    let responseStartTime = null;
+    const tokensPerSecondDisplay = document.getElementById('tokens-per-second');
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -492,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = response.body.getReader();
                 let partialResponse = '';
                 let llmMessageDiv = null;
-                
+                responseStartTime = performance.now();
                 while(true) {
                     const { done, value } = await reader.read();
                     if (done) {
@@ -526,6 +528,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 lastResponse = partialResponse;
+                const responseEndTime = performance.now();
+                const elapsedTime = (responseEndTime - responseStartTime) / 1000;
+                const tokens = partialResponse.split(/\s+/).length;
+                const tokensPerSecond = (tokens / elapsedTime).toFixed(2);
+                tokensPerSecondDisplay.textContent = `${tokensPerSecond} tokens/sec`;
                 addMessage(partialResponse, false, llmMessageDiv);
                 chatHistory.push({ role: "model", content: partialResponse });
                 previousResponses.push({
