@@ -33,6 +33,7 @@ def generate():
     system_message = data.get('system_message')
     conversation_id = data.get('conversation_id')
     selected_tools_str = data.get('selected_tools')
+    base_url = data.get('base_url')
 
     if selected_tools_str:
         try:
@@ -92,7 +93,7 @@ def generate():
     def stream_response():
         global streaming
         full_response = ""
-        for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message, selected_tools):
+        for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message, selected_tools, base_url):
             if not streaming:
                 debug_print(True, "Streaming stopped.")
                 break

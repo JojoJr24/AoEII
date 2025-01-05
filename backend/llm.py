@@ -29,8 +29,15 @@ try:
     openai_api = OpenAIAPI()
     debug_print(BLUE, "OpenAI API initialized.")
 except Exception as e:
-    debug_print(MAGENTA, f"Error initializing OpenAI API: {e}")
-    openai_api = None
+    try:
+        openai_compatible_api = OpenAIAPI(base_url=os.getenv("OPENAI_COMPATIBLE_BASE_URL"))
+        debug_print(BLUE, "OpenAI Compatible API initialized.")
+    except Exception as e:
+        debug_print(MAGENTA, f"Error initializing OpenAI API: {e}")
+        openai_api = None
+        openai_compatible_api = None
+    else:
+        openai_api = openai_compatible_api
 
 # Initialize the Claude API
 try:
@@ -242,6 +249,7 @@ else:
 
 if openai_api:
     llm_providers["openai"] = openai_api
+    llm_providers["openai_compatible"] = openai_api
 else:
     debug_print(True, "OpenAI API not available, setting empty model list.")
 
@@ -262,7 +270,7 @@ selected_model = "gemini-1.5-flash"
 
 
 # Function to generate responses using the selected LLM
-def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None, selected_tools=None):
+def generate_response(prompt, model_name, image=None, history=None, provider_name=None, system_message=None, selected_tools=None, base_url=None):
 
     debug_print(BLUE, f"Generating response with provider: {provider_name}, model: {model_name}, tools: {selected_tools}")
 

@@ -9,12 +9,12 @@ from utils import retry_with_exponential_backoff, STREAM_START_DELAY, STREAM_YIE
 load_dotenv()
 
 class OpenAIAPI:
-    def __init__(self):
+    def __init__(self, base_url=None):
         # Configure the API key
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("No OPENAI_API_KEY found in environment variables.")
-        self.client = OpenAI(api_key=api_key)
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.available_models = self._list_available_models()
 
     @retry_with_exponential_backoff()
