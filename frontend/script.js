@@ -413,6 +413,9 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedProvider = llmProvider.value;
         if (selectedProvider === 'openai') {
             openaiBaseUrlGroup.style.display = 'flex';
+            if (openaiBaseUrlInput.value.trim() !== '') {
+                llmModel.innerHTML = '<option value="Default">Default</option>';
+            }
         } else {
             openaiBaseUrlGroup.style.display = 'none';
         }
@@ -442,6 +445,15 @@ document.addEventListener('DOMContentLoaded', () => {
             datalist.appendChild(option);
         });
         llmModel.setAttribute('list', datalistId);
+    });
+
+    // Event listener for base URL input change
+    openaiBaseUrlInput.addEventListener('input', () => {
+        if (openaiBaseUrlInput.value.trim() !== '') {
+            llmModel.innerHTML = '<option value="Default">Default</option>';
+        } else {
+            fetchModels(selectedProvider);
+        }
     });
 
     // Event listener for send button click
@@ -475,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('think_depth', thinkDepth.value);
             if (selectedProvider === 'openai' && openaiBaseUrlInput.value.trim() !== '') {
                 formData.append('base_url', openaiBaseUrlInput.value.trim());
+                formData.append('model', '');
             }
             if (firstMessage) {
                 conversationTitle = message;
