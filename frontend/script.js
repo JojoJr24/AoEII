@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const thinkToggle = document.getElementById('think-toggle');
     const thinkDepth = document.getElementById('think-depth');
     const thinkDepthMessage = document.getElementById('think-depth-message');
+    const openaiBaseUrlGroup = document.getElementById('openai-base-url-group');
+    const openaiBaseUrlInput = document.getElementById('openai-base-url');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -409,6 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for provider change
     llmProvider.addEventListener('change', async () => {
         selectedProvider = llmProvider.value;
+        if (selectedProvider === 'openai') {
+            openaiBaseUrlGroup.style.display = 'flex';
+        } else {
+            openaiBaseUrlGroup.style.display = 'none';
+        }
         await fetchModels(selectedProvider);
         updateStatus();
     });
@@ -466,6 +473,9 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('selected_tools', JSON.stringify(activeTools));
             formData.append('think', thinkToggle.checked);
             formData.append('think_depth', thinkDepth.value);
+            if (selectedProvider === 'openai' && openaiBaseUrlInput.value.trim() !== '') {
+                formData.append('base_url', openaiBaseUrlInput.value.trim());
+            }
             if (firstMessage) {
                 conversationTitle = message;
                 formData.append('conversation_title', conversationTitle);
