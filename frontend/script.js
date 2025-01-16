@@ -421,6 +421,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Function to toggle dark mode on modal
+    function toggleModalDarkMode(isDark) {
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.toggle('dark-mode', isDark);
+            const modalTitle = document.querySelector('.modal-title');
+            if (modalTitle) {
+                modalTitle.classList.toggle('dark-mode', isDark);
+            }
+        }
+    }
+
     // Function to load simple responses into the modal
     async function loadConversationsModal() {
         try {
@@ -668,6 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for dark mode toggle
     darkModeToggle.addEventListener('change', () => {
         toggleDarkMode(darkModeToggle.checked);
+        toggleModalDarkMode(darkModeToggle.checked);
     });
 
     // Function to set initial dark mode based on system preference
@@ -675,6 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         darkModeToggle.checked = prefersDark;
         toggleDarkMode(prefersDark);
+        toggleModalDarkMode(prefersDark);
     }
 
     // Function to save a system message

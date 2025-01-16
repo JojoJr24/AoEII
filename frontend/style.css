@@ -448,18 +448,30 @@ body.dark-mode {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
-    border: 1px solid #888;
+    border: 1px solid #dee2e6;
     width: 80%;
     max-height: 80%;
     overflow-y: auto;
     border-radius: 8px;
     position: relative;
+    transition: background-color 0.3s, color 0.3s;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
 .modal-content.dark-mode {
     background-color: #343a40;
     color: #fff;
     border: 1px solid #495057;
+}
+
+.modal-title {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #343a40;
+}
+
+.modal-title.dark-mode {
+    color: #fff;
 }
 
 .close-button {
