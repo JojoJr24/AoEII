@@ -419,3 +419,28 @@ def generate_think_response(prompt, depth, model_name=None, provider_name=None):
     response = think(prompt, depth, selected_model=model_name, selected_provider=provider_name)
     debug_print(GREEN, f"Think response generated successfully.")
     return response
+
+def generate_simple_response(prompt):
+    """
+    Generates a simplified response using Ollama with Phi4 model and all available tools.
+    
+    Args:
+        prompt (str): The input prompt.
+        
+    Returns:
+        Generator[str, None, None]: The generated response chunks.
+    """
+    tools_dir = '../tools'
+    tools = []
+    for filename in os.listdir(tools_dir):
+        if filename.endswith('.py'):
+            tools.append(os.path.splitext(filename)[0])
+    
+    return generate_response(
+        prompt=prompt,
+        model_name="phi4",
+        provider_name="ollama",
+        selected_tools=tools,
+        history=None,
+        system_message=None
+    )
