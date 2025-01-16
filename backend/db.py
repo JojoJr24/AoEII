@@ -65,6 +65,38 @@ def save_system_message(name, content):
     conn.close()
     return system_message_id
 
+def save_simple_response(prompt, response):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    timestamp = datetime.now().isoformat()
+    cursor.execute("INSERT INTO simple_responses (prompt, response, created_at) VALUES (?, ?, ?)", (prompt, response, timestamp))
+    simple_response_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return simple_response_id
+
+def list_simple_responses():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, prompt, response, created_at FROM simple_responses ORDER BY created_at DESC")
+    simple_responses = cursor.fetchall()
+    conn.close()
+    return [dict(response) for response in simple_responses]
+
+def delete_simple_response(simple_response_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM simple_responses WHERE id = ?", (simple_response_id,))
+    conn.commit()
+    conn.close()
+
+def delete_all_simple_responses():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM simple_responses")
+    conn.commit()
+    conn.close()
+
 def get_system_message(system_message_id):
     conn = get_db_connection()
     cursor = conn.cursor()

@@ -446,4 +446,6 @@ def generate_simple_response(prompt):
         system_message=None
     ):
         response += chunk
+    from db import save_simple_response
+    save_simple_response(prompt, response)
     return response

@@ -116,6 +116,26 @@ def generate_simple():
     response = generate_simple_response(prompt)
     return jsonify({"response": response})
 
+@api_bp.route('/simple_responses', methods=['GET'])
+def list_simple_responses_route():
+    debug_print(True, "Received request for /api/simple_responses")
+    simple_responses = list_simple_responses()
+    return jsonify(simple_responses)
+
+@api_bp.route('/simple_responses/<int:simple_response_id>', methods=['DELETE'])
+def delete_simple_response_route(simple_response_id):
+    debug_print(True, f"Received request to DELETE /api/simple_responses/{simple_response_id}")
+    delete_simple_response(simple_response_id)
+    debug_print(True, f"Response: Simple response {simple_response_id} deleted")
+    return jsonify({"message": f"Simple response {simple_response_id} deleted"})
+
+@api_bp.route('/simple_responses', methods=['DELETE'])
+def delete_all_simple_responses_route():
+    debug_print(True, "Received request to DELETE all simple responses")
+    delete_all_simple_responses()
+    debug_print(True, "Response: All simple responses deleted")
+    return jsonify({"message": "All simple responses deleted"})
+
 
 @api_bp.route('/think', methods=['POST'])
 def think_route():
