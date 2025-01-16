@@ -421,26 +421,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Function to load conversations into the modal
+    // Function to load simple responses into the modal
     async function loadConversationsModal() {
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/conversations');
+            const response = await fetch('http://127.0.0.1:5000/api/simple_responses');
             if (!response.ok) {
-                console.error('Failed to fetch conversations:', response.statusText);
+                console.error('Failed to fetch simple responses:', response.statusText);
                 return;
             }
-            const conversations = await response.json();
+            const simpleResponses = await response.json();
             conversationsListModal.innerHTML = '';
-            conversations.forEach(conversation => {
+            simpleResponses.forEach(response => {
                 const listItem = document.createElement('li');
-                const title = conversation.title ? conversation.title : `Conversation ${conversation.id}`;
-                listItem.innerHTML = `<strong>${title}</strong><br>
-                                     <small>Prompt: ${conversation.messages[0].content.substring(0, 50)}...</small><br>
-                                     <small>Date: ${new Date(conversation.created_at).toLocaleString()}</small>`;
+                listItem.innerHTML = `<strong>${response.prompt.substring(0, 50)}...</strong><br>
+                                     <small>Date: ${new Date(response.created_at).toLocaleString()}</small>`;
                 conversationsListModal.appendChild(listItem);
             });
         } catch (error) {
-            console.error('Error fetching conversations:', error);
+            console.error('Error fetching simple responses:', error);
         }
     }
 
