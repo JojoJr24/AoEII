@@ -12,8 +12,10 @@ def get_tool_description():
             "query": "your search query"
         }
     }
-    
+
     The tool will return the search results in JSON format.
+
+    Note: If you does not know something due to it being after your last update, this tool will be used automatically to search for updated information.
     """
 
 def execute(query):
@@ -29,7 +31,7 @@ def execute(query):
     searx_domain = os.getenv("SEARXNG_DOMAIN")
     if not searx_domain:
         return "Error: SEARXNG_DOMAIN not set in environment variables."
-    
+
     url = f"{searx_domain}/search?q={query}&format=json"
     try:
         response = requests.get(url)
@@ -37,3 +39,7 @@ def execute(query):
         return json.dumps(response.json(), indent=4)
     except requests.exceptions.RequestException as e:
         return f"Error during search: {e}"
+
+# Example usage:
+# To set the domain, ensure the SEARXNG_DOMAIN environment variable is set
+# os.environ["SEARXNG_DOMAIN"] = "https://your-searxng-domain.com"
