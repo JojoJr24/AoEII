@@ -47,6 +47,7 @@
         <div class="main-content">
             <div class="header">
                 <button id="sidebar-toggle"><i class="fas fa-bars"></i></button>
+                <button id="show-conversations-button"><i class="fas fa-tasks"></i></button>
                 <div class="dark-mode-switch-header">
                     <label for="dark-mode-toggle">Dark Mode:</label>
                     <input type="checkbox" id="dark-mode-toggle">
@@ -122,6 +123,15 @@
                     <p id="think-depth-message">La profundidad se determinará automaticamente</p>
                 </div>
             </div>
+        </div>
+    </div>
+    <div id="conversations-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Conversations</h2>
+            <ul id="conversations-list-modal">
+                <!-- Conversations will be loaded here -->
+            </ul>
         </div>
     </div>
     <script src="script.js"></script>

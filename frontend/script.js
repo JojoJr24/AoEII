@@ -29,6 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const thinkDepthMessage = document.getElementById('think-depth-message');
     const openaiBaseUrlGroup = document.getElementById('openai-base-url-group');
     const openaiBaseUrlInput = document.getElementById('openai-base-url');
+    const showConversationsButton = document.getElementById('show-conversations-button');
+    const conversationsModal = document.getElementById('conversations-modal');
+    const conversationsListModal = document.getElementById('conversations-list-modal');
+    const closeModalButton = document.querySelector('.close-button');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -398,6 +402,47 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('system-message-name').value = '';
         }
     });
+
+    // Event listener for show conversations button
+    showConversationsButton.addEventListener('click', () => {
+        conversationsModal.style.display = 'block';
+        loadConversationsModal();
+    });
+
+    // Event listener for close modal button
+    closeModalButton.addEventListener('click', () => {
+        conversationsModal.style.display = 'none';
+    });
+
+    // Event listener for closing modal when clicking outside
+    window.addEventListener('click', (event) => {
+        if (event.target === conversationsModal) {
+            conversationsModal.style.display = 'none';
+        }
+    });
+
+    // Function to load conversations into the modal
+    async function loadConversationsModal() {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/conversations');
+            if (!response.ok) {
+                console.error('Failed to fetch conversations:', response.statusText);
+                return;
+            }
+            const conversations = await response.json();
+            conversationsListModal.innerHTML = '';
+            conversations.forEach(conversation => {
+                const listItem = document.createElement('li');
+                const title = conversation.title ? conversation.title : `Conversation ${conversation.id}`;
+                listItem.innerHTML = `<strong>${title}</strong><br>
+                                     <small>Prompt: ${conversation.messages[0].content.substring(0, 50)}...</small><br>
+                                     <small>Date: ${new Date(conversation.created_at).toLocaleString()}</small>`;
+                conversationsListModal.appendChild(listItem);
+            });
+        } catch (error) {
+            console.error('Error fetching conversations:', error);
+        }
+    }
 
     // Event listener for think depth change
     thinkDepth.addEventListener('change', () => {
