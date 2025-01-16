@@ -4,7 +4,7 @@ import subprocess
 
 def get_tool_description():
     return """
-    This tool creates a cron job to execute a command at a specified interval.
+    This tool creates a cron job using Linux Crontab to execute a command at a specified interval.
     It accepts a JSON object with the following format:
     {
         "tool_name": "task_tool",
@@ -18,7 +18,7 @@ def get_tool_description():
 
 def execute(command, interval):
     """
-    Creates a cron job to execute a command at a specified interval.
+    Creates a cron job to execute a command at a specified interval using Linux crontab
 
     Args:
         command (str): The command to execute.
