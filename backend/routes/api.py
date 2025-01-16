@@ -113,17 +113,8 @@ def generate_simple():
         debug_print(True, "Error: Prompt is required")
         return jsonify({"response": "Prompt is required"}), 400
 
-    def stream_response():
-        global streaming
-        full_response = ""
-        for chunk in generate_simple_response(prompt):
-            if not streaming:
-                debug_print(True, "Streaming stopped.")
-                break
-            full_response += chunk
-            yield f" {json.dumps({'response': chunk})}\n\n"
-
-    return Response(stream_response(), mimetype='text/event-stream')
+    response = generate_simple_response(prompt)
+    return jsonify({"response": response})
 
 
 @api_bp.route('/think', methods=['POST'])
