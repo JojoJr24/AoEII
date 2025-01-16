@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 listItem.classList.add('task-list-item');
                 listItem.innerHTML = `
                     <div class="task-item-content">
-                        <strong>${response.prompt.substring(0, 50)}...</strong>
+                        <strong>${response.prompt}</strong>
                         <small>Date: ${new Date(response.created_at).toLocaleString()}</small>
                     </div>
                     <button class="delete-task-button" data-task-id="${response.id}">

@@ -225,6 +225,7 @@ body.dark-mode {
     position: relative;
     transition: background-color 0.3s, color 0.3s;
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    white-space: pre-wrap;
 }
 
 #task-response-modal pre.dark-mode {
