@@ -1,0 +1,12 @@
+[Unit]
+Description=Backend service for LLM application
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/your_project_directory
+ExecStart=/home/ubuntu/your_project_directory/run.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
