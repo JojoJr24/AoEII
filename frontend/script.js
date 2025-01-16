@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const conversationsModal = document.getElementById('conversations-modal');
     const conversationsListModal = document.getElementById('conversations-list-modal');
     const closeModalButton = document.querySelector('.close-button');
+    const deleteAllTasksButton = document.getElementById('delete-all-tasks-button');
+    const taskResponseModal = document.getElementById('task-response-modal');
+    const taskResponseContent = document.getElementById('task-response-content');
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -219,6 +222,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // Event listener for delete all tasks button
+    deleteAllTasksButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/simple_responses', {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                console.log('All simple responses deleted.');
+                loadConversationsModal();
+                taskResponseModal.style.display = 'none';
+            } else {
+                console.error('Failed to delete all simple responses:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error deleting all simple responses:', error);
+        }
+    });
+
+    // Event listener to close task response modal
+    taskResponseModal.addEventListener('click', (event) => {
+        if (event.target === taskResponseModal) {
+            taskResponseModal.style.display = 'none';
+        }
+    });
 
     // Function to fetch and display tools
     async function fetchTools() {
@@ -455,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
+                listItem.addEventListener('click', () => showTaskResponse(response.id));
                 conversationsListModal.appendChild(listItem);
             });
             // Add event listeners to delete buttons
@@ -467,6 +496,28 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error('Error fetching simple responses:', error);
+        }
+    }
+
+    // Function to show task response
+    async function showTaskResponse(taskId) {
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/simple_responses`);
+             if (!response.ok) {
+                console.error('Failed to fetch simple responses:', response.statusText);
+                return;
+            }
+            const simpleResponses = await response.json();
+            const task = simpleResponses.find(task => task.id === taskId);
+            if (task) {
+                taskResponseContent.textContent = task.response;
+                hljs.highlightBlock(taskResponseContent);
+                taskResponseModal.style.display = 'block';
+            } else {
+                console.error('Task not found:', taskId);
+            }
+        } catch (error) {
+            console.error('Error fetching task response:', error);
         }
     }
 

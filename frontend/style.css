@@ -179,6 +179,60 @@ body.dark-mode {
     color: #c82333;
 }
 
+#delete-all-tasks-button {
+    background-color: transparent;
+    color: #dc3545;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1em;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 10px;
+    right: 40px;
+}
+
+#delete-all-tasks-button:hover {
+    color: #c82333;
+}
+
+#task-response-modal {
+    display: none;
+    position: fixed;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+}
+
+#task-response-modal pre {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    width: 80%;
+    max-height: 80%;
+    overflow-y: auto;
+    border-radius: 8px;
+    position: relative;
+    transition: background-color 0.3s, color 0.3s;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+#task-response-modal pre.dark-mode {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #495057;
+}
+
 .form-group label {
     display: flex;
     align-items: center;

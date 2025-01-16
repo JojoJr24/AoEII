@@ -129,9 +129,13 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2 class="modal-title">Tareas</h2>
+            <button id="delete-all-tasks-button"><i class="fas fa-trash"></i></button>
             <ul id="conversations-list-modal">
                 <!-- Conversations will be loaded here -->
             </ul>
+            <div id="task-response-modal" style="display: none;">
+                <pre><code id="task-response-content"></code></pre>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>
