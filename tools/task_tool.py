@@ -4,31 +4,32 @@ import subprocess
 
 def get_tool_description():
     return """
-    This tool creates a cron job using Linux Crontab to execute a comen lugar mand at a specified interval.
+    This tool creates a cron job using Linux Crontab to execute a curl command to call the /api/generate_simple endpoint at a specified interval.
     It accepts a JSON object with the following format:
     {
         "tool_name": "task_tool",
         "parameters": {
-            "command": "command to execute",
+            "prompt": "prompt to send to the /api/generate_simple endpoint",
             "interval": "cron interval (e.g., '0 0 * * *' for daily at midnight)"
         }
     }
     The tool will return a success or error message.
     """
 
-def execute(command, interval):
+def execute(prompt, interval):
     """
-    Creates a cron job to execute a command at a specified interval using Linux crontab
+    Creates a cron job to execute a curl command to call the /api/generate_simple endpoint at a specified interval using Linux crontab
 
     Args:
-        command (str): The command to execute.
+        prompt (str): The prompt to send to the /api/generate_simple endpoint.
         interval (str): The cron interval.
 
     Returns:
         str: A success or error message.
     """
     try:
-        cron_command = f'{interval} {command}'
+        curl_command = f'curl -X POST http://127.0.0.1:5000/api/generate_simple -H "Content-Type: application/json" -d \'{{ "prompt": "{prompt}" }}\''
+        cron_command = f'{interval} {curl_command}'
         
         # Check if the command already exists in the crontab
         existing_cron = subprocess.check_output(['crontab', '-l'], text=True)
