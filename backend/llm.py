@@ -426,9 +426,9 @@ def generate_simple_response(prompt):
     
     Args:
         prompt (str): The input prompt.
-        
+    
     Returns:
-        Generator[str, None, None]: The generated response chunks.
+        str: The generated response.
     """
     tools_dir = '../tools'
     tools = []
@@ -436,11 +436,14 @@ def generate_simple_response(prompt):
         if filename.endswith('.py'):
             tools.append(os.path.splitext(filename)[0])
     
-    return generate_response(
+    response = ""
+    for chunk in generate_response(
         prompt=prompt,
         model_name="phi4",
         provider_name="ollama",
         selected_tools=tools,
         history=None,
         system_message=None
-    )
+    ):
+        response += chunk
+    return response
