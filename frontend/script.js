@@ -445,12 +445,45 @@ document.addEventListener('DOMContentLoaded', () => {
             conversationsListModal.innerHTML = '';
             simpleResponses.forEach(response => {
                 const listItem = document.createElement('li');
-                listItem.innerHTML = `<strong>${response.prompt.substring(0, 50)}...</strong><br>
-                                     <small>Date: ${new Date(response.created_at).toLocaleString()}</small>`;
+                listItem.classList.add('task-list-item');
+                listItem.innerHTML = `
+                    <div class="task-item-content">
+                        <strong>${response.prompt.substring(0, 50)}...</strong>
+                        <small>Date: ${new Date(response.created_at).toLocaleString()}</small>
+                    </div>
+                    <button class="delete-task-button" data-task-id="${response.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
                 conversationsListModal.appendChild(listItem);
+            });
+            // Add event listeners to delete buttons
+            conversationsListModal.querySelectorAll('.delete-task-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const taskId = button.getAttribute('data-task-id');
+                    deleteSimpleResponse(taskId);
+                });
             });
         } catch (error) {
             console.error('Error fetching simple responses:', error);
+        }
+    }
+
+    // Function to delete a simple response
+    async function deleteSimpleResponse(taskId) {
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/simple_responses/${taskId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                console.log(`Simple response ${taskId} deleted.`);
+                loadConversationsModal();
+            } else {
+                console.error('Failed to delete simple response:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error deleting simple response:', error);
         }
     }
 

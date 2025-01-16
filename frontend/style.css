@@ -495,12 +495,40 @@ body.dark-mode {
 }
 
 #conversations-list-modal li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px;
     border-bottom: 1px solid #eee;
+    transition: background-color 0.3s;
+}
+
+#conversations-list-modal li:hover {
+    background-color: #f0f0f0;
 }
 
 #conversations-list-modal li:last-child {
     border-bottom: none;
+}
+
+#conversations-list-modal li .task-item-content {
+    flex: 1;
+}
+
+.delete-task-button {
+    background-color: transparent;
+    color: #dc3545;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-task-button:hover {
+    color: #c82333;
 }
 
 .system-message-column {
