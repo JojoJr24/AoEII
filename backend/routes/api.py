@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, Response
-from llm import generate_response, generate_think_response, llm_providers, selected_model, selected_provider
+from llm import generate_response, generate_think_response, generate_simple_response, llm_providers, selected_model, selected_provider
 from db import get_conversation, save_conversation, add_message_to_conversation, list_conversations, list_system_messages, get_system_message, save_system_message, delete_system_message, delete_all_system_messages, delete_conversation, delete_all_conversations
 from utils import debug_print, streaming, stop_stream_global
 from tools import list_tools
@@ -100,6 +100,28 @@ def generate():
             full_response += chunk
             yield f" {json.dumps({'response': chunk})}\n\n"
         add_message_to_conversation(conversation_id, "model", full_response)
+
+    return Response(stream_response(), mimetype='text/event-stream')
+
+@api_bp.route('/generate_simple', methods=['POST'])
+def generate_simple():
+    debug_print(True, "Received request for /api/generate_simple")
+    data = request.get_json()
+    prompt = data.get('prompt')
+
+    if not prompt:
+        debug_print(True, "Error: Prompt is required")
+        return jsonify({"response": "Prompt is required"}), 400
+
+    def stream_response():
+        global streaming
+        full_response = ""
+        for chunk in generate_simple_response(prompt):
+            if not streaming:
+                debug_print(True, "Streaming stopped.")
+                break
+            full_response += chunk
+            yield f" {json.dumps({'response': chunk})}\n\n"
 
     return Response(stream_response(), mimetype='text/event-stream')
 
