@@ -49,7 +49,7 @@ def execute(query):
             simplified_results.append({
                 "title": r.get("title", ""),
                 "url": r.get("url", ""),
-                "content": content[:150] # Truncate content to 150 characters
+                "content": content
             })
         return json.dumps(simplified_results, indent=4)
 
