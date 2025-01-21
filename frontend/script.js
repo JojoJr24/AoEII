@@ -37,6 +37,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskResponseModal = document.getElementById('task-response-modal');
     const taskResponseContent = document.getElementById('task-response-content');
 
+    // Function to save the current configuration
+    function saveConfig() {
+        const config = {
+            selected_provider: selectedProvider,
+            selected_model: selectedModel,
+            selected_conversation_id: currentConversationId,
+            selected_system_message_id: selectedSystemMessageId,
+            selected_tools: Array.from(activeToolsContainer.querySelectorAll('.active-tool-tag')).map(tool => tool.textContent),
+            think_mode: thinkToggle.checked,
+            think_depth: thinkDepth.value,
+            openai_base_url: openaiBaseUrlInput.value.trim()
+        };
+        fetch('http://127.0.0.1:5000/api/save_config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(config)
+        }).then(response => {
+            if (!response.ok) {
+                console.error('Failed to save config:', response.statusText);
+            }
+        }).catch(error => {
+            console.error('Error saving config:', error);
+        });
+    }
+
     // Initialize variables
     let selectedProvider = llmProvider.value;
     let selectedModel = llmModel.value;
@@ -545,6 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             thinkDepthMessage.textContent = '';
         }
+        saveConfig();
     });
 
     // Event listener for provider change
@@ -560,12 +588,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         await fetchModels(selectedProvider);
         updateStatus();
+        saveConfig();
     });
 
     // Event listener for model input change
     llmModel.addEventListener('input', () => {
         selectedModel = llmModel.value;
         updateStatus();
+        saveConfig();
     });
 
     // Event listener for model input focus to show autocomplete
@@ -593,6 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             fetchModels(selectedProvider);
         }
+        saveConfig();
     });
 
     // Event listener for send button click
@@ -765,6 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
     darkModeToggle.addEventListener('change', () => {
         toggleDarkMode(darkModeToggle.checked);
         toggleModalDarkMode(darkModeToggle.checked);
+        saveConfig();
     });
 
     // Function to set initial dark mode based on system preference
@@ -826,6 +858,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for delete system message button
     deleteSystemMessageButton.addEventListener('click', deleteSystemMessage);
+
+    // Event listener for think toggle
+    thinkToggle.addEventListener('change', () => {
+        saveConfig();
+    });
 
     // Event listener for stop button
     stopButton.addEventListener('click', async () => {
