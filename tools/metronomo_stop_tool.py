@@ -2,13 +2,18 @@ import socket
 
 SOCKET_PATH = '/tmp/metronomo.sock'
 
-def get_tool_description():
-    return {
-        "name": "stop_metronome",
-        "description": "Stops the running metronome server."
-    }
+import json
 
-def execute():
+def get_tool_description():
+    return """
+    This tool stops the running metronome server.
+    It accepts a JSON object with the following format:
+    {
+        "tool_name": "stop_metronome"
+    }
+    """
+
+def execute(params):
     """Sends a command to stop the metronome server."""
     try:
         client_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

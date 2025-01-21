@@ -4,25 +4,24 @@ import os
 
 SOCKET_PATH = '/tmp/metronomo.sock'
 
-def get_tool_description():
-    return {
-        "name": "start_metronome",
-        "description": "Starts the metronome with the specified tempo and time signature.",
-        "parameters": [
-            {
-                "name": "tempo",
-                "type": "integer",
-                "description": "The tempo of the metronome in BPM."
-            },
-            {
-                "name": "compas",
-                "type": "integer",
-                "description": "The time signature of the metronome (number of beats per measure)."
-            }
-        ]
-    }
+import json
 
-def execute(tempo, compas):
+def get_tool_description():
+    return """
+    This tool starts the metronome with the specified tempo and time signature.
+    It accepts a JSON object with the following format:
+    {
+        "tool_name": "start_metronome",
+        "parameters": {
+            "tempo": "tempo in BPM",
+            "compas": "time signature"
+        }
+    }
+    """
+
+def execute(params):
+    tempo = params.get("tempo")
+    compas = params.get("compas")
     """Starts the metronome server with the given tempo and time signature."""
     
     # Check if the server is already running
