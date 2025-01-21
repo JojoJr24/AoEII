@@ -49,17 +49,19 @@ document.addEventListener('DOMContentLoaded', () => {
             think_depth: thinkDepth.value,
             openai_base_url: openaiBaseUrlInput.value.trim()
         };
-        fetch('http://127.0.0.1:5000/api/save_config', {
-            method: 'POST',
+        fetch('./config.json', {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(config)
-        }).then(response => {
+        })
+        .then(response => {
             if (!response.ok) {
                 console.error('Failed to save config:', response.statusText);
             }
-        }).catch(error => {
+        })
+        .catch(error => {
             console.error('Error saving config:', error);
         });
     }
