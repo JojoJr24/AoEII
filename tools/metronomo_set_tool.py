@@ -1,8 +1,6 @@
-import socket
 import sys
 import os
 import subprocess
-import json
 
 def get_tool_description():
     return """
