@@ -1,0 +1,10 @@
+{
+    "selected_provider": "gemini",
+    "selected_model": "gemini-1.5-flash",
+    "selected_conversation_id": null,
+    "selected_system_message_id": null,
+    "selected_tools": [],
+    "think_mode": false,
+    "think_depth": 0,
+    "openai_base_url": null
+}

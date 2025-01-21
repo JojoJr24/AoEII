@@ -5,6 +5,7 @@ import time
 import uuid
 from typing import List, Dict, Any
 import requests
+import json
 
 # Constants
 API_BASE_URL = "http://127.0.0.1:5000/api"
@@ -13,6 +14,7 @@ DEFAULT_MODEL = "gemini-1.5-flash"
 MAX_HISTORY_LENGTH = 10
 MAX_MESSAGE_LENGTH = 1000
 MAX_CONVERSATION_TITLE_LENGTH = 30
+CONFIG_FILE = "config.json"
 
 class ConsoleApp:
     def __init__(self, stdscr):
@@ -42,7 +44,42 @@ class ConsoleApp:
         self.previous_responses = []
         self.response_start_time = None
         self.streaming = False
+        self.load_config()
         self.load_data()
+
+    def load_config(self):
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                config = json.load(f)
+                self.selected_provider = config.get("selected_provider", DEFAULT_PROVIDER)
+                self.selected_model = config.get("selected_model", DEFAULT_MODEL)
+                self.selected_conversation_id = config.get("selected_conversation_id")
+                self.selected_system_message_id = config.get("selected_system_message_id")
+                self.selected_tools = config.get("selected_tools", [])
+                self.think_mode = config.get("think_mode", False)
+                self.think_depth = config.get("think_depth", 0)
+                self.openai_base_url = config.get("openai_base_url")
+        except FileNotFoundError:
+            pass
+        except json.JSONDecodeError:
+            self.add_message("Error loading config file", is_user=False)
+
+    def save_config(self):
+        config = {
+            "selected_provider": self.selected_provider,
+            "selected_model": self.selected_model,
+            "selected_conversation_id": self.selected_conversation_id,
+            "selected_system_message_id": self.selected_system_message_id,
+            "selected_tools": self.selected_tools,
+            "think_mode": self.think_mode,
+            "think_depth": self.think_depth,
+            "openai_base_url": self.openai_base_url
+        }
+        try:
+            with open(CONFIG_FILE, "w") as f:
+                json.dump(config, f, indent=4)
+        except Exception as e:
+            self.add_message(f"Error saving config: {e}", is_user=False)
 
     def load_data(self):
         self.fetch_models()
@@ -187,6 +224,7 @@ class ConsoleApp:
                         self.selected_provider = providers[selected_index]
                         self.fetch_models()
                         self.stdscr.clear()
+                        self.save_config()
                         break
                 except ValueError:
                     pass
@@ -214,6 +252,7 @@ class ConsoleApp:
                     if 0 <= selected_index < len(self.available_models):
                         self.selected_model = self.available_models[selected_index]
                         self.stdscr.clear()
+                        self.save_config()
                         break
                 except ValueError:
                     pass
@@ -243,6 +282,7 @@ class ConsoleApp:
                         self.selected_conversation_id = self.conversations[selected_index]['id']
                         self.load_conversation(self.selected_conversation_id)
                         self.stdscr.clear()
+                        self.save_config()
                         break
                 except ValueError:
                     pass
@@ -286,6 +326,7 @@ class ConsoleApp:
                     if 0 <= selected_index < len(self.system_messages):
                         self.selected_system_message_id = self.system_messages[selected_index]['id']
                         self.stdscr.clear()
+                        self.save_config()
                         break
                 except ValueError:
                     pass
@@ -320,6 +361,7 @@ class ConsoleApp:
                     self.selected_tools.append(tool_name)
             elif key == 10:
                 self.stdscr.clear()
+                self.save_config()
                 break
             elif key == 27:
                 self.stdscr.clear()
@@ -337,6 +379,7 @@ class ConsoleApp:
     def toggle_think_mode(self):
         self.think_mode = not self.think_mode
         self.stdscr.clear()
+        self.save_config()
 
     def select_think_depth(self):
         self.stdscr.clear()
@@ -351,6 +394,7 @@ class ConsoleApp:
                 try:
                     self.think_depth = int(selection)
                     self.stdscr.clear()
+                    self.save_config()
                     break
                 except ValueError:
                     pass
