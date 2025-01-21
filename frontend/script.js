@@ -971,11 +971,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial fetch of models, system messages and conversations
-    loadConfig();
     fetchModels(selectedProvider);
     fetchSystemMessages();
     fetchTools();
     updateStatus();
     loadConversations();
+    loadConfig();
     setInitialDarkMode();
 });
