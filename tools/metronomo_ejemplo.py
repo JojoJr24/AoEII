@@ -3,7 +3,8 @@ import sys
 import os
 import time
 import threading
-from playsound import playsound
+import sounddevice as sd
+import numpy as np
 
 SOCKET_PATH = '/tmp/metronomo.sock'
 
@@ -19,13 +20,15 @@ class Metronomo:
 
     def run(self):
         """Lógica principal del metrónomo."""
+        sample_rate = 44100
+        duration = 0.1
         while self.running:
-            interval = 60 / self.tempo  # Duración de cada pulso en segundos
+            interval = 60 / self.tempo
             for beat in range(1, self.compas + 1):
                 if not self.running:
                     break
                 print(f"Pulso {beat}/{self.compas}")
-                playsound(os.path.join(os.path.dirname(__file__), 'tick.wav'), block=False)
+                self.play_sound(beat == 1, sample_rate, duration)
                 time.sleep(interval)
 
     def update(self, tempo, compas):
@@ -37,6 +40,14 @@ class Metronomo:
     def stop(self):
         """Detiene el metrónomo."""
         self.running = False
+
+    def play_sound(self, is_first_beat, sample_rate, duration):
+        """Genera y reproduce el sonido del metrónomo."""
+        frequency = 440 if not is_first_beat else 880
+        t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+        tone = 0.5 * np.sin(2 * np.pi * frequency * t)
+        sd.play(tone, samplerate=sample_rate)
+        sd.wait()
 
 
 def start_server(initial_tempo, initial_compas):
