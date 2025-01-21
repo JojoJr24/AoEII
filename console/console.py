@@ -406,7 +406,7 @@ class ConsoleApp:
     def handle_input(self, key):
         if key == 10:  # Enter key
             self.send_message()
-        elif key == 127:  # Backspace key
+        elif key == curses.KEY_BACKSPACE or key == 127:  # Backspace key
             self.current_input = self.current_input[:-1]
         elif 32 <= key <= 126:  # Printable characters
             if len(self.current_input) < MAX_MESSAGE_LENGTH:
@@ -423,7 +423,7 @@ class ConsoleApp:
             self.display_input_area()
             self.display_menu()
             key = self.stdscr.getch()
-            if key == ord('m'):
+            if key == curses.KEY_IC:
                 self.stdscr.clear()
                 self.display_menu()
                 key = self.stdscr.getch()
