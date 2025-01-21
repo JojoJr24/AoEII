@@ -40,31 +40,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to save the current configuration
     function saveConfig() {
         const config = {
-            selected_provider: selectedProvider,
-            selected_model: selectedModel,
-            selected_conversation_id: currentConversationId,
-            selected_system_message_id: selectedSystemMessageId,
-            selected_tools: Array.from(activeToolsContainer.querySelectorAll('.active-tool-tag')).map(tool => tool.textContent),
-            think_mode: thinkToggle.checked,
-            think_depth: thinkDepth.value,
-            openai_base_url: openaiBaseUrlInput.value.trim()
+            selected_provider: "exampleProvider",
+            selected_model: "exampleModel",
+            selected_conversation_id: "12345",
+            selected_system_message_id: "67890",
+            selected_tools: ["tool1", "tool2"],
+            think_mode: true,
+            think_depth: 2,
+            openai_base_url: "https://example.com"
         };
-        fetch('./config.json', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(config)
-        })
-        .then(response => {
-            if (!response.ok) {
-                console.error('Failed to save config:', response.statusText);
-            }
-        })
-        .catch(error => {
-            console.error('Error saving config:', error);
-        });
+    
+        localStorage.setItem('config', JSON.stringify(config));
+        console.log('Config saved in localStorage!');
     }
+    
+    function loadConfig() {
+        const config = JSON.parse(localStorage.getItem('config'));
+        console.log('Loaded config:', config);
+    }
+    
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
