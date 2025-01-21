@@ -177,16 +177,27 @@ class ConsoleApp:
         for i, provider in enumerate(providers):
             self.stdscr.addstr(i + 2, 3, f"{i + 1}. {provider}")
         self.stdscr.refresh()
+        selection = ""
         while True:
             key = self.stdscr.getch()
-            if 49 <= key <= 49 + len(providers) - 1:
-                self.selected_provider = providers[key - 49]
-                self.fetch_models()
-                self.stdscr.clear()
-                break
+            if key == 10:
+                try:
+                    selected_index = int(selection) - 1
+                    if 0 <= selected_index < len(providers):
+                        self.selected_provider = providers[selected_index]
+                        self.fetch_models()
+                        self.stdscr.clear()
+                        break
+                except ValueError:
+                    pass
+                selection = ""
             elif key == 27:
                 self.stdscr.clear()
                 break
+            elif 48 <= key <= 57:
+                selection += chr(key)
+                self.stdscr.addstr(len(providers) + 3, 3, f"Selected: {selection}")
+                self.stdscr.refresh()
 
     def select_model(self):
         self.stdscr.clear()
@@ -194,15 +205,26 @@ class ConsoleApp:
         for i, model in enumerate(self.available_models):
             self.stdscr.addstr(i + 2, 3, f"{i + 1}. {model}")
         self.stdscr.refresh()
+        selection = ""
         while True:
             key = self.stdscr.getch()
-            if 49 <= key <= 49 + len(self.available_models) - 1:
-                self.selected_model = self.available_models[key - 49]
-                self.stdscr.clear()
-                break
+            if key == 10:
+                try:
+                    selected_index = int(selection) - 1
+                    if 0 <= selected_index < len(self.available_models):
+                        self.selected_model = self.available_models[selected_index]
+                        self.stdscr.clear()
+                        break
+                except ValueError:
+                    pass
+                selection = ""
             elif key == 27:
                 self.stdscr.clear()
                 break
+            elif 48 <= key <= 57:
+                selection += chr(key)
+                self.stdscr.addstr(len(self.available_models) + 3, 3, f"Selected: {selection}")
+                self.stdscr.refresh()
 
     def select_conversation(self):
         self.stdscr.clear()
@@ -211,16 +233,27 @@ class ConsoleApp:
             title = conversation.get('title', f"Conversation {conversation['id']}")
             self.stdscr.addstr(i + 2, 3, f"{i + 1}. {title}")
         self.stdscr.refresh()
+        selection = ""
         while True:
             key = self.stdscr.getch()
-            if 49 <= key <= 49 + len(self.conversations) - 1:
-                self.selected_conversation_id = self.conversations[key - 49]['id']
-                self.load_conversation(self.selected_conversation_id)
-                self.stdscr.clear()
-                break
+            if key == 10:
+                try:
+                    selected_index = int(selection) - 1
+                    if 0 <= selected_index < len(self.conversations):
+                        self.selected_conversation_id = self.conversations[selected_index]['id']
+                        self.load_conversation(self.selected_conversation_id)
+                        self.stdscr.clear()
+                        break
+                except ValueError:
+                    pass
+                selection = ""
             elif key == 27:
                 self.stdscr.clear()
                 break
+            elif 48 <= key <= 57:
+                selection += chr(key)
+                self.stdscr.addstr(len(self.conversations) + 3, 3, f"Selected: {selection}")
+                self.stdscr.refresh()
 
     def load_conversation(self, conversation_id):
         try:
@@ -244,15 +277,26 @@ class ConsoleApp:
         for i, message in enumerate(self.system_messages):
             self.stdscr.addstr(i + 2, 3, f"{i + 1}. {message['name']}")
         self.stdscr.refresh()
+        selection = ""
         while True:
             key = self.stdscr.getch()
-            if 49 <= key <= 49 + len(self.system_messages) - 1:
-                self.selected_system_message_id = self.system_messages[key - 49]['id']
-                self.stdscr.clear()
-                break
+            if key == 10:
+                try:
+                    selected_index = int(selection) - 1
+                    if 0 <= selected_index < len(self.system_messages):
+                        self.selected_system_message_id = self.system_messages[selected_index]['id']
+                        self.stdscr.clear()
+                        break
+                except ValueError:
+                    pass
+                selection = ""
             elif key == 27:
                 self.stdscr.clear()
                 break
+            elif 48 <= key <= 57:
+                selection += chr(key)
+                self.stdscr.addstr(len(self.system_messages) + 3, 3, f"Selected: {selection}")
+                self.stdscr.refresh()
 
     def select_tools(self):
         self.stdscr.clear()
@@ -300,15 +344,24 @@ class ConsoleApp:
         for i in range(11):
             self.stdscr.addstr(i + 2, 3, f"{i}. {i}")
         self.stdscr.refresh()
+        selection = ""
         while True:
             key = self.stdscr.getch()
-            if 48 <= key <= 57:
-                self.think_depth = key - 48
-                self.stdscr.clear()
-                break
+            if key == 10:
+                try:
+                    self.think_depth = int(selection)
+                    self.stdscr.clear()
+                    break
+                except ValueError:
+                    pass
+                selection = ""
             elif key == 27:
                 self.stdscr.clear()
                 break
+            elif 48 <= key <= 57:
+                selection += chr(key)
+                self.stdscr.addstr(13, 3, f"Selected: {selection}")
+                self.stdscr.refresh()
 
     def reset_chat(self):
         self.chat_history = []
