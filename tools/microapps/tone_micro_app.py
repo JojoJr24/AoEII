@@ -72,11 +72,11 @@ def start_server(initial_frequency):
             else:
                 # Parseamos los parámetros del comando
                 try:
-                    frequency = int(data)
+                    frequency = float(data)
                     tone_generator.update(frequency)
                     conn.sendall(f"Tono actualizado: Frequency={frequency}\n".encode('utf-8'))
                 except ValueError:
-                    conn.sendall(b"Error: Formato de comando no valido. Use '<frequency>'.\n")
+                    conn.sendall(b"Error: Formato de comando no valido. Use '<frequency> (ej: 440.0)'.\n")
         except Exception as e:
             print(f"[Servidor] Error procesando la conexión: {e}")
             conn.close()
@@ -121,10 +121,10 @@ if __name__ == "__main__":
                 print("No hay servidor en ejecución para cerrar.")
                 sys.exit(1)
 
-            frequency = int(command)
+            frequency = float(command)
             start_server(frequency)
         except ValueError:
-            print("Error: Formato de comando no válido. Use '<frequency>'.")
+            print("Error: Formato de comando no válido. Use '<frequency> (ej: 440.0)'.")
             sys.exit(1)
     else:
         # Ya existe un servidor, enviamos el comando
