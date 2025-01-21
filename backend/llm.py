@@ -496,11 +496,14 @@ def generate_simple_response(prompt):
         if filename.endswith('.py'):
             tools.append(os.path.splitext(filename)[0])
     
+    model_name = os.getenv("SIMPLE_RESPONSE_MODEL", "phi4")
+    provider_name = os.getenv("SIMPLE_RESPONSE_PROVIDER", "ollama")
+
     response = ""
     for chunk in generate_response(
         prompt=prompt,
-        model_name="phi4",
-        provider_name="ollama",
+        model_name=model_name,
+        provider_name=provider_name,
         selected_tools=tools,
         history=None,
         system_message=None
