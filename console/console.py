@@ -379,7 +379,6 @@ class ConsoleApp:
                         try:
                             json_line = json.loads(line.decode('utf-8').strip())
                             partial_response += json_line.get('response', '')
-                            self.add_message(partial_response, is_user=False)
                         except json.JSONDecodeError:
                             self.add_message(f"Error decoding response: {line}", is_user=False)
                 self.last_response = partial_response
