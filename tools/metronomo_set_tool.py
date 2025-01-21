@@ -14,7 +14,7 @@ def get_tool_description():
         "tool_name": "metronomo_set_tool",
         "parameters": {
             "tempo": "tempo in BPM",
-            "compas": "time signature"
+            "compas": "a number from 2 to 8" 
         }
     }
     """
