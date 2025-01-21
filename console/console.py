@@ -141,7 +141,10 @@ class ConsoleApp:
         self.stdscr.addstr(menu_y, menu_x, "Menu:")
         menu_y += 1
         for i, item in enumerate(self.menu_items):
-            self.stdscr.addstr(menu_y + i, menu_x, f"{i + 1}. {item}")
+            if i == self.selected_menu_item:
+                self.stdscr.addstr(menu_y + i, menu_x, f"> {i + 1}. {item}", curses.A_REVERSE)
+            else:
+                self.stdscr.addstr(menu_y + i, menu_x, f"  {i + 1}. {item}")
         self.stdscr.refresh()
 
     def handle_menu_selection(self, key):
@@ -425,8 +428,20 @@ class ConsoleApp:
             if key == curses.KEY_IC:
                 self.stdscr.clear()
                 self.display_menu()
-                key = self.stdscr.getch()
-                self.handle_menu_selection(key)
+                while True:
+                    key = self.stdscr.getch()
+                    if key == curses.KEY_UP and self.selected_menu_item > 0:
+                        self.selected_menu_item -= 1
+                    elif key == curses.KEY_DOWN and self.selected_menu_item < len(self.menu_items) - 1:
+                        self.selected_menu_item += 1
+                    elif key == 10:
+                        self.stdscr.clear()
+                        self.handle_menu_navigation()
+                        break
+                    elif key == 27:
+                        self.stdscr.clear()
+                        break
+                    self.display_menu()
             elif not self.handle_input(key):
                 break
 
