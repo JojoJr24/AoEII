@@ -123,7 +123,7 @@ class ConsoleApp:
         self.stdscr.addstr(self.height - 2, 1, f"Provider: {self.selected_provider}, Model: {self.selected_model}")
         self.stdscr.refresh()
 
-    def display_menu(self):
+    def display_menu(self, menu_selection=""):
         menu_y = 1
         menu_x = self.width - 20
         self.menu_items = [
