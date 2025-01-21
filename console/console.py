@@ -44,6 +44,7 @@ class ConsoleApp:
         self.previous_responses = []
         self.response_start_time = None
         self.streaming = False
+        self.menu_active = False
         self.load_data()
         self.load_config()
 
@@ -175,12 +176,13 @@ class ConsoleApp:
             "Stop"
         ]
         self.selected_menu_item = 0
-        self.stdscr.addstr(menu_y, menu_x, "Menu:")
-        menu_y += 1
-        for i, item in enumerate(self.menu_items):
-            self.stdscr.addstr(menu_y + i, menu_x, f"  {i + 1}. {item}")
-        if menu_selection:
-            self.stdscr.addstr(menu_y + len(self.menu_items) + 1, menu_x, f"Selected: {menu_selection}")
+        if self.menu_active:
+            self.stdscr.addstr(menu_y, menu_x, "Menu:")
+            menu_y += 1
+            for i, item in enumerate(self.menu_items):
+                self.stdscr.addstr(menu_y + i, menu_x, f"  {i + 1}. {item}")
+            if menu_selection:
+                self.stdscr.addstr(menu_y + len(self.menu_items) + 1, menu_x, f"Selected: {menu_selection}")
         self.stdscr.refresh()
 
     def handle_menu_selection(self, menu_selection):
@@ -507,6 +509,7 @@ class ConsoleApp:
                 self.current_input += chr(key)
         elif key == 27:
             self.stdscr.clear()
+            self.menu_active = False
             return False
         return True
 
@@ -518,6 +521,7 @@ class ConsoleApp:
             self.display_menu()
             key = self.stdscr.getch()
             if key == curses.KEY_IC:
+                self.menu_active = True
                 self.stdscr.clear()
                 self.display_menu()
                 menu_selection = ""
@@ -526,9 +530,11 @@ class ConsoleApp:
                     if key == 10:
                         self.stdscr.clear()
                         self.handle_menu_selection(menu_selection)
+                        self.menu_active = False
                         break
                     elif key == 27:
                         self.stdscr.clear()
+                        self.menu_active = False
                         break
                     elif 48 <= key <= 57:
                         menu_selection += chr(key)
