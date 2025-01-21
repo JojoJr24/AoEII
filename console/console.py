@@ -44,8 +44,8 @@ class ConsoleApp:
         self.previous_responses = []
         self.response_start_time = None
         self.streaming = False
-        self.load_config()
         self.load_data()
+        self.load_config()
 
     def load_config(self):
         try:
