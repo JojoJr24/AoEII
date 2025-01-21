@@ -3,6 +3,7 @@ import sys
 import os
 import time
 import threading
+from playsound import playsound
 
 SOCKET_PATH = '/tmp/metronomo.sock'
 
@@ -24,6 +25,7 @@ class Metronomo:
                 if not self.running:
                     break
                 print(f"Pulso {beat}/{self.compas}")
+                playsound(os.path.join(os.path.dirname(__file__), 'tick.wav'), block=False)
                 time.sleep(interval)
 
     def update(self, tempo, compas):
