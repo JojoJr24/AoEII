@@ -57,6 +57,49 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadConfig() {
         const config = JSON.parse(localStorage.getItem('config'));
         console.log('Loaded config:', config);
+        if (config) {
+            selectedProvider = config.selected_provider;
+            selectedModel = config.selected_model;
+            currentConversationId = config.selected_conversation_id;
+            selectedSystemMessageId = config.selected_system_message_id;
+            thinkToggle.checked = config.think_mode;
+            thinkDepth.value = config.think_depth;
+            openaiBaseUrlInput.value = config.openai_base_url;
+            llmProvider.value = selectedProvider;
+            llmModel.value = selectedModel;
+            if (selectedProvider === 'openai') {
+                openaiBaseUrlGroup.style.display = 'flex';
+            }
+            fetchModels(selectedProvider);
+            if (currentConversationId) {
+                loadConversation(currentConversationId);
+            }
+            if (selectedSystemMessageId) {
+                fetch(`http://127.0.0.1:5000/api/system_messages/${selectedSystemMessageId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        systemMessageTextarea.value = data.content;
+                        document.getElementById('system-message-name').value = data.name;
+                    })
+                    .catch(error => console.error('Error fetching system message:', error));
+            }
+            const savedTools = config.selected_tools;
+            if (savedTools && savedTools.length > 0) {
+                savedTools.forEach(toolName => {
+                    const toolTag = document.createElement('span');
+                    toolTag.classList.add('tool-tag', 'active-tool-tag');
+                    toolTag.textContent = toolName;
+                    const deleteButton = document.createElement('button');
+                    deleteButton.innerHTML = '<i class="fas fa-times"></i>';
+                    deleteButton.classList.add('delete-active-tool-button');
+                    deleteButton.addEventListener('click', () => {
+                        toolTag.remove();
+                    });
+                    toolTag.appendChild(deleteButton);
+                    activeToolsContainer.appendChild(toolTag);
+                });
+            }
+        }
     }
     
 
@@ -928,6 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial fetch of models, system messages and conversations
+    loadConfig();
     fetchModels(selectedProvider);
     fetchSystemMessages();
     fetchTools();
