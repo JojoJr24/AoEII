@@ -159,14 +159,25 @@ class ConsoleApp:
             self.toggle_think_mode()
         elif key == ord('7'):
             self.select_think_depth()
-        elif key == ord('8'):
+    def handle_menu_navigation(self):
+        if self.selected_menu_item == 0:
+            self.select_provider()
+        elif self.selected_menu_item == 1:
+            self.select_model()
+        elif self.selected_menu_item == 2:
+            self.select_conversation()
+        elif self.selected_menu_item == 3:
+            self.select_system_message()
+        elif self.selected_menu_item == 4:
+            self.select_tools()
+        elif self.selected_menu_item == 5:
+            self.toggle_think_mode()
+        elif self.selected_menu_item == 6:
+            self.select_think_depth()
+        elif self.selected_menu_item == 7:
             self.reset_chat()
-        elif key == 10:
-            self.handle_menu_navigation()
-        elif key == curses.KEY_UP:
-            self.selected_menu_item = (self.selected_menu_item - 1) % len(self.menu_items)
-        elif key == curses.KEY_DOWN:
-            self.selected_menu_item = (self.selected_menu_item + 1) % len(self.menu_items)
+        elif self.selected_menu_item == 8:
+            self.stop_stream()
 
     def select_provider(self):
         self.stdscr.clear()
