@@ -24,7 +24,7 @@ class ToneGenerator:
         while self.running:
             if not self.running:
                 break
-            print(f"Playing tone at {self.frequency} Hz for 5 seconds")
+            print(f"Playing tone at {self.frequency} Hz for 3 seconds")
             self.play_sound()
             time.sleep(1)  # Silencio de 1 segundo
             if not self.running:
