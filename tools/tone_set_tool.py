@@ -21,7 +21,7 @@ def execute(frequency):
     # Start the server if it's not running
     try:
         command = f"{frequency}"
-        subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), '.', 'tone_micro_app.py'), command])
+        subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), './microapps', 'tone_micro_app.py'), command])
         return f"Tone started with Frequency={frequency}."
     except ValueError as e:
         return f"Error: {e}"
