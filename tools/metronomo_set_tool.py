@@ -1,7 +1,7 @@
 import socket
 import sys
 import os
-
+import subprocess
 import json
 
 def get_tool_description():
@@ -24,9 +24,8 @@ def execute(tempo, compas):
     try:
         if compas not in [2, 3, 4, 5, 6, 7, 8]:
             raise ValueError("The time signature must be a number between 2 and 8.")
-        
         command = f"{tempo},{compas}"
-        os.execl(sys.executable, sys.executable, os.path.join(os.path.dirname(__file__), '.', 'metronomo_micro_app.py'), command)
+        subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), '.', 'metronomo_micro_app.py'), command])
         return f"Metronome started with Tempo={tempo}, Compás={compas}."
     except ValueError as e:
         return f"Error: {e}"
