@@ -26,7 +26,10 @@ class ToneGenerator:
                 break
             print(f"Playing tone at {self.frequency} Hz")
             self.play_sound()
-            time.sleep(self.duration)
+            time.sleep(5)
+            if not self.running:
+                break
+            time.sleep(1)
 
     def update(self, frequency):
         """Actualiza la frecuencia del tono."""
