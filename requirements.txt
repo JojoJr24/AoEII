@@ -6,3 +6,5 @@ flask_cors
 ollama
 groq
 sounddevice
+anthropic
+openai

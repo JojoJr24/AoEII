@@ -13,7 +13,7 @@ def get_tool_description():
     }
     """
 
-def execute(params):
+def execute():
     """Sends a command to stop the metronome server."""
     try:
         client_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
