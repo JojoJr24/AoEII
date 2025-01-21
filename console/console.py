@@ -141,45 +141,33 @@ class ConsoleApp:
         self.stdscr.addstr(menu_y, menu_x, "Menu:")
         menu_y += 1
         for i, item in enumerate(self.menu_items):
-            if i == self.selected_menu_item:
-                self.stdscr.addstr(menu_y + i, menu_x, f"> {i + 1}. {item}", curses.A_REVERSE)
-            else:
-                self.stdscr.addstr(menu_y + i, menu_x, f"  {i + 1}. {item}")
+            self.stdscr.addstr(menu_y + i, menu_x, f"  {i + 1}. {item}")
+        if menu_selection:
+            self.stdscr.addstr(menu_y + len(self.menu_items) + 1, menu_x, f"Selected: {menu_selection}")
         self.stdscr.refresh()
 
-    def handle_menu_selection(self, key):
-        if key == ord('1'):
+    def handle_menu_selection(self, menu_selection):
+        try:
+            key = int(menu_selection)
+        except ValueError:
+            return
+        if key == 1:
             self.select_provider()
-        elif key == ord('2'):
+        elif key == 2:
             self.select_model()
-        elif key == ord('3'):
+        elif key == 3:
             self.select_conversation()
-        elif key == ord('4'):
+        elif key == 4:
             self.select_system_message()
-        elif key == ord('5'):
+        elif key == 5:
             self.select_tools()
-        elif key == ord('6'):
+        elif key == 6:
             self.toggle_think_mode()
-        elif key == ord('7'):
+        elif key == 7:
             self.select_think_depth()
-    def handle_menu_navigation(self):
-        if self.selected_menu_item == 0:
-            self.select_provider()
-        elif self.selected_menu_item == 1:
-            self.select_model()
-        elif self.selected_menu_item == 2:
-            self.select_conversation()
-        elif self.selected_menu_item == 3:
-            self.select_system_message()
-        elif self.selected_menu_item == 4:
-            self.select_tools()
-        elif self.selected_menu_item == 5:
-            self.toggle_think_mode()
-        elif self.selected_menu_item == 6:
-            self.select_think_depth()
-        elif self.selected_menu_item == 7:
+        elif key == 8:
             self.reset_chat()
-        elif self.selected_menu_item == 8:
+        elif key == 9:
             self.stop_stream()
 
     def select_provider(self):
@@ -428,20 +416,19 @@ class ConsoleApp:
             if key == curses.KEY_IC:
                 self.stdscr.clear()
                 self.display_menu()
+                menu_selection = ""
                 while True:
                     key = self.stdscr.getch()
-                    if key == curses.KEY_UP and self.selected_menu_item > 0:
-                        self.selected_menu_item -= 1
-                    elif key == curses.KEY_DOWN and self.selected_menu_item < len(self.menu_items) - 1:
-                        self.selected_menu_item += 1
-                    elif key == 10:
+                    if key == 10:
                         self.stdscr.clear()
-                        self.handle_menu_navigation()
+                        self.handle_menu_selection(menu_selection)
                         break
                     elif key == 27:
                         self.stdscr.clear()
                         break
-                    self.display_menu()
+                    elif 48 <= key <= 57:
+                        menu_selection += chr(key)
+                        self.display_menu(menu_selection)
             elif not self.handle_input(key):
                 break
 
