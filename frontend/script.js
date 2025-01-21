@@ -40,14 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to save the current configuration
     function saveConfig() {
         const config = {
-            selected_provider: "exampleProvider",
-            selected_model: "exampleModel",
-            selected_conversation_id: "12345",
-            selected_system_message_id: "67890",
-            selected_tools: ["tool1", "tool2"],
-            think_mode: true,
-            think_depth: 2,
-            openai_base_url: "https://example.com"
+            selected_provider: "",
+            selected_model: "",
+            selected_conversation_id: "",
+            selected_system_message_id: "",
+            selected_tools: [],
+            think_mode: false,
+            think_depth: 0,
+            openai_base_url: ""
         };
     
         localStorage.setItem('config', JSON.stringify(config));
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function loadConfig() {
-        const config = JSON.parse(localStorage.getItem('config'));
+       /* const config = JSON.parse(localStorage.getItem('config'));
         console.log('Loaded config:', config);
         if (config) {
             selectedProvider = config.selected_provider;
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     activeToolsContainer.appendChild(toolTag);
                 });
             }
-        }
+        }*/
     }
     
 
