@@ -9,7 +9,7 @@ def get_tool_description():
     This tool stops the running metronome server.
     It accepts a JSON object with the following format:
     {
-        "tool_name": "stop_metronome"
+        "tool_name": "metronomo_stop_tool"
     }
     """
 

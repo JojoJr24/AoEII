@@ -8,10 +8,10 @@ import json
 
 def get_tool_description():
     return """
-    This tool starts the metronome with the specified tempo and time signature.
+    This tool set the metronome with the specified tempo and time signature.
     It accepts a JSON object with the following format:
     {
-        "tool_name": "start_metronome",
+        "tool_name": "metronomo_set_tool",
         "parameters": {
             "tempo": "tempo in BPM",
             "compas": "time signature"
@@ -19,9 +19,7 @@ def get_tool_description():
     }
     """
 
-def execute(params):
-    tempo = params.get("tempo")
-    compas = params.get("compas")
+def execute(tempo, compas):
     """Starts the metronome server with the given tempo and time signature."""
     
     # Check if the server is already running
