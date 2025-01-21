@@ -62,22 +62,19 @@ def start_server(initial_frequency):
         conn, _ = server_sock.accept()
         try:
             data = conn.recv(1024).decode('utf-8').strip()
-            if 
-                if data.upper() == 'CERRAR':
-                    print("[Servidor] Recibido comando de cierre. Terminando servidor.")
-                    tone_generator.stop()
-                    conn.close()
-                    break
-                else:
-                    # Parseamos los parámetros del comando
-                    try:
-                        frequency = int(data)
-                        tone_generator.update(frequency)
-                        conn.sendall(f"Tono actualizado: Frequency={frequency}\n".encode('utf-8'))
-                    except ValueError:
-                        conn.sendall(b"Error: Formato de comando no valido. Use '<frequency>'.\n")
-            else:
+            if data.upper() == 'CERRAR':
+                print("[Servidor] Recibido comando de cierre. Terminando servidor.")
+                tone_generator.stop()
                 conn.close()
+                break
+            else:
+                # Parseamos los parámetros del comando
+                try:
+                    frequency = int(data)
+                    tone_generator.update(frequency)
+                    conn.sendall(f"Tono actualizado: Frequency={frequency}\n".encode('utf-8'))
+                except ValueError:
+                    conn.sendall(b"Error: Formato de comando no valido. Use '<frequency>'.\n")
         except Exception as e:
             print(f"[Servidor] Error procesando la conexión: {e}")
             conn.close()
@@ -129,4 +126,10 @@ if __name__ == "__main__":
             sys.exit(1)
     else:
         # Ya existe un servidor, enviamos el comando
-        send_to_server(command)
+        if command.upper() == 'CERRAR':
+            send_to_server(command)
+        else:
+            try:
+                send_to_server(command)
+            except socket.error as e:
+                print(f"Error: No se pudo conectar al servidor. Asegúrese de que el servidor esté en ejecución. {e}")
