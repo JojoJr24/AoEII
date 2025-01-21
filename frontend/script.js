@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteAllTasksButton = document.getElementById('delete-all-tasks-button');
     const taskResponseModal = document.getElementById('task-response-modal');
     const taskResponseContent = document.getElementById('task-response-content');
+    import config from './config.js';
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -51,6 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedSystemMessageId = null;
     let responseStartTime = null;
     const tokensPerSecondDisplay = document.getElementById('tokens-per-second');
+    const configElements = [
+        llmProvider,
+        llmModel,
+        openaiBaseUrlInput,
+        darkModeToggle,
+        systemMessageTextarea,
+        document.getElementById('system-message-name'),
+        thinkToggle,
+        thinkDepth
+    ];
 
     // Function to add a message to the chat window
     function addMessage(message, isUser = true, messageDiv = null) {
@@ -352,6 +363,9 @@ document.addEventListener('DOMContentLoaded', () => {
         llmStatus.textContent = `${selectedProvider}, ${selectedModel}`;
     }
     
+    // Apply saved config
+    config.apply(configElements);
+
     // Set initial status
     updateStatus();
 
@@ -545,6 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             thinkDepthMessage.textContent = '';
         }
+        config.save(config.collect(configElements));
     });
 
     // Event listener for provider change
@@ -560,12 +575,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         await fetchModels(selectedProvider);
         updateStatus();
+        config.save(config.collect(configElements));
     });
 
     // Event listener for model input change
     llmModel.addEventListener('input', () => {
         selectedModel = llmModel.value;
         updateStatus();
+        config.save(config.collect(configElements));
     });
 
     // Event listener for model input focus to show autocomplete
@@ -593,6 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             fetchModels(selectedProvider);
         }
+        config.save(config.collect(configElements));
     });
 
     // Event listener for send button click
@@ -765,6 +783,7 @@ document.addEventListener('DOMContentLoaded', () => {
     darkModeToggle.addEventListener('change', () => {
         toggleDarkMode(darkModeToggle.checked);
         toggleModalDarkMode(darkModeToggle.checked);
+        config.save(config.collect(configElements));
     });
 
     // Function to set initial dark mode based on system preference
@@ -791,6 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     console.log('System message saved.');
                     fetchSystemMessages();
+                    config.save(config.collect(configElements));
                 } else {
                     console.error('Failed to save system message:', response.statusText);
                 }
@@ -822,7 +842,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener for save system message button
-    saveSystemMessageButton.addEventListener('click', saveSystemMessage);
+    saveSystemMessageButton.addEventListener('click', () => {
+        saveSystemMessage();
+    });
 
     // Event listener for delete system message button
     deleteSystemMessageButton.addEventListener('click', deleteSystemMessage);
@@ -841,6 +863,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error stopping streaming:', error);
         }
+    });
+    
+    // Event listener for think toggle
+    thinkToggle.addEventListener('change', () => {
+        config.save(config.collect(configElements));
     });
 
     // Event listener for reset button
