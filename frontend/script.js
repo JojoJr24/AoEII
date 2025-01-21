@@ -976,6 +976,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchTools();
     updateStatus();
     loadConversations();
-    loadConfig();
     setInitialDarkMode();
+    setTimeout(loadConfig, 2000);
 });
