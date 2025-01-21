@@ -574,7 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             thinkDepthMessage.textContent = '';
         }
-        saveConfig();
     });
 
     // Event listener for provider change
@@ -597,7 +596,6 @@ document.addEventListener('DOMContentLoaded', () => {
     llmModel.addEventListener('input', () => {
         selectedModel = llmModel.value;
         updateStatus();
-        saveConfig();
     });
 
     // Event listener for model input focus to show autocomplete
@@ -625,7 +623,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             fetchModels(selectedProvider);
         }
-        saveConfig();
     });
 
     // Event listener for send button click
@@ -744,7 +741,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     firstMessage = false;
                     loadConversations();
                 }
-                saveConfig();
             } catch (error) {
                 console.error('Failed to send message:', error);
                 addMessage(`Error generating response: ${error.message}`, false);
@@ -798,7 +794,6 @@ document.addEventListener('DOMContentLoaded', () => {
     darkModeToggle.addEventListener('change', () => {
         toggleDarkMode(darkModeToggle.checked);
         toggleModalDarkMode(darkModeToggle.checked);
-        saveConfig();
     });
 
     // Function to set initial dark mode based on system preference
