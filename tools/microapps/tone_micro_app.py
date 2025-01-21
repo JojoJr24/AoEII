@@ -13,7 +13,7 @@ class ToneGenerator:
         self.frequency = frequency
         self.running = True
         self.sample_rate = 44100
-        self.duration = 0.1
+        self.duration = 3  
 
     def start(self):
         """Inicia el generador de tono en un hilo separado."""
@@ -24,12 +24,11 @@ class ToneGenerator:
         while self.running:
             if not self.running:
                 break
-            print(f"Playing tone at {self.frequency} Hz")
+            print(f"Playing tone at {self.frequency} Hz for 5 seconds")
             self.play_sound()
-            time.sleep(5)
+            time.sleep(1)  # Silencio de 1 segundo
             if not self.running:
                 break
-            time.sleep(1)
 
     def update(self, frequency):
         """Actualiza la frecuencia del tono."""
