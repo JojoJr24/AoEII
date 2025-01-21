@@ -856,11 +856,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for delete system message button
     deleteSystemMessageButton.addEventListener('click', deleteSystemMessage);
 
-    // Event listener for think toggle
-    thinkToggle.addEventListener('change', () => {
-        saveConfig();
-    });
-
     // Event listener for stop button
     stopButton.addEventListener('click', async () => {
         try {
