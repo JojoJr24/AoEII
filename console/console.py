@@ -384,11 +384,18 @@ class ConsoleApp:
         self.add_message(message)
         self.current_input = ""
         
+        transformed_history = []
+        for item in self.chat_history:
+            if item['role'] == 'user':
+                transformed_history.append({'role': 'user', 'content': item['content']})
+            elif item['role'] == 'llm':
+                transformed_history.append({'role': 'model', 'content': item['content']})
+        
         data = {
             'prompt': message,
             'model': self.selected_model,
             'provider': self.selected_provider,
-            'history': json.dumps(self.chat_history),
+            'history': json.dumps(transformed_history),
             'selected_tools': json.dumps(self.selected_tools),
             'think': self.think_mode,
             'think_depth': self.think_depth
