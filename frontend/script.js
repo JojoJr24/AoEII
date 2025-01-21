@@ -1,3 +1,5 @@
+import config from './config.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // Get references to DOM elements
     const chatWindow = document.getElementById('chat-window');
@@ -36,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteAllTasksButton = document.getElementById('delete-all-tasks-button');
     const taskResponseModal = document.getElementById('task-response-modal');
     const taskResponseContent = document.getElementById('task-response-content');
-    import config from './config.js';
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
