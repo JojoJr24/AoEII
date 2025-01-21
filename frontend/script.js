@@ -364,8 +364,13 @@ document.addEventListener('DOMContentLoaded', () => {
         llmStatus.textContent = `${selectedProvider}, ${selectedModel}`;
     }
     
-    // Apply saved config
-    config.apply(configElements);
+    // Apply saved config or default config
+    const savedConfig = config.load();
+    if (Object.keys(savedConfig).length === 0) {
+        config.apply(configElements, config.default);
+    } else {
+        config.apply(configElements, savedConfig);
+    }
 
     // Set initial status
     updateStatus();

@@ -2,11 +2,21 @@ const config = {
     load: () => {
         try {
             const storedConfig = localStorage.getItem('appConfig');
-            return storedConfig ? JSON.parse(storedConfig) : {};
+            return storedConfig ? JSON.parse(storedConfig) : this.default;
         } catch (error) {
             console.error('Error loading config:', error);
-            return {};
+            return this.default;
         }
+    },
+    default: {
+        'llm-provider': 'gemini',
+        'llm-model': '',
+        'openai-base-url': '',
+        'dark-mode-toggle': false,
+        'system-message': '',
+        'system-message-name': '',
+        'think-toggle': false,
+        'think-depth': '0'
     },
     save: (newConfig) => {
         try {
