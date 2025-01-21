@@ -126,25 +126,22 @@ class ConsoleApp:
     def display_menu(self):
         menu_y = 1
         menu_x = self.width - 20
+        self.menu_items = [
+            "Provider",
+            "Model",
+            "Conversations",
+            "System Message",
+            "Tools",
+            "Think Mode",
+            "Think Depth",
+            "Reset",
+            "Stop"
+        ]
+        self.selected_menu_item = 0
         self.stdscr.addstr(menu_y, menu_x, "Menu:")
         menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "1. Provider")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "2. Model")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "3. Conversations")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "4. System Message")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "5. Tools")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "6. Think Mode")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "7. Think Depth")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "8. Reset")
-        menu_y += 1
-        self.stdscr.addstr(menu_y, menu_x, "9. Stop")
+        for i, item in enumerate(self.menu_items):
+            self.stdscr.addstr(menu_y + i, menu_x, f"{i + 1}. {item}")
         self.stdscr.refresh()
 
     def handle_menu_selection(self, key):
@@ -164,8 +161,12 @@ class ConsoleApp:
             self.select_think_depth()
         elif key == ord('8'):
             self.reset_chat()
-        elif key == ord('9'):
-            self.stop_stream()
+        elif key == 10:
+            self.handle_menu_navigation()
+        elif key == curses.KEY_UP:
+            self.selected_menu_item = (self.selected_menu_item - 1) % len(self.menu_items)
+        elif key == curses.KEY_DOWN:
+            self.selected_menu_item = (self.selected_menu_item + 1) % len(self.menu_items)
 
     def select_provider(self):
         self.stdscr.clear()
@@ -412,7 +413,10 @@ class ConsoleApp:
             self.display_menu()
             key = self.stdscr.getch()
             if key == ord('m'):
-                self.handle_menu_selection(self.stdscr.getch())
+                self.stdscr.clear()
+                self.display_menu()
+                key = self.stdscr.getch()
+                self.handle_menu_selection(key)
             elif not self.handle_input(key):
                 break
 
