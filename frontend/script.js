@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     firstMessage = false;
                     loadConversations();
                 }
-            
+                saveConfig();
             } catch (error) {
                 console.error('Failed to send message:', error);
                 addMessage(`Error generating response: ${error.message}`, false);
