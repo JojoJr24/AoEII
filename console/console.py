@@ -2,10 +2,10 @@ import curses
 import json
 import os
 import time
-import uuid
 from typing import List, Dict, Any
 import requests
 import json
+from console.voice_input import record_and_transcribe
 
 # Constants
 API_BASE_URL = "http://127.0.0.1:5000/api"
@@ -507,6 +507,9 @@ class ConsoleApp:
         elif 32 <= key <= 126:  # Printable characters
             if len(self.current_input) < MAX_MESSAGE_LENGTH:
                 self.current_input += chr(key)
+        elif key == curses.KEY_F2:  # F2 for voice input
+            transcription = record_and_transcribe(self.stdscr)
+            self.current_input += transcription
         elif key == 27:
             self.stdscr.clear()
             self.menu_active = False
@@ -519,6 +522,8 @@ class ConsoleApp:
             self.display_chat()
             self.display_input_area()
             self.display_menu()
+            self.stdscr.addstr(self.height - 4, 1, "F2: Voice Input")
+            self.stdscr.refresh()
             key = self.stdscr.getch()
             if key == curses.KEY_IC:
                 self.menu_active = True
