@@ -20,7 +20,7 @@ speech = LiveSpeech(
 if not speech.config.get('dict'):
     speech.config['dict'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cmudict-en-us.dict")
     if not os.path.exists(speech.config['dict']):
-        speech.config['dict'] = "/usr/share/pocketsphinx/model/en-us/cmudict-en-us.dict"
+        speech.config['dict'] = "../.venv/lib/python3.11/site-packages/pocketsphinx/model/en-us/cmudict-en-us.dict"
 
 # Audio recording configuration
 RATE = 16000

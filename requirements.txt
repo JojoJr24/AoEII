@@ -6,7 +6,9 @@ flask_cors
 ollama
 groq
 sounddevice
+numpy
 anthropic
 openai
 whisper
 pocketsphinx
+requests
