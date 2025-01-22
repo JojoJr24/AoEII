@@ -66,6 +66,10 @@ def record_and_transcribe(stdscr):
             stdscr.refresh()
             return "Error during recording"
     except Exception as e:
-        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Error durante la grabación con VAD: {e}")
+        error_message = f"Error durante la grabación con VAD: {e}"
+        max_length = stdscr.getmaxyx()[1] - 2
+        if len(error_message) > max_length:
+            error_message = error_message[:max_length] + "..."
+        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, error_message)
         stdscr.refresh()
         return "Error during recording"
