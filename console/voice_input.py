@@ -1,6 +1,8 @@
 import os
-import pyaudio
 import wave
+import tempfile
+import numpy as np
+import sounddevice as sd
 from pocketsphinx import LiveSpeech
 import whisper
 import curses
@@ -16,47 +18,42 @@ speech = LiveSpeech(
     dic=os.path.join("/usr/share/pocketsphinx/model/en-us/cmudict-en-us.dict")  # Path to dictionary
 )
 
-# PyAudio configuration for recording audio after keyword detection
-CHUNK = 1024
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
+# Audio recording configuration
 RATE = 16000
 RECORD_SECONDS = 5
-WAVE_OUTPUT_FILENAME = "detected_audio.wav"
 
 # Whisper configuration
 MODEL_NAME = "tiny"  # Available models: tiny, base, small, medium, large
 whisper_model = whisper.load_model(MODEL_NAME)
 
-def record_audio(filename, duration):
+def record_audio(duration):
     """
-    Records audio from the microphone for a defined time.
+    Records audio from the microphone for a defined time using sounddevice.
     """
-    audio = pyaudio.PyAudio()
-    stream = audio.open(format=FORMAT, channels=CHANNELS,
-                        rate=RATE, input=True, frames_per_buffer=CHUNK)
-    frames = []
+    print("Recording...")
+    try:
+        audio_data = sd.rec(int(duration * RATE), samplerate=RATE, channels=1, dtype='int16')
+        sd.wait()
+        return audio_data.flatten()
+    except Exception as e:
+        print(f"Error during recording: {e}")
+        return None
 
-    for _ in range(0, int(RATE / CHUNK * duration)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
-
-    with wave.open(filename, 'wb') as wf:
-        wf.setnchannels(CHANNELS)
-        wf.setsampwidth(audio.get_sample_size(FORMAT))
-        wf.setframerate(RATE)
-        wf.writeframes(b''.join(frames))
-
-def transcribe_audio(filename):
+def transcribe_audio(audio_data):
     """
-    Uses Whisper to transcribe an audio file.
+    Uses Whisper to transcribe audio data.
     """
-    result = whisper_model.transcribe(filename, fp16=False)  # Use CPU
-    return result['text']
+    print("Transcribing audio with Whisper...")
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
+        temp_audio_file = tmp_file.name
+        with wave.open(temp_audio_file, 'wb') as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(RATE)
+            wf.writeframes(audio_data.tobytes())
+        result = whisper_model.transcribe(temp_audio_file, fp16=False)  # Use CPU
+        os.remove(temp_audio_file)
+        return result['text']
 
 def record_and_transcribe(stdscr):
     """
@@ -70,14 +67,15 @@ def record_and_transcribe(stdscr):
             stdscr.refresh()
             
             # Record audio after detecting the keyword
-            record_audio(WAVE_OUTPUT_FILENAME, RECORD_SECONDS)
+            audio_data = record_audio(RECORD_SECONDS)
+            if audio_data is None:
+                return "Error during recording"
             
             stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "Transcribing...")
             stdscr.refresh()
             
             # Transcribe the recorded audio
-            transcription = transcribe_audio(WAVE_OUTPUT_FILENAME)
-            os.remove(WAVE_OUTPUT_FILENAME)
+            transcription = transcribe_audio(audio_data)
             return transcription
     except Exception as e:
         return f"Error during recording or transcription: {e}"
