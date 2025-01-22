@@ -9,6 +9,6 @@ sounddevice
 numpy
 anthropic
 openai
-whisper
-vosk
+git+https://github.com/openai/whisper.git
+silero_vad
 requests

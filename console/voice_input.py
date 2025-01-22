@@ -1,116 +1,77 @@
 import os
-import wave
-import tempfile
 import numpy as np
 import sounddevice as sd
-import curses
-import json
-from vosk import Model, KaldiRecognizer
+import whisper
+import torch
 
-# Vosk configuration
-MODEL_PATH = "vosk-model-small-es-0.42"  # Path to the Vosk model
-KEYWORDS = ["hola", "adiós", "gracias", "hey google"]  # Keywords to detect
-
-# Audio recording configuration
 RATE = 16000
-RECORD_SECONDS = 5
+CHANNELS = 1
+BLOCK_SIZE = 512  # Changed to match Silero VAD requirements
 
-# Initialize Vosk model
-if not MODEL_PATH:
-    raise ValueError("You must specify the path to the Vosk model.")
-model = Model(MODEL_PATH)
-
-def record_audio(duration):
-    """
-    Records audio from the microphone for a defined time using sounddevice.
-    """
-    print("Recording...")
+def record_audio_with_vad():
     try:
-        audio_data = sd.rec(int(duration * RATE), samplerate=RATE, channels=1, dtype='int16')
-        sd.wait()
-        return audio_data.flatten()
+        vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
+                                        model='silero_vad',
+                                        force_reload=True)
+        vad_model.eval()
+        
+        audio_buffer = []
+        silent_blocks = 0
+        max_silence_duration = int(RATE / BLOCK_SIZE) * 2  # 2 seconds of silence
+        min_speech_duration = int(RATE * 0.5 / BLOCK_SIZE)  # 0.5 seconds of speech
+        
+        with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype=np.float32) as stream:
+            while True:
+                audio_chunk, _ = stream.read(BLOCK_SIZE)
+                audio_chunk = audio_chunk.flatten()
+                
+                # Convert to torch tensor
+                tensor_chunk = torch.from_numpy(audio_chunk).unsqueeze(0)
+                
+                speech_prob = vad_model(tensor_chunk, RATE).item()
+                is_speech = speech_prob > 0.5
+                
+                if is_speech:
+                    print("Habla detectada, grabando...")
+                    audio_buffer.append(audio_chunk)
+                    silent_blocks = 0
+                else:
+                    silent_blocks += 1
+                    if len(audio_buffer) > 0:
+                        audio_buffer.append(audio_chunk)
+                
+                if len(audio_buffer) >= min_speech_duration and silent_blocks >= max_silence_duration:
+                    print("Silencio detectado, terminando grabación...")
+                    break
+                    
+        return np.concatenate(audio_buffer) if audio_buffer else None
+        
     except Exception as e:
-        print(f"Error during recording: {e}")
+        print(f"Error durante la grabación con VAD: {e}")
         return None
 
-def transcribe_audio(audio_data, keywords):
-    """
-    Transcribes audio data using Vosk and detects specific keywords.
-    """
-    print("Transcribing audio with Vosk...")
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
-        temp_audio_file = tmp_file.name
-        with wave.open(temp_audio_file, 'wb') as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(RATE)
-            wf.writeframes(audio_data.tobytes())
-        
-        # Open the audio file
-        wf = wave.open(temp_audio_file, "rb")
-        if wf.getnchannels() != 1 or wf.getsampwidth() != 2 or wf.getframerate() != 16000:
-            raise ValueError("Audio file must be mono, 16-bit, 16kHz.")
-
-        # Configure the recognizer with keywords
-        recognizer = KaldiRecognizer(model, wf.getframerate(), f'["{" ".join(keywords)}", "[unk]"]')
-
-        # Process the audio
-        detected_keywords = []
-        while True:
-            data = wf.readframes(4000)
-            if len(data) == 0:
-                break
-            if recognizer.AcceptWaveform(data):
-                result = json.loads(recognizer.Result())
-                text = result.get("text", "")
-                for keyword in keywords:
-                    if keyword in text:
-                        detected_keywords.append(keyword)
-
-        # Close the audio file
-        wf.close()
-        os.remove(temp_audio_file)
-
-        # Results
-        final_result = recognizer.FinalResult()
-        return {
-            "transcription": final_result,
-            "detected_keywords": list(set(detected_keywords)),
-        }
-
-def record_and_transcribe(stdscr):
-    """
-    Listens for the wake word, records audio, and transcribes it using Vosk.
-    """
+def transcribe_audio(audio_data):
     try:
-        stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, f"Listening for keywords: '{', '.join(KEYWORDS)}'...")
-        stdscr.refresh()
+        temp_audio_path = "temp_audio.wav"
+        sd.write(temp_audio_path, audio_data, RATE)
         
-        # Record audio
-        audio_data = record_audio(RECORD_SECONDS)
-        if audio_data is None:
-            return "Error during recording"
+        model = whisper.load_model("tiny")
+        result = model.transcribe(temp_audio_path, fp16=False, language="es")
         
-        stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "Transcribing...")
-        stdscr.refresh()
-        
-        # Transcribe the recorded audio
-        result = transcribe_audio(audio_data, KEYWORDS)
-        if result and result["detected_keywords"]:
-            return result["transcription"].get("text", "")
-        else:
-            return ""
+        os.remove(temp_audio_path)
+        return result.get("text", "")
     except Exception as e:
-        return f"Error during recording or transcription: {e}"
-    finally:
-        stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "                                            ")
-        stdscr.refresh()
+        print(f"Error durante la transcripción: {e}")
+        return None
 
 if __name__ == '__main__':
-    def test_voice_input(stdscr):
-        curses.curs_set(0)
-        transcription = record_and_transcribe(stdscr)
-        stdscr.addstr(1, 1, f"Transcription: {transcription}")
-        stdscr.refresh()
-        stdscr.getch()
-    curses.wrapper(test_voice_input)
+    print("Iniciando sistema de grabación y transcripción...")
+    audio_data = record_audio_with_vad()
+    if audio_data is not None:
+        transcription = transcribe_audio(audio_data)
+        if transcription:
+            print(f"Transcripción: {transcription}")
+        else:
+            print("No se pudo obtener la transcripción.")
+    else:
+        print("No se pudo grabar audio.")
