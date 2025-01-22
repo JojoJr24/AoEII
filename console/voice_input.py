@@ -33,7 +33,6 @@ def record_audio_with_vad():
                 is_speech = speech_prob > 0.5
                 
                 if is_speech:
-                    print("Habla detectada, grabando...")
                     audio_buffer.append(audio_chunk)
                     silent_blocks = 0
                 else:
