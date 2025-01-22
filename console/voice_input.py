@@ -1,36 +1,90 @@
-import whisper
-import tempfile
 import os
+import pyaudio
+import wave
+from pocketsphinx import LiveSpeech
+import whisper
 import curses
 
+# Pocketsphinx configuration for keyword detection
+KEYWORD = "hey google"  # Keyword to detect
+THRESHOLD = 1e-20       # Adjust threshold for detection (smaller = more sensitive)
+
+speech = LiveSpeech(
+    lm=False,                # Don't use full language model
+    keyphrase=KEYWORD,       # Define the keyword
+    kws_threshold=THRESHOLD, # Sensitivity
+    dic=os.path.join("/usr/share/pocketsphinx/model/en-us/cmudict-en-us.dict")  # Path to dictionary
+)
+
+# PyAudio configuration for recording audio after keyword detection
+CHUNK = 1024
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 16000
+RECORD_SECONDS = 5
+WAVE_OUTPUT_FILENAME = "detected_audio.wav"
+
+# Whisper configuration
+MODEL_NAME = "tiny"  # Available models: tiny, base, small, medium, large
+whisper_model = whisper.load_model(MODEL_NAME)
+
+def record_audio(filename, duration):
+    """
+    Records audio from the microphone for a defined time.
+    """
+    audio = pyaudio.PyAudio()
+    stream = audio.open(format=FORMAT, channels=CHANNELS,
+                        rate=RATE, input=True, frames_per_buffer=CHUNK)
+    frames = []
+
+    for _ in range(0, int(RATE / CHUNK * duration)):
+        data = stream.read(CHUNK)
+        frames.append(data)
+
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
+
+    with wave.open(filename, 'wb') as wf:
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(audio.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
+
+def transcribe_audio(filename):
+    """
+    Uses Whisper to transcribe an audio file.
+    """
+    result = whisper_model.transcribe(filename, fp16=False)  # Use CPU
+    return result['text']
+
 def record_and_transcribe(stdscr):
-    """Records audio from the microphone and transcribes it using Whisper."""
+    """
+    Listens for the wake word, records audio, and transcribes it using Whisper.
+    """
     try:
-        stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "Recording... Press Enter to stop.")
+        stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, f"Listening for keyword: '{KEYWORD}'...")
         stdscr.refresh()
-        
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
-            temp_audio_file = tmp_file.name
-        
-        # Use arecord to record audio
-        os.system(f"arecord -d 5 -f S16_LE -r 16000 {temp_audio_file}")
-        
-        stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "Transcribing...")
-        stdscr.refresh()
-        
-        model = whisper.load_model("base")
-        result = model.transcribe(temp_audio_file)
-        transcription = result["text"]
-        
-        os.remove(temp_audio_file)
-        
-        return transcription
+        for phrase in speech:
+            stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "Keyword detected. Recording...")
+            stdscr.refresh()
+            
+            # Record audio after detecting the keyword
+            record_audio(WAVE_OUTPUT_FILENAME, RECORD_SECONDS)
+            
+            stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "Transcribing...")
+            stdscr.refresh()
+            
+            # Transcribe the recorded audio
+            transcription = transcribe_audio(WAVE_OUTPUT_FILENAME)
+            os.remove(WAVE_OUTPUT_FILENAME)
+            return transcription
     except Exception as e:
         return f"Error during recording or transcription: {e}"
     finally:
         stdscr.addstr(stdscr.getmaxyx()[0] - 4, 1, "                                            ")
         stdscr.refresh()
-        
+
 if __name__ == '__main__':
     def test_voice_input(stdscr):
         curses.curs_set(0)
