@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import sounddevice as sd
+import soundfile as sf
 import whisper
 import torch
 
@@ -53,7 +54,7 @@ def record_audio_with_vad():
 def transcribe_audio(audio_data):
     try:
         temp_audio_path = "temp_audio.wav"
-        sd.write(temp_audio_path, audio_data, RATE)
+        sf.write(temp_audio_path, audio_data, RATE)
         
         model = whisper.load_model("tiny")
         result = model.transcribe(temp_audio_path, fp16=False, language="es")
