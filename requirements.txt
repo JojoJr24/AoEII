@@ -10,5 +10,5 @@ numpy
 anthropic
 openai
 whisper
-pocketsphinx
+vosk
 requests
