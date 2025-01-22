@@ -8,9 +8,12 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+import os
+
 def init_db():
     conn = get_db_connection()
-    with open('schema.sql', 'r') as f:
+    schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
+    with open(schema_path, 'r') as f:
         conn.executescript(f.read())
     conn.close()
 
