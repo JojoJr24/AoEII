@@ -4,12 +4,13 @@ import sounddevice as sd
 import soundfile as sf
 import whisper
 import torch
+import curses
 
 RATE = 16000
 CHANNELS = 1
 BLOCK_SIZE = 512  # Changed to match Silero VAD requirements
 
-def record_audio_with_vad():
+def record_and_transcribe(stdscr):
     try:
         vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
                                         model='silero_vad',
@@ -30,7 +31,8 @@ def record_audio_with_vad():
                 tensor_chunk = torch.from_numpy(audio_chunk).unsqueeze(0)
                 
                 speech_prob = vad_model(tensor_chunk, RATE).item()
-                print(f"Speech probability: {speech_prob}")
+                stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Speech probability: {speech_prob:.2f}")
+                stdscr.refresh()
                 is_speech = speech_prob > 0.5
                 
                 if is_speech:
@@ -42,37 +44,28 @@ def record_audio_with_vad():
                         audio_buffer.append(audio_chunk)
                 
                 if len(audio_buffer) >= min_speech_duration and silent_blocks >= max_silence_duration:
-                    print("Silencio detectado, terminando grabación...")
+                    stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "Silencio detectado, terminando grabación...")
+                    stdscr.refresh()
                     break
                     
-        return np.concatenate(audio_buffer) if audio_buffer else None
-        
-    except Exception as e:
-        print(f"Error durante la grabación con VAD: {e}")
-        return None
-
-def transcribe_audio(audio_data):
-    try:
-        temp_audio_path = "temp_audio.wav"
-        sf.write(temp_audio_path, audio_data, RATE)
-        
-        model = whisper.load_model("tiny")
-        result = model.transcribe(temp_audio_path, fp16=False, language="es")
-        
-        os.remove(temp_audio_path)
-        return result.get("text", "")
-    except Exception as e:
-        print(f"Error durante la transcripción: {e}")
-        return None
-
-if __name__ == '__main__':
-    print("Iniciando sistema de grabación y transcripción...")
-    audio_data = record_audio_with_vad()
-    if audio_data is not None:
-        transcription = transcribe_audio(audio_data)
-        if transcription:
-            print(f"Transcripción: {transcription}")
+        audio_data = np.concatenate(audio_buffer) if audio_buffer else None
+        if audio_data is not None:
+            temp_audio_path = "temp_audio.wav"
+            sf.write(temp_audio_path, audio_data, RATE)
+            
+            model = whisper.load_model("tiny")
+            result = model.transcribe(temp_audio_path, fp16=False, language="es")
+            
+            os.remove(temp_audio_path)
+            transcription = result.get("text", "")
+            stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción: {transcription}")
+            stdscr.refresh()
+            return transcription
         else:
-            print("No se pudo obtener la transcripción.")
-    else:
-        print("No se pudo grabar audio.")
+            stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "No se pudo grabar audio.")
+            stdscr.refresh()
+            return "Error during recording"
+    except Exception as e:
+        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Error durante la grabación con VAD: {e}")
+        stdscr.refresh()
+        return "Error during recording"

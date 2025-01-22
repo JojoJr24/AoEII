@@ -513,7 +513,7 @@ class ConsoleApp:
         elif key == curses.KEY_F2:  # F2 for voice input
             transcription = record_and_transcribe(self.stdscr)
             if transcription and transcription != "Error during recording":
-                self.current_input += transcription
+                self.current_input = transcription
         return True
 
     def run(self):
