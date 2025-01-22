@@ -507,13 +507,13 @@ class ConsoleApp:
         elif 32 <= key <= 126:  # Printable characters
             if len(self.current_input) < MAX_MESSAGE_LENGTH:
                 self.current_input += chr(key)
-        elif key == curses.KEY_F2:  # F2 for voice input
-            transcription = record_and_transcribe(self.stdscr)
-            self.current_input += transcription
         elif key == 27:
             self.stdscr.clear()
             self.menu_active = False
             return False
+        if "Activa" in self.current_input:
+            transcription = record_and_transcribe(self.stdscr)
+            self.current_input = self.current_input.replace("Activa", "").strip() + " " + transcription
         return True
 
     def run(self):
