@@ -57,7 +57,7 @@ def transcribe_audio(audio_data):
         sf.write(temp_audio_path, audio_data, RATE)
         
         model = whisper.load_model("tiny")
-        result = model.transcribe(temp_audio_path, fp16=False, language="es", weights_only=True)
+        result = model.transcribe(temp_audio_path, fp16=False, language="es")
         
         os.remove(temp_audio_path)
         return result.get("text", "")
