@@ -6,3 +6,5 @@
 __pycache__
 *.db
 backend/.env
+uv.lock
+pyproject.toml
