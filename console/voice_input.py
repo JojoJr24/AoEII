@@ -30,6 +30,7 @@ def record_audio_with_vad():
                 tensor_chunk = torch.from_numpy(audio_chunk).unsqueeze(0)
                 
                 speech_prob = vad_model(tensor_chunk, RATE).item()
+                print(f"Speech probability: {speech_prob}")
                 is_speech = speech_prob > 0.5
                 
                 if is_speech:
@@ -56,7 +57,7 @@ def transcribe_audio(audio_data):
         sf.write(temp_audio_path, audio_data, RATE)
         
         model = whisper.load_model("tiny")
-        result = model.transcribe(temp_audio_path, fp16=False, language="es")
+        result = model.transcribe(temp_audio_path, fp16=False, language="es", weights_only=True)
         
         os.remove(temp_audio_path)
         return result.get("text", "")
