@@ -15,15 +15,8 @@ speech = LiveSpeech(
     lm=False,                # Don't use full language model
     keyphrase=KEYWORD,       # Define the keyword
     kws_threshold=THRESHOLD, # Sensitivity
-    dictionary=os.path.join(os.path.dirname(os.path.abspath(__file__)), "cmudict-en-us.dict")
+    dictionary="../.venv/lib/python3.11/site-packages/pocketsphinx/model/en-us/cmudict-en-us.dict"
 )
-if not os.path.exists(speech.config['dictionary']):
-    speech = LiveSpeech(
-        lm=False,                # Don't use full language model
-        keyphrase=KEYWORD,       # Define the keyword
-        kws_threshold=THRESHOLD, # Sensitivity
-        dictionary="../.venv/lib/python3.11/site-packages/pocketsphinx/model/en-us/cmudict-en-us.dict"
-    )
 
 # Audio recording configuration
 RATE = 16000
