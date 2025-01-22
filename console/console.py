@@ -1,6 +1,5 @@
 import curses
 import json
-import os
 import time
 from typing import List, Dict, Any
 import requests
