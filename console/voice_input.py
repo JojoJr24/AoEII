@@ -6,28 +6,17 @@ import whisper
 import torch
 import curses
 
-# Load models outside the function
-try:
-    vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
-                                    model='silero_vad',
-                                    force_reload=True)
-    vad_model.eval()
-    whisper_model = whisper.load_model("tiny")
-except Exception as e:
-    print(f"Error loading models: {e}")
-    vad_model = None
-    whisper_model = None
-
 RATE = 16000
 CHANNELS = 1
 BLOCK_SIZE = 512  # Changed to match Silero VAD requirements
 
 def record_and_transcribe(stdscr):
-    if vad_model is None or whisper_model is None:
-        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "Error: Models not loaded.")
-        stdscr.refresh()
-        return "Error during recording"
     try:
+        vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
+                                        model='silero_vad',
+                                        force_reload=False)
+        vad_model.eval()
+        
         audio_buffer = []
         silent_blocks = 0
         max_silence_duration = int(RATE / BLOCK_SIZE) * 5  # 2 seconds of silence
@@ -64,7 +53,8 @@ def record_and_transcribe(stdscr):
             temp_audio_path = "temp_audio.wav"
             sf.write(temp_audio_path, audio_data, RATE)
             
-            result = whisper_model.transcribe(temp_audio_path, fp16=False, language="es")
+            model = whisper.load_model("tiny")
+            result = model.transcribe(temp_audio_path, fp16=False, language="es")
             
             os.remove(temp_audio_path)
             transcription = result.get("text", "")
