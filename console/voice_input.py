@@ -31,7 +31,7 @@ def record_and_transcribe(stdscr):
                 tensor_chunk = torch.from_numpy(audio_chunk).unsqueeze(0)
                 
                 speech_prob = vad_model(tensor_chunk, RATE).item()
-                stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Speech probability: {speech_prob:.2f}")
+                stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Speech probability: {speech_prob:.2f}   ")
                 stdscr.refresh()
                 is_speech = speech_prob > 0.5
                 
@@ -44,7 +44,7 @@ def record_and_transcribe(stdscr):
                         audio_buffer.append(audio_chunk)
                 
                 if len(audio_buffer) >= min_speech_duration and silent_blocks >= max_silence_duration:
-                    stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "Silencio detectado, terminando grabación...")
+                    stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "Silencio detectado, terminando grabación...   ")
                     stdscr.refresh()
                     break
                     
@@ -58,14 +58,20 @@ def record_and_transcribe(stdscr):
             
             os.remove(temp_audio_path)
             transcription = result.get("text", "")
-            stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción: {transcription}")
+            stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción: {transcription}   ")
             stdscr.refresh()
             return transcription
         else:
-            stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "No se pudo grabar audio.")
+            stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "No se pudo grabar audio.   ")
             stdscr.refresh()
-            return "Error during recording"
+            return "Error durante la grabación"
     except Exception as e:
-        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Error durante la grabación con VAD: {e}")
+        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Error durante la grabación con VAD: {e}   ")
         stdscr.refresh()
-        return "Error during recording"
+        return "Error durante la grabación"
+
+def main():
+    curses.wrapper(record_and_transcribe)
+
+if __name__ == "__main__":
+    main()
