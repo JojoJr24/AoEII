@@ -334,13 +334,12 @@ def load_tools(selected_modes):
                 spec = importlib.util.spec_from_file_location(tool_name, file_path)
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-
-            if hasattr(module, 'execute') and hasattr(module, 'get_tool_description'):
-                tool_instances.append({
-                        'name': tool_name,
-                        'description': module.get_tool_description(),
-                        'execute': module.execute
-                    })
+                if hasattr(module, 'execute') and hasattr(module, 'get_tool_description'):
+                    tool_instances.append({
+                            'name': tool_name,
+                            'description': module.get_tool_description(),
+                            'execute': module.execute
+                        })
                 else:
                     debug_print(MAGENTA, f"Error: Tool {tool_name} lacks required methods.")
             except Exception as e:
