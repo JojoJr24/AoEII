@@ -16,8 +16,35 @@ def list_tools():
                 if hasattr(module, 'get_tool_description'):
                     tools.append({
                         'name': module_name,
-                        'description': module.get_tool_description()
+                        'description': module.get_tool_description(),
+                        'modes': module.modes if hasattr(module, 'modes') else []
                     })
             except Exception as e:
                 debug_print(True, f"Error loading tool {module_name}: {e}")
     return tools
+
+def list_tools_by_mode(mode):
+    """
+    Lists tools that belong to a specific mode.
+
+    Args:
+        mode (str): The mode to filter by.
+
+    Returns:
+        list: A list of tool names that belong to the specified mode.
+    """
+    tools = list_tools()
+    return [tool['name'] for tool in tools if mode in tool.get('modes', [])]
+
+def list_all_modes():
+    """
+    Lists all unique modes available in the tools.
+
+    Returns:
+        list: A list of unique modes.
+    """
+    tools = list_tools()
+    modes = set()
+    for tool in tools:
+        modes.update(tool.get('modes', []))
+    return list(modes)
