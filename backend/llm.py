@@ -299,8 +299,8 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
         return "Error: No model selected for the provider."
 
     tool_instances = []
-    if selected_tools:
-        tool_instances = load_tools(selected_tools)
+    if selected_modes:
+        tool_instances = load_tools(selected_modes)
 
     tool_descriptions = generate_tool_descriptions(tool_instances)
 
@@ -313,36 +313,38 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
     debug_print(GREEN, "Response generated successfully.")
     return response
 
-def load_tools(selected_tools):
+def load_tools(selected_modes):
     """
     Load tool modules and validate their structure.
 
     Args:
-        selected_tools (list): List of tool names to load.
+        selected_modes (list): List of tool modes to load.
 
     Returns:
         list: List of tool instances with execute and description methods.
     """
     tools_dir = '../tools'
     tool_instances = []
-
-    for tool_name in selected_tools:
-        try:
-            file_path = os.path.join(tools_dir, f'{tool_name}.py')
-            spec = importlib.util.spec_from_file_location(tool_name, file_path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+    from tools import list_tools_by_mode
+    for mode in selected_modes:
+        tool_names = list_tools_by_mode(mode)
+        for tool_name in tool_names:
+            try:
+                file_path = os.path.join(tools_dir, f'{tool_name}.py')
+                spec = importlib.util.spec_from_file_location(tool_name, file_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
 
             if hasattr(module, 'execute') and hasattr(module, 'get_tool_description'):
                 tool_instances.append({
-                    'name': tool_name,
-                    'description': module.get_tool_description(),
-                    'execute': module.execute
-                })
-            else:
-                debug_print(MAGENTA, f"Error: Tool {tool_name} lacks required methods.")
-        except Exception as e:
-            debug_print(MAGENTA, f"Error loading tool {tool_name}: {e}")
+                        'name': tool_name,
+                        'description': module.get_tool_description(),
+                        'execute': module.execute
+                    })
+                else:
+                    debug_print(MAGENTA, f"Error: Tool {tool_name} lacks required methods.")
+            except Exception as e:
+                debug_print(MAGENTA, f"Error loading tool {tool_name}: {e}")
 
     return tool_instances
 
@@ -504,7 +506,7 @@ def generate_simple_response(prompt):
         prompt=prompt,
         model_name=model_name,
         provider_name=provider_name,
-        selected_tools=tools,
+        selected_modes=tools,
         history=None,
         system_message=None
     ):

@@ -32,20 +32,20 @@ def generate():
     history_str = data.get('history')
     system_message = data.get('system_message')
     conversation_id = data.get('conversation_id')
-    selected_tools_str = data.get('selected_tools')
+    selected_modes_str = data.get('selected_modes')
     base_url = data.get('base_url')
 
-    if selected_tools_str:
+    if selected_modes_str:
         try:
-            selected_tools = json.loads(selected_tools_str)
-            debug_print(True, f"Selected tools: {selected_tools}")
+            selected_modes = json.loads(selected_modes_str)
+            debug_print(True, f"Selected modes: {selected_modes}")
         except json.JSONDecodeError:
-            debug_print(True, "Error decoding selected tools")
-            selected_tools = []
+            debug_print(True, "Error decoding selected modes")
+            selected_modes = []
     else:
-        selected_tools = []
+        selected_modes = []
 
-    debug_print(True, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}', selected_tools='{selected_tools}'")
+    debug_print(True, f"Request: prompt='{prompt}', model='{model_name}', provider='{provider_name}', image={'present' if image_file else 'not present'}, history='{history_str}', system_message='{system_message}', conversation_id='{conversation_id}', selected_modes='{selected_modes}'")
 
     image = None
     if image_file:
@@ -93,7 +93,7 @@ def generate():
     def stream_response():
         global streaming
         full_response = ""
-        for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message, selected_tools, base_url):
+        for chunk in generate_response(prompt, model_name, image, history, provider_name, system_message, selected_modes, base_url):
             if not streaming:
                 debug_print(True, "Streaming stopped.")
                 break
