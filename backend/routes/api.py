@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, Response
 from llm import generate_response, generate_think_response, generate_simple_response, llm_providers, selected_model, selected_provider
 from db import get_conversation, save_conversation, add_message_to_conversation, list_conversations, list_system_messages, get_system_message, save_system_message, delete_system_message, delete_all_system_messages, delete_conversation, delete_all_conversations, list_simple_responses, delete_simple_response, delete_all_simple_responses
 from utils import debug_print, streaming, stop_stream_global
-from tools import list_tools
+from tools import list_tools, list_all_modes
 import json
 from PIL import Image
 import io
