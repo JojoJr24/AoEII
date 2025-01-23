@@ -167,7 +167,7 @@ class ConsoleApp:
         self.stdscr.addstr(input_y, 1, "Input: " + self.current_input)
         self.stdscr.addstr(self.height - 2, 1, " " * (self.width - 2))
         self.stdscr.addstr(self.height - 2, 1, f"Provider: {self.selected_provider}, Model: {self.selected_model}")
-        if not self.voice_input_active:
+        if self.voice_input_active == False:
             self.stdscr.addstr(self.height - 4, 1, "F2: Voice Input")
         self.stdscr.refresh()
 
