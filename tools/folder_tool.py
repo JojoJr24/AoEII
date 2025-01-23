@@ -14,6 +14,7 @@ def get_tool_description():
     
     The tool will return the content of the text files or file information for other files.
     """
+modes = ["developer"]
 
 def execute(folder_path):
     """

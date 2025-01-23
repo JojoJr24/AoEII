@@ -14,6 +14,7 @@ def get_tool_description():
     
     The tool will return the content of the file or file information.
     """
+modes = ["developer"]
 
 def execute(file_path):
     """

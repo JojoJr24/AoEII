@@ -33,3 +33,4 @@ def get_tool_description():
     
     The tool will return the result of the operation.
     """
+modes = ["general"]

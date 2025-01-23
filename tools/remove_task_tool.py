@@ -25,6 +25,7 @@ def get_tool_description():
     
     The tool will return a success or error message.
     """
+modes = ["developer"]
 
 def execute(cron_line):
     """

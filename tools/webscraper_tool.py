@@ -15,6 +15,7 @@ def get_tool_description():
     
     The tool will return the extracted text content, or an error message if the request fails.
     """
+modes = ["general"]
 
 def execute(url):
     """

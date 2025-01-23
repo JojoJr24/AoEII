@@ -22,6 +22,7 @@ def get_tool_description():
     1)If the system does not know something due to it being after its last update, this tool will be used automatically to search for updated information. 
     2)For queries about news use the current date that is {today}
     """
+modes = ["general"]
 
 def execute(query):
     """

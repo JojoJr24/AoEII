@@ -14,6 +14,7 @@ def get_tool_description():
         }
     }
     """
+modes = ["music"]
 
 def execute(frequency):
     """Starts the tone server with the given frequency."""

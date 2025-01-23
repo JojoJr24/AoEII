@@ -12,6 +12,7 @@ def get_tool_description():
         "tool_name": "metronomo_stop_tool"
     }
     """
+modes = ["music"]
 
 def execute():
     """Sends a command to stop the metronome server."""

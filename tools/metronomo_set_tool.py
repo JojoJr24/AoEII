@@ -14,6 +14,7 @@ def get_tool_description():
         }
     }
     """
+modes = ["music"]
 
 def execute(tempo, compas):
     """Starts the metronome server with the given tempo and time signature."""
