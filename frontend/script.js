@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             selected_model: "",
             selected_conversation_id: "",
             selected_system_message_id: "",
-            selected_tools: [],
+            selected_modes: [],
             think_mode: false,
             think_depth: 0,
             openai_base_url: ""
@@ -83,12 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                     .catch(error => console.error('Error fetching system message:', error));
             }
-            const savedTools = config.selected_tools;
-            if (savedTools && savedTools.length > 0) {
-                savedTools.forEach(toolName => {
+            const savedModes = config.selected_modes;
+            if (savedModes && savedModes.length > 0) {
+                savedModes.forEach(modeName => {
                     const toolTag = document.createElement('span');
                     toolTag.classList.add('tool-tag', 'active-tool-tag');
-                    toolTag.textContent = toolName;
+                    toolTag.textContent = modeName;
                     const deleteButton = document.createElement('button');
                     deleteButton.innerHTML = '<i class="fas fa-times"></i>';
                     deleteButton.classList.add('delete-active-tool-button');
@@ -314,12 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Function to fetch and display tool modes
+    // Function to fetch and display modes
     async function fetchToolModes() {
         try {
             const response = await fetch('http://127.0.0.1:5000/api/tool_modes');
             if (!response.ok) {
-                console.error('Failed to fetch tool modes:', response.statusText);
+                console.error('Failed to fetch modes:', response.statusText);
                 return;
             }
             const modes = await response.json();
@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolsContainer.appendChild(toolTag);
             });
         } catch (error) {
-            console.error('Error fetching tool modes:', error);
+            console.error('Error fetching modes:', error);
         }
     }
 
@@ -349,10 +349,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     activeToolsContainer.addEventListener('drop', (event) => {
         event.preventDefault();
-        const toolName = event.dataTransfer.getData('text/plain');
+        const modeName = event.dataTransfer.getData('text/plain');
         const toolTag = document.createElement('span');
         toolTag.classList.add('tool-tag', 'active-tool-tag');
-        toolTag.textContent = toolName;
+        toolTag.textContent = modeName;
         const deleteButton = document.createElement('button');
         deleteButton.innerHTML = '<i class="fas fa-times"></i>';
         deleteButton.classList.add('delete-active-tool-button');
