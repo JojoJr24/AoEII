@@ -299,8 +299,8 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
         return "Error: No model selected for the provider."
 
     tool_instances = []
-    if selected_modes:
-        tool_instances = load_tools(selected_modes)
+    if selected_tools:
+        tool_instances = load_tools(selected_tools)
 
     tool_descriptions = generate_tool_descriptions(tool_instances)
 
