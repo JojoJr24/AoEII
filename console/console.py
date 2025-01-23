@@ -55,7 +55,7 @@ class ConsoleApp:
                 self.selected_model = config.get("selected_model", DEFAULT_MODEL)
                 self.selected_conversation_id = config.get("selected_conversation_id")
                 self.selected_system_message_id = config.get("selected_system_message_id")
-                self.selected_modes = config.get("selected_tools", [])
+                self.selected_modes = config.get("selected_modes", [])
                 self.think_mode = config.get("think_mode", False)
                 self.think_depth = config.get("think_depth", 0)
                 self.openai_base_url = config.get("openai_base_url")
@@ -70,7 +70,7 @@ class ConsoleApp:
             "selected_model": self.selected_model,
             "selected_conversation_id": self.selected_conversation_id,
             "selected_system_message_id": self.selected_system_message_id,
-            "selected_tools": self.selected_modes,
+            "selected_modes": self.selected_modes,
             "think_mode": self.think_mode,
             "think_depth": self.think_depth,
             "openai_base_url": self.openai_base_url
@@ -489,7 +489,7 @@ class ConsoleApp:
                     'model': self.selected_model,
                     'provider': self.selected_provider,
                     'systemMessage': data.get('system_message'),
-                    'tools': self.selected_tools
+                    'modes': self.select_modes
                 })
                 if self.first_message:
                     self.first_message = False

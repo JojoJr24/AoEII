@@ -3,9 +3,7 @@
     "selected_model": "models/gemini-2.0-flash-exp",
     "selected_conversation_id": null,
     "selected_system_message_id": null,
-    "selected_tools": [
-        "searx_tool"
-    ],
+    "selected_modes": [],
     "think_mode": false,
     "think_depth": 0,
     "openai_base_url": null
