@@ -19,8 +19,8 @@ def record_and_transcribe(stdscr):
         
         audio_buffer = []
         silent_blocks = 0
-        max_silence_duration = (int(RATE / BLOCK_SIZE) * 5) / 2  # 2 seconds of silence
-        min_speech_duration = int(RATE * 0.5 / BLOCK_SIZE)  # 0.5 seconds of speech
+        max_silence_duration = int(RATE * 3 / BLOCK_SIZE)  # 3 seconds of silence
+        min_speech_duration = int(RATE * 0.1 / BLOCK_SIZE)  # 0.1 seconds of speech
         
         with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype=np.float32) as stream:
             while True:
@@ -43,7 +43,7 @@ def record_and_transcribe(stdscr):
                     if len(audio_buffer) > 0:
                         audio_buffer.append(audio_chunk)
                 
-                if len(audio_buffer) >= min_speech_duration and silent_blocks >= max_silence_duration:
+                if silent_blocks >= max_silence_duration:
                     stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, "Silencio detectado, terminando grabación...")
                     stdscr.refresh()
                     break
@@ -54,7 +54,7 @@ def record_and_transcribe(stdscr):
             sf.write(temp_audio_path, audio_data, RATE)
             
             model = WhisperModel("tiny", device="cpu")
-            segments, _ = model.transcribe(temp_audio_path, language="es")
+            segments, _ = model.transcribe(temp_audio_path)
             transcription = " ".join([segment.text for segment in segments])
             
             os.remove(temp_audio_path)
