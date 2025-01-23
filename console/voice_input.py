@@ -53,7 +53,7 @@ def record_and_transcribe(stdscr):
             temp_audio_path = "temp_audio.wav"
             sf.write(temp_audio_path, audio_data, RATE)
             
-            model = WhisperModel("tiny")
+            model = WhisperModel("tiny", device="cpu")
             segments, _ = model.transcribe(temp_audio_path)
             transcription = " ".join([segment.text for segment in segments])
             
