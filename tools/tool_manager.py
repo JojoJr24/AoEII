@@ -51,6 +51,19 @@ class ToolManagerApp:
         self.stdscr.addstr(self.height - 2, 1, message)
         self.stdscr.refresh()
 
+    def wrap_text(self, text, width):
+        words = text.split()
+        lines = []
+        current_line = ""
+        for word in words:
+            if len(current_line + word) + 1 <= width:
+                current_line += (word + " ")
+            else:
+                lines.append(current_line.rstrip())
+                current_line = word + " "
+        lines.append(current_line.rstrip())
+        return lines
+
     def view_tool(self):
         if not self.tools:
             self.add_message("No tools to view.", is_user=False)
@@ -59,10 +72,15 @@ class ToolManagerApp:
         selected_tool = self.tools[self.current_selection]
         self.stdscr.clear()
         self.stdscr.addstr(1, 1, f"Tool: {selected_tool['name']}")
-        self.stdscr.addstr(2, 3, f"Description: {selected_tool['description']}")
-        self.stdscr.addstr(2, 3, f"Description: {selected_tool['description']}")
-        self.stdscr.addstr(3, 3, f"Modes: {', '.join(selected_tool['modes'])}")
-        self.stdscr.addstr(4, 3, f"File: {selected_tool['name']}.py")
+        
+        description_lines = self.wrap_text(f"Description: {selected_tool['description']}", self.width - 4)
+        y = 2
+        for line in description_lines:
+            self.stdscr.addstr(y, 3, line)
+            y += 1
+        
+        self.stdscr.addstr(y, 3, f"Modes: {', '.join(selected_tool['modes'])}")
+        self.stdscr.addstr(y + 1, 3, f"File: {selected_tool['name']}.py")
         self.stdscr.refresh()
         self.stdscr.getch()
 
