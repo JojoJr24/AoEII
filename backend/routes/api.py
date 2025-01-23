@@ -210,6 +210,12 @@ def list_tools_route():
     tools = list_tools()
     return jsonify(tools)
 
+@api_bp.route('/tool_modes', methods=['GET'])
+def list_tool_modes_route():
+    debug_print(True, "Received request for /api/tool_modes")
+    modes = list_all_modes()
+    return jsonify(modes)
+
 @api_bp.route('/system_messages', methods=['POST'])
 def save_system_message_route():
     debug_print(True, "Received request to POST /api/system_messages")
