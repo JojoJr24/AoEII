@@ -2,8 +2,8 @@ import os
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-import whisper
 import torch
+from faster_whisper import WhisperModel
 import curses
 
 RATE = 16000
@@ -53,11 +53,11 @@ def record_and_transcribe(stdscr):
             temp_audio_path = "temp_audio.wav"
             sf.write(temp_audio_path, audio_data, RATE)
             
-            model = whisper.load_model("tiny")
-            result = model.transcribe(temp_audio_path, fp16=False, language="es")
+            model = WhisperModel("tiny")
+            segments, _ = model.transcribe(temp_audio_path)
+            transcription = " ".join([segment.text for segment in segments])
             
             os.remove(temp_audio_path)
-            transcription = result.get("text", "")
             stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción: {transcription}")
             stdscr.refresh()
             return transcription

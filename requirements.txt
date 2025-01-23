@@ -12,4 +12,4 @@ git+https://github.com/openai/whisper.git
 silero_vad
 requests
 soundfile
-Pillow
+Pillowfaster-whisper
