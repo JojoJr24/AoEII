@@ -31,8 +31,8 @@ class ConsoleApp:
         self.selected_conversation_id = None
         self.system_messages = []
         self.selected_system_message_id = None
-        self.tools = []
-        self.selected_tools = []
+        self.modes = []
+        self.selected_modes = []
         self.think_mode = False
         self.think_depth = 0
         self.openai_base_url = None
@@ -55,7 +55,7 @@ class ConsoleApp:
                 self.selected_model = config.get("selected_model", DEFAULT_MODEL)
                 self.selected_conversation_id = config.get("selected_conversation_id")
                 self.selected_system_message_id = config.get("selected_system_message_id")
-                self.selected_tools = config.get("selected_tools", [])
+                self.selected_modes = config.get("selected_tools", [])
                 self.think_mode = config.get("think_mode", False)
                 self.think_depth = config.get("think_depth", 0)
                 self.openai_base_url = config.get("openai_base_url")
@@ -70,7 +70,7 @@ class ConsoleApp:
             "selected_model": self.selected_model,
             "selected_conversation_id": self.selected_conversation_id,
             "selected_system_message_id": self.selected_system_message_id,
-            "selected_tools": self.selected_tools,
+            "selected_tools": self.selected_modes,
             "think_mode": self.think_mode,
             "think_depth": self.think_depth,
             "openai_base_url": self.openai_base_url
@@ -85,7 +85,7 @@ class ConsoleApp:
         self.fetch_models()
         self.fetch_conversations()
         self.fetch_system_messages()
-        self.fetch_tools()
+        self.fetch_modes()
 
     def fetch_models(self):
         try:
@@ -113,13 +113,13 @@ class ConsoleApp:
         except requests.exceptions.RequestException as e:
             self.add_message(f"Error fetching system messages: {e}", is_user=False)
 
-    def fetch_tools(self):
+    def fetch_modes(self):
         try:
-            response = requests.get(f"{API_BASE_URL}/tools")
+            response = requests.get(f"{API_BASE_URL}/tool_modes")
             response.raise_for_status()
-            self.tools = response.json()
+            self.modes = response.json()
         except requests.exceptions.RequestException as e:
-            self.add_message(f"Error fetching tools: {e}", is_user=False)
+            self.add_message(f"Error fetching modes: {e}", is_user=False)
 
     def add_message(self, message, is_user=True):
         self.chat_history.append({"role": "user" if is_user else "llm", "content": message})
@@ -168,7 +168,7 @@ class ConsoleApp:
             "Model",
             "Conversations",
             "System Message",
-            "Tools",
+            "Modes",
             "Think Mode",
             "Think Depth",
             "Reset",
@@ -198,7 +198,7 @@ class ConsoleApp:
         elif key == 4:
             self.select_system_message()
         elif key == 5:
-            self.select_tools()
+            self.select_modes()
         elif key == 6:
             self.toggle_think_mode()
         elif key == 7:
@@ -340,26 +340,26 @@ class ConsoleApp:
                 self.stdscr.addstr(len(self.system_messages) + 3, 3, f"Selected: {selection}")
                 self.stdscr.refresh()
 
-    def select_tools(self):
+    def select_modes(self):
         self.stdscr.clear()
-        self.stdscr.addstr(1, 1, "Select Tools (Space to toggle, Enter to confirm):")
-        for i, tool in enumerate(self.tools):
-            prefix = "[x] " if tool['name'] in self.selected_tools else "[ ] "
-            self.stdscr.addstr(i + 2, 3, f"{prefix}{tool['name']}")
+        self.stdscr.addstr(1, 1, "Select Modes (Space to toggle, Enter to confirm):")
+        for i, mode in enumerate(self.modes):
+            prefix = "[x] " if mode in self.selected_modes else "[ ] "
+            self.stdscr.addstr(i + 2, 3, f"{prefix}{mode}")
         self.stdscr.refresh()
         current_selection = 0
         while True:
             key = self.stdscr.getch()
             if key == curses.KEY_UP and current_selection > 0:
                 current_selection -= 1
-            elif key == curses.KEY_DOWN and current_selection < len(self.tools) - 1:
+            elif key == curses.KEY_DOWN and current_selection < len(self.modes) - 1:
                 current_selection += 1
             elif key == ord(' '):
-                tool_name = self.tools[current_selection]['name']
-                if tool_name in self.selected_tools:
-                    self.selected_tools.remove(tool_name)
+                mode_name = self.modes[current_selection]
+                if mode_name in self.selected_modes:
+                    self.selected_modes.remove(mode_name)
                 else:
-                    self.selected_tools.append(tool_name)
+                    self.selected_modes.append(mode_name)
             elif key == 10:
                 self.stdscr.clear()
                 self.save_config()
@@ -368,13 +368,13 @@ class ConsoleApp:
                 self.stdscr.clear()
                 break
             self.stdscr.clear()
-            self.stdscr.addstr(1, 1, "Select Tools (Space to toggle, Enter to confirm):")
-            for i, tool in enumerate(self.tools):
-                prefix = "[x] " if tool['name'] in self.selected_tools else "[ ] "
+            self.stdscr.addstr(1, 1, "Select Modes (Space to toggle, Enter to confirm):")
+            for i, mode in enumerate(self.modes):
+                prefix = "[x] " if mode in self.selected_modes else "[ ] "
                 if i == current_selection:
-                    self.stdscr.addstr(i + 2, 3, f"> {prefix}{tool['name']}", curses.A_REVERSE)
+                    self.stdscr.addstr(i + 2, 3, f"> {prefix}{mode}", curses.A_REVERSE)
                 else:
-                    self.stdscr.addstr(i + 2, 3, f"  {prefix}{tool['name']}")
+                    self.stdscr.addstr(i + 2, 3, f"  {prefix}{mode}")
             self.stdscr.refresh()
 
     def toggle_think_mode(self):
@@ -441,7 +441,7 @@ class ConsoleApp:
             'model': self.selected_model,
             'provider': self.selected_provider,
             'history': json.dumps(transformed_history),
-            'selected_tools': json.dumps(self.selected_tools),
+            'selected_modes': json.dumps(self.selected_modes),
             'think': self.think_mode,
             'think_depth': self.think_depth
         }
