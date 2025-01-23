@@ -17,6 +17,7 @@ class ToolManagerApp:
         self.edit_mode = False
         self.edit_tool_name = ""
         self.edit_tool_modes = ""
+        self.edit_tool_description = ""
 
     def load_tools(self):
         tools = []
@@ -42,7 +43,7 @@ class ToolManagerApp:
         for i, tool in enumerate(self.tools):
             prefix = "> " if i == self.current_selection else "  "
             self.stdscr.addstr(i + 2, 3, f"{prefix}{tool['name']}")
-        self.stdscr.addstr(len(self.tools) + 3, 1, "a: Add, e: Edit, d: Delete, q: Quit")
+        self.stdscr.addstr(len(self.tools) + 3, 1, "a: Add, e: Edit, d: Delete, v: View, q: Quit")
         self.stdscr.refresh()
 
     def add_message(self, message, is_user=True):
@@ -93,22 +94,43 @@ def execute():
         self.edit_mode = True
         self.edit_tool_name = self.tools[self.current_selection]['name']
         self.edit_tool_modes = ",".join(self.tools[self.current_selection]['modes'])
+        if not self.tools:
+            self.add_message("No tools to edit.", is_user=False)
+            self.stdscr.getch()
+            return
+        self.edit_mode = True
+        selected_tool = self.tools[self.current_selection]
+        self.edit_tool_name = selected_tool['name']
+        self.edit_tool_modes = ",".join(selected_tool['modes'])
+        self.edit_tool_description = selected_tool['description']
         self.stdscr.clear()
         self.stdscr.addstr(1, 1, f"Edit Tool: {self.edit_tool_name}")
-        self.stdscr.addstr(2, 3, "Modes (comma separated):")
+        self.stdscr.addstr(2, 3, "Description:")
+        self.stdscr.addstr(3, 3, "Modes (comma separated):")
         self.stdscr.refresh()
         curses.echo()
-        self.stdscr.move(2, 28)
-        tool_modes = self.stdscr.getstr(20).decode('utf-8').strip()
+        self.stdscr.move(2, 15)
+        tool_description = self.stdscr.getstr(50).decode('utf-8').strip()
+        self.stdscr.move(3, 28)
+        tool_modes = self.stdscr.getstr(50).decode('utf-8').strip()
         curses.noecho()
-        if tool_modes:
+        if tool_modes and tool_description:
             try:
                 with open(os.path.join(TOOLS_DIR, f"{self.edit_tool_name}.py"), "r") as f:
                     lines = f.readlines()
                 for i, line in enumerate(lines):
                     if line.startswith("modes = "):
                         lines[i] = f"modes = {json.dumps([mode.strip() for mode in tool_modes.split(',')])}\n"
-                        break
+                    if line.strip().startswith('return """'):
+                        start_index = i
+                        end_index = -1
+                        for j in range(i + 1, len(lines)):
+                            if lines[j].strip().endswith('"""'):
+                                end_index = j
+                                break
+                        if end_index != -1:
+                            lines = lines[:start_index+1] + [f'    {tool_description}\n'] + lines[end_index:]
+                            break
                 with open(os.path.join(TOOLS_DIR, f"{self.edit_tool_name}.py"), "w") as f:
                     f.writelines(lines)
                 self.tools = self.load_tools()
@@ -116,7 +138,7 @@ def execute():
             except Exception as e:
                 self.add_message(f"Error editing tool: {e}", is_user=False)
         else:
-            self.add_message("Modes are required.", is_user=False)
+            self.add_message("Description and Modes are required.", is_user=False)
         self.edit_mode = False
         self.stdscr.getch()
 
@@ -134,6 +156,19 @@ def execute():
             self.add_message(f"Error deleting tool: {e}", is_user=False)
         self.stdscr.getch()
 
+    def view_tool(self):
+        if not self.tools:
+            self.add_message("No tools to view.", is_user=False)
+            self.stdscr.getch()
+            return
+        selected_tool = self.tools[self.current_selection]
+        self.stdscr.clear()
+        self.stdscr.addstr(1, 1, f"Tool: {selected_tool['name']}")
+        self.stdscr.addstr(2, 3, f"Description: {selected_tool['description']}")
+        self.stdscr.addstr(3, 3, f"Modes: {', '.join(selected_tool['modes'])}")
+        self.stdscr.refresh()
+        self.stdscr.getch()
+
     def run(self):
         while True:
             self.display_tools()
@@ -148,6 +183,8 @@ def execute():
                 self.edit_tool()
             elif key == ord('d'):
                 self.delete_tool()
+            elif key == ord('v'):
+                self.view_tool()
             elif key == ord('q'):
                 break
 
