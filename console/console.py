@@ -444,7 +444,7 @@ class ConsoleApp:
             'conversationId': self.selected_conversation_id,
             'model': self.selected_model,
             'provider': self.selected_provider,
-            'systemMessage': self.data.get('system_message'),
+            'systemMessage': data.get('system_message'),
             'modes': self.select_modes
         })
         if self.first_message:
