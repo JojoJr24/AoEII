@@ -314,28 +314,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Function to fetch and display tools
-    async function fetchTools() {
+    // Function to fetch and display tool modes
+    async function fetchToolModes() {
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/tools');
+            const response = await fetch('http://127.0.0.1:5000/api/tool_modes');
             if (!response.ok) {
-                console.error('Failed to fetch tools:', response.statusText);
+                console.error('Failed to fetch tool modes:', response.statusText);
                 return;
             }
-            const tools = await response.json();
+            const modes = await response.json();
             toolsContainer.innerHTML = '';
-            tools.forEach(tool => {
+            modes.forEach(mode => {
                 const toolTag = document.createElement('span');
                 toolTag.classList.add('tool-tag', 'draggable-tool');
-                toolTag.textContent = tool.name;
-                toolTag.title = tool.description;
+                toolTag.textContent = mode;
+                toolTag.title = mode;
                 
                 toolTag.draggable = true;
                 toolTag.addEventListener('dragstart', handleDragStart);
                 toolsContainer.appendChild(toolTag);
             });
         } catch (error) {
-            console.error('Error fetching tools:', error);
+            console.error('Error fetching tool modes:', error);
         }
     }
 
@@ -973,7 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial fetch of models, system messages and conversations
     fetchModels(selectedProvider);
     fetchSystemMessages();
-    fetchTools();
+    fetchToolModes();
     updateStatus();
     loadConversations();
     setInitialDarkMode();
