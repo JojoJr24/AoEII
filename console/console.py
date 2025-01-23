@@ -434,20 +434,38 @@ class ConsoleApp:
         except requests.exceptions.RequestException as e:
             self.add_message(f"Error stopping stream: {e}", is_user=False)
 
-    def send_message(self):
+    def process_response(self, message, response, start_time):
+        elapsed_time = time.time() - start_time
+        tokens = len(response.split())
+        self.tokens_per_second = f"{tokens / elapsed_time:.2f}" if elapsed_time > 0 else "0.00"
+        self.previous_responses.append({
+            'prompt': message,
+            'response': response,
+            'conversationId': self.selected_conversation_id,
+            'model': self.selected_model,
+            'provider': self.selected_provider,
+            'systemMessage': self.data.get('system_message'),
+            'modes': self.select_modes
+        })
+        if self.first_message:
+            self.first_message = False
+            self.fetch_conversations()
+
+    def send_message(self, executor):
         if not self.current_input.strip():
             return
+
         message = self.current_input
         self.add_message(message)
         self.current_input = ""
-        
+
         transformed_history = []
         for item in self.chat_history:
             if item['role'] == 'user':
                 transformed_history.append({'role': 'user', 'content': item['content']})
             elif item['role'] == 'llm':
                 transformed_history.append({'role': 'model', 'content': item['content']})
-        
+
         data = {
             'prompt': message,
             'model': self.selected_model,
@@ -469,14 +487,28 @@ class ConsoleApp:
         if self.first_message:
             self.conversation_title = message
             data['conversation_title'] = self.conversation_title
-        
+
         api_url = f"{API_BASE_URL}/generate"
         if self.think_mode:
             api_url = f"{API_BASE_URL}/think"
-        
+
         self.streaming = True
         try:
-            self.response_start_time = time.time()
+            start_time = time.time()
+            future = executor.submit(self.make_api_request, api_url, data)
+            response = future.result()
+            self.last_response = response
+            self.add_message(response, is_user=False)
+            self.process_response(message, response, start_time)
+
+        except requests.exceptions.RequestException as e:
+            self.add_message(f"Error sending message: {e}", is_user=False)
+        except Exception as e:
+            self.add_message(f"Error processing response: {e}", is_user=False)
+        self.streaming = False
+
+    def make_api_request(self, api_url, data):
+        try:
             with requests.post(api_url, data=data, stream=True) as response:
                 response.raise_for_status()
                 partial_response = ""
@@ -489,28 +521,12 @@ class ConsoleApp:
                             partial_response += json_line.get('response', '')
                         except json.JSONDecodeError:
                             self.add_message(f"Error decoding response: {line}", is_user=False)
-                self.last_response = partial_response
-                self.add_message(partial_response, is_user=False)
-                elapsed_time = time.time() - self.response_start_time
-                tokens = len(partial_response.split())
-                self.tokens_per_second = f"{tokens / elapsed_time:.2f}" if elapsed_time > 0 else "0.00"
-                self.previous_responses.append({
-                    'prompt': message,
-                    'response': partial_response,
-                    'conversationId': self.selected_conversation_id,
-                    'model': self.selected_model,
-                    'provider': self.selected_provider,
-                    'systemMessage': data.get('system_message'),
-                    'modes': self.select_modes
-                })
-                if self.first_message:
-                    self.first_message = False
-                    self.fetch_conversations()
+                return partial_response
         except requests.exceptions.RequestException as e:
             self.add_message(f"Error sending message: {e}", is_user=False)
-        self.streaming = False
+            return ""
 
-    def handle_input(self, key):
+    def handle_input(self, key, executor):
         if key == 10:  # Enter key
             self.send_message(executor)
         elif key == curses.KEY_BACKSPACE or key == 127:  # Backspace key
