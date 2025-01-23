@@ -14,7 +14,7 @@ CHANNELS = 1
 BLOCK_SIZE = 512
 
 def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", language="es"):
-    model = WhisperModel(model_size, device="cpu")
+    model = WhisperModel(model_size, device="cpu",compute_type="int8")
     while True:
         audio_data = audio_queue.get()
         if audio_data is None:
@@ -25,7 +25,7 @@ def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", langua
         sf.write(audio_buffer, audio_data, RATE, format='WAV')
         audio_buffer.seek(0)  # Rewind to the beginning of the buffer
         
-        segments, _ = model.transcribe(audio_buffer, language=language, vad_filter=True)
+        segments, _ = model.transcribe(audio_buffer, language=language, vad_filter=True, beam_size=2)
         transcription = " ".join([segment.text for segment in segments])
         transcription_queue.put(transcription)
 
@@ -56,7 +56,7 @@ def record_and_transcribe(stdscr):
                 tensor_chunk = torch.from_numpy(audio_chunk).unsqueeze(0)
                 speech_prob = vad_model(tensor_chunk, RATE).item()
                 
-                is_speech = speech_prob > 0.5
+                is_speech = speech_prob > 0.3
                 
                 if is_speech:
                     audio_buffer.append(audio_chunk)
