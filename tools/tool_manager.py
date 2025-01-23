@@ -91,9 +91,6 @@ def execute():
             self.add_message("No tools to edit.", is_user=False)
             self.stdscr.getch()
             return
-        self.edit_mode = True
-        self.edit_tool_name = self.tools[self.current_selection]['name']
-        self.edit_tool_modes = ",".join(self.tools[self.current_selection]['modes'])
         if not self.tools:
             self.add_message("No tools to edit.", is_user=False)
             self.stdscr.getch()
@@ -101,17 +98,17 @@ def execute():
         self.edit_mode = True
         selected_tool = self.tools[self.current_selection]
         self.edit_tool_name = selected_tool['name']
-        self.edit_tool_modes = ",".join(selected_tool['modes'])
-        self.edit_tool_description = selected_tool['description']
+        self.edit_tool_modes = ", ".join(selected_tool['modes'])
+        self.edit_tool_description = selected_tool['description'].strip()
         self.stdscr.clear()
         self.stdscr.addstr(1, 1, f"Edit Tool: {self.edit_tool_name}")
-        self.stdscr.addstr(2, 3, "Description:")
-        self.stdscr.addstr(3, 3, "Modes (comma separated):")
+        self.stdscr.addstr(2, 3, f"Description: {self.edit_tool_description}")
+        self.stdscr.addstr(3, 3, f"Modes (comma separated): {self.edit_tool_modes}")
         self.stdscr.refresh()
         curses.echo()
         self.stdscr.move(2, 15)
         tool_description = self.stdscr.getstr(50).decode('utf-8').strip()
-        self.stdscr.move(3, 28)
+        self.stdscr.move(3, 30 + len(self.edit_tool_modes))
         tool_modes = self.stdscr.getstr(50).decode('utf-8').strip()
         curses.noecho()
         if tool_modes and tool_description:
