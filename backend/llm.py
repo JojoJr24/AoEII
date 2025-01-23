@@ -103,8 +103,8 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
         return
 
     retries = 3
-    for _ in range(retries):
-        debug_print(BLUE, f"Intentando obtener clasificación del problema, intento {_ + 1} de {retries}.")
+    for attempt in range(retries):
+        debug_print(BLUE, f"Intentando obtener clasificación del problema, intento {attempt + 1} de {retries}.")
         try:
             for chunk in provider.generate_response(
                 prompt=prompt,
@@ -120,11 +120,16 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
                 parsed_json = json.loads(json_string)
                 debug_print(GREEN, f"Clasificación obtenida exitosamente: {parsed_json}")
                 break
-        except json.JSONDecodeError:
-            debug_print(MAGENTA, f"Error al parsear JSON en el intento {_ + 1}.")
-            if _ == retries - 1:
+        except json.JSONDecodeError as e:
+            debug_print(MAGENTA, f"Error al parsear JSON en el intento {attempt + 1}: {e}")
+            if attempt == retries - 1:
                 yield "Error: Failed to parse JSON after multiple retries"
                 return
+        else:
+            continue
+    else:
+        yield "Error: Failed to get classification after multiple retries"
+        return
 
     dificultad = depth if depth != 0 else parsed_json.get("dificultad", 1)
     tipo_problema = parsed_json.get("tipo_problema", 1)
@@ -136,8 +141,8 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     for estrategia in estrategias_comunes:
         debug_print(BLUE, f"Procesando estrategia: {estrategia}")
         steps_response = ""
-        for _ in range(retries):
-            debug_print(BLUE, f"Intentando obtener pasos para la estrategia '{estrategia}', intento {_ + 1} de {retries}.")
+        for attempt in range(retries):
+            debug_print(BLUE, f"Intentando obtener pasos para la estrategia '{estrategia}', intento {attempt + 1} de {retries}.")
             try:
                 system_msg_for_steps = (
                     f"Eres un experto resolviendo problemas. La estrategia actual es: {estrategia}. "
@@ -166,9 +171,13 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
                 debug_print(GREEN, f"Pasos obtenidos: {pasos_para_estrategia}")
                 break
             except Exception as e:
-                debug_print(MAGENTA, f"Error al procesar pasos en el intento {_ + 1}: {e}")
-                if _ == retries - 1:
+                debug_print(MAGENTA, f"Error al procesar pasos en el intento {attempt + 1}: {e}")
+                if attempt == retries - 1:
                     pasos_para_estrategia = []
+            else:
+                continue
+        else:
+            pasos_para_estrategia = []
 
         resumen_acumulado = ""
         for paso in pasos_para_estrategia:
