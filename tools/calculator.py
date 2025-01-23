@@ -33,4 +33,4 @@ def get_tool_description():
     
     The tool will return the result of the operation.
     """
-modes = ["general"]
+modes = ["\u001b\u001b\u001b\u001b\u001b"]
