@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 import requests
 import json
 import argparse
+import concurrent.futures
 from voice_input import record_and_transcribe
 
 # Constants
@@ -511,7 +512,7 @@ class ConsoleApp:
 
     def handle_input(self, key):
         if key == 10:  # Enter key
-            self.send_message()
+            self.send_message(executor)
         elif key == curses.KEY_BACKSPACE or key == 127:  # Backspace key
             self.current_input = self.current_input[:-1]
         elif 32 <= key <= 126:  # Printable characters
@@ -530,35 +531,36 @@ class ConsoleApp:
 
     def run(self):
         self.parse_arguments()
-        while True:
-            self.stdscr.clear()
-            self.display_chat()
-            self.display_input_area()
-            self.display_menu()
-            self.stdscr.addstr(self.height - 4, 1, "F2: Voice Input")
-            self.stdscr.refresh()
-            key = self.stdscr.getch()
-            if key == curses.KEY_IC:
-                self.menu_active = True
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            while True:
                 self.stdscr.clear()
+                self.display_chat()
+                self.display_input_area()
                 self.display_menu()
-                menu_selection = ""
-                while True:
-                    key = self.stdscr.getch()
-                    if key == 10:
-                        self.stdscr.clear()
-                        self.handle_menu_selection(menu_selection)
-                        self.menu_active = False
-                        break
-                    elif key == 27:
-                        self.stdscr.clear()
-                        self.menu_active = False
-                        break
-                    elif 48 <= key <= 57:
-                        menu_selection += chr(key)
-                        self.display_menu(menu_selection)
-            elif not self.handle_input(key):
-                break
+                self.stdscr.addstr(self.height - 4, 1, "F2: Voice Input")
+                self.stdscr.refresh()
+                key = self.stdscr.getch()
+                if key == curses.KEY_IC:
+                    self.menu_active = True
+                    self.stdscr.clear()
+                    self.display_menu()
+                    menu_selection = ""
+                    while True:
+                        key = self.stdscr.getch()
+                        if key == 10:
+                            self.stdscr.clear()
+                            self.handle_menu_selection(menu_selection)
+                            self.menu_active = False
+                            break
+                        elif key == 27:
+                            self.stdscr.clear()
+                            self.menu_active = False
+                            break
+                        elif 48 <= key <= 57:
+                            menu_selection += chr(key)
+                            self.display_menu(menu_selection)
+                elif not self.handle_input(key, executor):
+                    break
 
 def main(stdscr):
     app = ConsoleApp(stdscr)
