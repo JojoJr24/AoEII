@@ -30,13 +30,6 @@ def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", langua
         transcription_queue.put(transcription)
 
 def record_and_transcribe(stdscr):
-    temp_audio_path = "temp_audio.wav"
-    if os.path.exists(temp_audio_path):
-        try:
-            os.remove(temp_audio_path)
-        except Exception as e:
-            print(f"Error removing temp audio file: {e}")
-
     vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
                                     model='silero_vad',
                                     force_reload=False)
