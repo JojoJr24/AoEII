@@ -2,6 +2,7 @@ import os
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
+import io
 import torch
 from faster_whisper import WhisperModel
 import curses
@@ -18,11 +19,14 @@ def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", langua
         audio_data = audio_queue.get()
         if audio_data is None:
             break
-        temp_audio_path = "temp_audio.wav"
-        sf.write(temp_audio_path, audio_data, RATE)
-        segments, _ = model.transcribe(temp_audio_path, language=language)
+        
+        # Use BytesIO to store audio data in memory
+        audio_buffer = io.BytesIO()
+        sf.write(audio_buffer, audio_data, RATE, format='WAV')
+        audio_buffer.seek(0)  # Rewind to the beginning of the buffer
+        
+        segments, _ = model.transcribe(audio_buffer, language=language)
         transcription = " ".join([segment.text for segment in segments])
-        os.remove(temp_audio_path)
         transcription_queue.put(transcription)
 
 def record_and_transcribe(stdscr):
