@@ -687,8 +687,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentConversationId) {
                 formData.append('conversation_id', currentConversationId);
             }
-            const activeTools = Array.from(activeToolsContainer.querySelectorAll('.active-tool-tag')).map(tool => tool.textContent);
-            formData.append('selected_tools', JSON.stringify(activeTools));
+            const activeModes = Array.from(activeToolsContainer.querySelectorAll('.active-tool-tag')).map(tool => tool.textContent);
+            formData.append('selected_modes', JSON.stringify(activeModes));
             formData.append('think', thinkToggle.checked);
             formData.append('think_depth', thinkDepth.value);
             if (selectedProvider === 'openai' && openaiBaseUrlInput.value.trim() !== '') {
