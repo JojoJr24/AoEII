@@ -443,7 +443,7 @@ class ConsoleApp:
             'history': json.dumps(transformed_history),
             'selected_modes': json.dumps(self.selected_modes),
             'think': self.think_mode,
-            'think_depth': self.think_depth
+            'think_depth': self.think_depth,
         }
         if self.selected_system_message_id:
             system_message = next((msg['content'] for msg in self.system_messages if msg['id'] == self.selected_system_message_id), None)
