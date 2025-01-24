@@ -40,6 +40,68 @@ def play_beep(frequency=440, duration=0.1, volume=0.5):
     sd.play(tone, samplerate=sample_rate)
     sd.wait()
 
+def record_and_transcribe_continuous(stdscr, language="es"):
+    vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
+                                    model='silero_vad',
+                                    force_reload=False)
+    vad_model.eval()
+    
+    audio_queue = queue.Queue()
+    transcription_queue = queue.Queue()
+    transcription_thread = threading.Thread(target=transcribe_audio, args=(audio_queue, transcription_queue, "tiny", language))
+    transcription_thread.daemon = True
+    transcription_thread.start()
+    
+    audio_buffer = []
+    silent_blocks = 0
+    max_silence_duration = int(RATE * 3 / BLOCK_SIZE)
+    
+    try:
+        play_beep(frequency=880, duration=0.05)
+        with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype=np.float32) as stream:
+            while True:
+                audio_chunk, _ = stream.read(BLOCK_SIZE)
+                audio_chunk = audio_chunk.flatten()
+                tensor_chunk = torch.from_numpy(audio_chunk).unsqueeze(0)
+                speech_prob = vad_model(tensor_chunk, RATE).item()
+                
+                is_speech = speech_prob > 0.3
+                
+                stdscr.addstr(stdscr.getmaxyx()[0] - 2, 1, f"Speech prob: {speech_prob:.2f}")
+                stdscr.refresh()
+                
+                if is_speech:
+                    audio_buffer.append(audio_chunk)
+                    silent_blocks = 0
+                else:
+                    silent_blocks += 1
+                    if len(audio_buffer) > 0:
+                        audio_queue.put(np.concatenate(audio_buffer))
+                        audio_buffer = []
+                    
+                if silent_blocks >= max_silence_duration:
+                    if len(audio_buffer) > 0:
+                        audio_queue.put(np.concatenate(audio_buffer))
+                        audio_buffer = []
+                    
+                # Check for new transcriptions
+                while not transcription_queue.empty():
+                    transcription = transcription_queue.get()
+                    yield transcription
+                    
+    except Exception as e:
+        error_message = f"Error durante la grabación con VAD: {e}"
+        max_length = stdscr.getmaxyx()[1] - 2
+        if len(error_message) > max_length:
+            error_message = error_message[:max_length] + "..."
+        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, error_message)
+        stdscr.refresh()
+        yield "Error during recording"
+    finally:
+        audio_queue.put(None)  # Signal the transcription thread to stop
+        transcription_thread.join()
+        play_beep(frequency=600, duration=0.1)
+
 def record_and_transcribe(stdscr):
     vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
                                     model='silero_vad',
