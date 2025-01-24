@@ -86,18 +86,18 @@ def record_and_transcribe(language="es"):
                 if speech_started and silent_blocks >= max_silence_duration:
                     break
                 
-                # Check for new transcriptions
-                while not transcription_queue.empty():
-                    transcription = transcription_queue.get()
-                    full_transcription += transcription + " "
-                    print(f"Transcripción: {full_transcription}", end='\r')
-                    
         # Process any remaining audio
         if len(audio_buffer) > 0:
             audio_queue.put(np.concatenate(audio_buffer))
         
         audio_queue.put(None)  # Signal the transcription thread to stop
         transcription_thread.join()
+        
+        full_transcription = ""
+        while not transcription_queue.empty():
+            transcription = transcription_queue.get()
+            full_transcription += transcription + " "
+        
         play_beep(frequency=600, duration=0.1)
         print(f"Transcripción final: {full_transcription}")
         return full_transcription.strip()
