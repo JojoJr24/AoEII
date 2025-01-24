@@ -25,7 +25,7 @@ def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", langua
         sf.write(audio_buffer, audio_data, RATE, format='WAV')
         audio_buffer.seek(0)  # Rewind to the beginning of the buffer
         
-        segments, _ = model.transcribe(audio_buffer, language=language, vad_filter=True, beam_size=2)
+        segments, _ = model.transcribe(audio_buffer, language=language, vad_filter=True)
         transcription = " ".join([segment.text for segment in segments])
         transcription_queue.put(transcription)
 
