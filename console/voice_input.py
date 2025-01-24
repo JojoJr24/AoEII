@@ -8,6 +8,8 @@ from faster_whisper import WhisperModel
 import curses
 import threading
 import queue
+import sounddevice as sd
+import numpy as np
 
 RATE = 16000
 CHANNELS = 1
@@ -29,6 +31,13 @@ def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", langua
         transcription = " ".join([segment.text for segment in segments])
         transcription_queue.put(transcription)
 
+def play_beep(frequency=440, duration=0.1, volume=0.5):
+    sample_rate = 44100
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    tone = volume * np.sin(2 * np.pi * frequency * t)
+    sd.play(tone, samplerate=sample_rate)
+    sd.wait()
+
 def record_and_transcribe(stdscr):
     vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
                                     model='silero_vad',
@@ -49,6 +58,7 @@ def record_and_transcribe(stdscr):
     full_transcription = ""
     
     try:
+        play_beep(frequency=880, duration=0.05)
         with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype=np.float32) as stream:
             while True:
                 audio_chunk, _ = stream.read(BLOCK_SIZE)
@@ -86,7 +96,7 @@ def record_and_transcribe(stdscr):
         
         audio_queue.put(None)  # Signal the transcription thread to stop
         transcription_thread.join()
-        
+        play_beep(frequency=600, duration=0.1)
         return full_transcription.strip()
     except Exception as e:
         error_message = f"Error durante la grabación con VAD: {e}"
