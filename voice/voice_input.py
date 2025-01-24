@@ -102,7 +102,7 @@ def record_and_transcribe_continuous(stdscr, language="es"):
         transcription_thread.join()
         play_beep(frequency=600, duration=0.1)
 
-def record_and_transcribe(stdscr):
+def record_and_transcribe(stdscr, language="es"):
     vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
                                     model='silero_vad',
                                     force_reload=False)

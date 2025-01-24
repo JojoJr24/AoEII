@@ -26,9 +26,8 @@ class VoiceApp:
 
     def parse_arguments(self):
         parser = argparse.ArgumentParser(description="Voice application.")
-        parser.add_argument("--continuous", action="store_true", help="Enable continuous listening.")
         args = parser.parse_args()
-        self.continuous_mode = args.continuous
+        self.continuous_mode = True
 
     def load_config(self):
         try:
@@ -93,16 +92,19 @@ class VoiceApp:
             print(f"Error sending message: {e}")
 
     def run(self):
+        import curses
+        stdscr = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        stdscr.keypad(True)
         print("Voice interface started. Say 'activar <prompt>' to set a prompt, and 'ejecutar' to send it.")
-        if self.continuous_mode:
-            for transcription in record_and_transcribe_continuous():
-                if transcription != "Error during recording":
-                    self.process_command(transcription)
-        else:
-            while True:
-                transcription = record_and_transcribe()
-                if transcription != "Error during recording":
-                    self.process_command(transcription)
+        for transcription in record_and_transcribe_continuous(stdscr):
+            if transcription != "Error during recording":
+                self.process_command(transcription)
+        curses.nocbreak()
+        stdscr.keypad(False)
+        curses.echo()
+        curses.endwin()
 
 if __name__ == "__main__":
     app = VoiceApp()
