@@ -56,6 +56,7 @@ def record_and_transcribe(stdscr, language="es"):
     silent_blocks = 0
     max_silence_duration = int(RATE * 3 / BLOCK_SIZE)
     min_speech_duration = int(RATE * 0.1 / BLOCK_SIZE)
+    speech_started = False
     
     full_transcription = ""
     
@@ -76,13 +77,15 @@ def record_and_transcribe(stdscr, language="es"):
                 if is_speech:
                     audio_buffer.append(audio_chunk)
                     silent_blocks = 0
+                    speech_started = True
                 else:
-                    silent_blocks += 1
+                    if speech_started:
+                        silent_blocks += 1
                     if len(audio_buffer) > 0:
                         audio_queue.put(np.concatenate(audio_buffer))
                         audio_buffer = []
                     
-                if silent_blocks >= max_silence_duration:
+                if speech_started and silent_blocks >= max_silence_duration:
                     break
                 
                 # Check for new transcriptions
