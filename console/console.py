@@ -71,8 +71,7 @@ class ConsoleApp:
         parser = argparse.ArgumentParser(description="Console application with voice input option.")
         parser.add_argument("--listen", action="store_true", help="Enable voice input by default.")
         args = parser.parse_args()
-        if args.listen:
-            self.voice_input_active = True
+        self.voice_input_active = args.listen
 
     def save_config(self):
         config = {
@@ -539,9 +538,19 @@ class ConsoleApp:
             self.menu_active = False
             return False
         elif key == curses.KEY_F2 or self.voice_input_active:  # F2 for voice input
-            transcription = record_and_transcribe(self.stdscr)
-            if transcription and transcription != "Error during recording":
-                self.current_input = transcription
+            if self.voice_input_active:
+                self.current_input = ""
+                for transcription in record_and_transcribe_continuous(self.stdscr):
+                    if transcription == "Error during recording":
+                        break
+                    self.current_input += transcription + " "
+                    self.display_input_area()
+                    self.stdscr.refresh()
+                self.voice_input_active = False
+            else:
+                transcription = record_and_transcribe(self.stdscr)
+                if transcription and transcription != "Error during recording":
+                    self.current_input = transcription
             self.voice_input_active = False
         return True
 
