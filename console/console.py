@@ -6,7 +6,7 @@ import requests
 import json
 import argparse
 import concurrent.futures
-from voice_input import record_and_transcribe
+from voice_input import record_and_transcribe, record_and_transcribe_continuous
 
 # Constants
 API_BASE_URL = "http://127.0.0.1:5000/api"
