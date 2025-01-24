@@ -58,6 +58,9 @@ def record_and_transcribe(stdscr):
                 
                 is_speech = speech_prob > 0.3
                 
+                stdscr.addstr(stdscr.getmaxyx()[0] - 2, 1, f"Speech prob: {speech_prob:.2f}")
+                stdscr.refresh()
+                
                 if is_speech:
                     audio_buffer.append(audio_chunk)
                     silent_blocks = 0
