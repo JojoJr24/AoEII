@@ -28,8 +28,10 @@ def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", langua
         audio_buffer.seek(0)  # Rewind to the beginning of the buffer
         
         segments, _ = model.transcribe(audio_buffer, language=language, vad_filter=True)
-        transcription = " ".join([segment.text for segment in segments])
-        transcription_queue.put(transcription)
+        full_transcription = ""
+        for segment in segments:
+            full_transcription += segment.text + " "
+        transcription_queue.put(full_transcription.strip())
 
 def play_beep(frequency=440, duration=0.1, volume=0.5):
     sample_rate = 44100
