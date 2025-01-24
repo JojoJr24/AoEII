@@ -3,7 +3,7 @@ import json
 import time
 import requests
 import threading
-from voice_input import record_and_transcribe, record_and_transcribe_continuous, play_beep
+from voice_input import record_and_transcribe, play_beep
 import argparse
 
 # Constants
@@ -45,11 +45,11 @@ class VoiceApp:
             print("Error loading config file, using defaults.")
 
     def process_command(self, transcription):
-        if "activar" in transcription.lower():
+        if "act" in transcription.lower():
             play_beep(frequency=880, duration=0.1)
             self.prompt = transcription.lower().split("activar", 1)[1].strip()
             print(f"Prompt loaded: {self.prompt}")
-        elif "ejecutar" in transcription.lower():
+        elif "ejec" in transcription.lower():
             self.send_message()
         else:
             print(f"Command not recognized: {transcription}")
@@ -98,7 +98,7 @@ class VoiceApp:
         curses.cbreak()
         stdscr.keypad(True)
         print("Voice interface started. Say 'activar <prompt>' to set a prompt, and 'ejecutar' to send it.")
-        for transcription in record_and_transcribe_continuous(stdscr):
+        for transcription in record_and_transcribe(stdscr):
             if transcription != "Error during recording":
                 self.process_command(transcription)
         curses.nocbreak()
