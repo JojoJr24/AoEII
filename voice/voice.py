@@ -1,8 +1,6 @@
 import os
 import json
-import time
 import requests
-import threading
 from voice_input import record_and_transcribe, play_beep
 import argparse
 
@@ -95,19 +93,10 @@ class VoiceApp:
             print(f"Error sending message: {e}")
 
     def run(self):
-        import curses
-        stdscr = curses.initscr()
-        curses.noecho()
-        curses.cbreak()
-        stdscr.keypad(True)
-        print("Voice interface started. Say 'activar <prompt>' to set a prompt, and 'ejecutar' to send it.")
-        for transcription in record_and_transcribe(stdscr):
+        print("Voice interface started. Say 'comando <prompt>' to set a prompt, and 'ejecutar' to send it.")
+        for transcription in record_and_transcribe():
             if transcription != "Error during recording":
                 self.process_command(transcription)
-        curses.nocbreak()
-        stdscr.keypad(False)
-        curses.echo()
-        curses.endwin()
 
 if __name__ == "__main__":
     app = VoiceApp()
