@@ -110,7 +110,6 @@ def record_and_transcribe(stdscr):
         # Aquí corregimos la transcripción final
         full_transcription = full_transcription.strip()
         texto_corregido = corregir_texto_languagetool(full_transcription)
-        
         # Mostramos el resultado corregido
         stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción corregida: {texto_corregido}")
         stdscr.refresh()
