@@ -46,12 +46,15 @@ class VoiceApp:
 
     def process_command(self, transcription):
         if "act" in transcription.lower():
-            play_beep(frequency=880, duration=0.1)
-            self.prompt = transcription.lower().split("activar", 1)[1].strip()
-            print(f"Prompt loaded: {self.prompt}")
-        elif "ejec" in transcription.lower():
+            try:
+                play_beep(frequency=880, duration=0.1)
+                self.prompt = transcription.lower().split("activar", 1)[1].strip()
+                print(f"Prompt loaded: {self.prompt}")
+            except IndexError:
+                print("No prompt provided after 'activar'.")
+        if "ejec" in transcription.lower():
             self.send_message()
-        else:
+        if not ("act" in transcription.lower() or "ejec" in transcription.lower()):
             print(f"Command not recognized: {transcription}")
 
     def send_message(self):
