@@ -10,10 +10,17 @@ import threading
 import queue
 import sounddevice as sd
 import numpy as np
+import language_tool_python  
 
 RATE = 16000
 CHANNELS = 1
 BLOCK_SIZE = 512
+
+def corregir_texto_languagetool(texto):
+    # Crea instancia del corrector para español
+    tool = language_tool_python.LanguageTool('es')
+    texto_corregido = tool.correct(texto)
+    return texto_corregido
 
 def transcribe_audio(audio_queue, transcription_queue, model_size="tiny", language="es"):
     model = WhisperModel(model_size, device="cpu",compute_type="int8")
@@ -89,17 +96,27 @@ def record_and_transcribe(stdscr):
                 while not transcription_queue.empty():
                     transcription = transcription_queue.get()
                     full_transcription += transcription + " "
-                    stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción: {full_transcription}")
+                    stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción parcial: {full_transcription}")
                     stdscr.refresh()
                     
-        # Process any remaining audio
+        # Procesar cualquier audio restante en el buffer
         if len(audio_buffer) > 0:
             audio_queue.put(np.concatenate(audio_buffer))
         
-        audio_queue.put(None)  # Signal the transcription thread to stop
+        # Finalizamos la cola de audio
+        audio_queue.put(None)  
         transcription_thread.join()
+        
+        # Aquí corregimos la transcripción final
+        full_transcription = full_transcription.strip()
+        texto_corregido = corregir_texto_languagetool(full_transcription)
+        
+        # Mostramos el resultado corregido
+        stdscr.addstr(stdscr.getmaxyx()[0] - 1, 1, f"Transcripción corregida: {texto_corregido}")
+        stdscr.refresh()
+        
         play_beep(frequency=600, duration=0.1)
-        return full_transcription.strip()
+        return texto_corregido
     except Exception as e:
         error_message = f"Error durante la grabación con VAD: {e}"
         max_length = stdscr.getmaxyx()[1] - 2
