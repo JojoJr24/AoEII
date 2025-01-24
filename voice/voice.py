@@ -3,7 +3,7 @@ import json
 import time
 import requests
 import threading
-from ..console.voice_input import record_and_transcribe, record_and_transcribe_continuous, play_beep
+from console.voice_input import record_and_transcribe, record_and_transcribe_continuous, play_beep
 import argparse
 
 # Constants
