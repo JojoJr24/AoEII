@@ -45,10 +45,10 @@ class VoiceApp:
             print("Error loading config file, using defaults.")
 
     def process_command(self, transcription):
-        if "act" in transcription.lower():
+        if "com" in transcription.lower():
             try:
                 play_beep(frequency=880, duration=0.1)
-                self.prompt = transcription.lower().split("activar", 1)[1].strip()
+                self.prompt = transcription.lower().split("comando", 1)[1].strip()
                 print(f"Prompt loaded: {self.prompt}")
             except IndexError:
                 print("No prompt provided after 'activar'.")
