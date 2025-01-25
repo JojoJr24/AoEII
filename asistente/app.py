@@ -3,6 +3,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf
 import os
 import cairo
+import json
+import requests
+import io
 
 class FloatingButton:
     def __init__(self):
@@ -78,8 +81,47 @@ class FloatingButton:
         context.paint()
 
         # Save the surface to a PNG file
-        surface.write_to_png("screenshot.png")
-        print("Screenshot saved to screenshot.png")
+        image_stream = io.BytesIO()
+        surface.write_to_png(image_stream)
+        image_stream.seek(0)
+
+        # Get the text from the text area
+        text_buffer = self.text_area.get_buffer()
+        text = text_buffer.get_text(text_buffer.get_start_iter(), text_buffer.get_end_iter(), True)
+
+        # Load the configuration from console/config.json
+        try:
+            with open("console/config.json", "r") as f:
+                config = json.load(f)
+                selected_provider = config.get("selected_provider", "gemini")
+                selected_model = config.get("selected_model", "models/gemini-2.0-flash-exp")
+        except Exception as e:
+            print(f"Error loading config: {e}")
+            return
+
+        # Prepare the request data
+        files = {'image': ('screenshot.png', image_stream, 'image/png')}
+        data = {
+            'prompt': text,
+            'provider': selected_provider,
+            'model': selected_model
+        }
+
+        # Send the request to the /generate endpoint
+        try:
+            response = requests.post("http://127.0.0.1:5000/api/generate", files=files, data=data, stream=True)
+            if response.status_code == 200:
+                for line in response.iter_lines():
+                    if line:
+                        try:
+                            json_data = json.loads(line.strip())
+                            print(json_data.get('response', ''))
+                        except json.JSONDecodeError:
+                            print(f"Error decoding JSON: {line}")
+            else:
+                print(f"Error: {response.status_code} - {response.text}")
+        except Exception as e:
+            print(f"Error sending request: {e}")
 
     def on_text_window_destroy(self, widget):
         self.text_window = None
