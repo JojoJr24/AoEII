@@ -6,6 +6,7 @@ import cairo
 import json
 import requests
 import io
+import pyttsx3
 
 class FloatingButton:
     def __init__(self):
@@ -25,6 +26,17 @@ class FloatingButton:
         self.window.show_all()
         self.window.move(10, 10)
         self.text_window = None
+
+        # Initialize the TTS engine
+        self.engine = pyttsx3.init()
+        voices = self.engine.getProperty('voices')
+        for voice in voices:
+            if "es" in voice.languages[0].decode().lower():
+                self.engine.setProperty('voice', voice.id)
+                print(f"TTS voice selected: {voice.name}")
+                break
+        self.engine.setProperty('rate', 150)
+        self.engine.setProperty('volume', 0.9)
 
     def on_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)
@@ -118,7 +130,10 @@ class FloatingButton:
                     if line:
                         try:
                             json_data = json.loads(line.strip())
-                            print(json_data.get('response', ''))
+                            response_text = json_data.get('response', '')
+                            print(response_text)
+                            self.engine.say(response_text)
+                            self.engine.runAndWait()
                         except json.JSONDecodeError:
                             print(f"Error decoding JSON: {line}")
             else:
