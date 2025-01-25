@@ -68,7 +68,7 @@ def record_and_transcribe(language="es"):
                 tensor_chunk = torch.from_numpy(audio_chunk).unsqueeze(0)
                 speech_prob = vad_model(tensor_chunk, RATE).item()
                 
-                is_speech = speech_prob > 0.3
+                is_speech = speech_prob > 0.6
                 
                 print(f"Speech prob: {speech_prob:.2f}", end='\r')
                 

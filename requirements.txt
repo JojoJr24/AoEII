@@ -15,3 +15,5 @@ soundfile
 Pillow
 faster-whisper
 language_tool_python
+PyGObject
+pyttsx3
