@@ -28,7 +28,7 @@ class FloatingButton:
         self.text_window = None
 
         # Initialize the TTS engine
-        self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to("cuda")
+        self.tts = TTS(model_name="tts_models/es/mai/tacotron2-DDC").to("cuda")
 
     def on_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)
@@ -98,7 +98,7 @@ class FloatingButton:
 
         # Load the configuration from console/config.json
         try:
-            with open("../console/config.json", "r") as f:
+            with open("config.json", "r") as f:
                 config = json.load(f)
                 selected_provider = config.get("selected_provider", "gemini")
                 selected_model = config.get("selected_model", "models/gemini-2.0-flash-exp")
@@ -124,7 +124,7 @@ class FloatingButton:
                             json_data = json.loads(line.strip())
                             response_text = json_data.get('response', '')
                             print(response_text)
-                            self.tts.tts(text=response_text, speaker="es", language="es", file_path="output.wav")
+                            self.tts.tts(text=response_text, file_path="output.wav")
                             os.system("aplay output.wav")
                         except json.JSONDecodeError:
                             print(f"Error decoding JSON: {line}")
