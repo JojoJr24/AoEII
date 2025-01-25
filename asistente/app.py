@@ -102,16 +102,29 @@ class FloatingButton:
                 config = json.load(f)
                 selected_provider = config.get("selected_provider", "gemini")
                 selected_model = config.get("selected_model", "models/gemini-2.0-flash-exp")
+                selected_system_message_id = config.get("selected_system_message_id")
         except Exception as e:
             print(f"Error loading config: {e}")
             return
+
+        system_message = None
+        if selected_system_message_id:
+            try:
+                response = requests.get(f"http://127.0.0.1:5000/api/system_messages/{selected_system_message_id}")
+                if response.status_code == 200:
+                    system_message = response.json().get('content')
+                else:
+                    print(f"Error fetching system message: {response.status_code} - {response.text}")
+            except Exception as e:
+                print(f"Error fetching system message: {e}")
 
         # Prepare the request data
         files = {'image': ('screenshot.png', image_stream, 'image/png')}
         data = {
             'prompt': text,
             'provider': selected_provider,
-            'model': selected_model
+            'model': selected_model,
+            'system_message': system_message
         }
 
         # Send the request to the /generate endpoint
