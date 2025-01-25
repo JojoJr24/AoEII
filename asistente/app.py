@@ -31,7 +31,7 @@ class FloatingButton:
         self.engine = pyttsx3.init()
         voices = self.engine.getProperty('voices')
         for voice in voices:
-            if "es" in voice.languages[0].decode().lower():
+            if "es" in voice.languages[0].lower():
                 self.engine.setProperty('voice', voice.id)
                 print(f"TTS voice selected: {voice.name}")
                 break
