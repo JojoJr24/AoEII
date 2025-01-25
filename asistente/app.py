@@ -137,8 +137,15 @@ class FloatingButton:
                             json_data = json.loads(line.strip())
                             response_text = json_data.get('response', '')
                             print(response_text)
-                            self.tts.tts(text=response_text, file_path="output.wav")
-                            os.system("aplay output.wav")
+                            
+                            # Filter out characters not in the vocabulary
+                            filtered_text = ''.join(filter(lambda char: char in self.tts.model.text_manager.vocabulary, response_text))
+                            
+                            if filtered_text:
+                                self.tts.tts(text=filtered_text, file_path="output.wav")
+                                os.system("aplay output.wav")
+                            else:
+                                print("Filtered text is empty, skipping TTS.")
                         except json.JSONDecodeError:
                             print(f"Error decoding JSON: {line}")
             else:
