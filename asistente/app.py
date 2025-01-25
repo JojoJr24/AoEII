@@ -66,6 +66,7 @@ class FloatingButton:
 
     def on_send_clicked(self, widget):
         # Minimize the text window
+        original_size = self.text_window.get_size()
         self.text_window.iconify()
 
         # Wait for the text window to be minimized
@@ -153,6 +154,9 @@ class FloatingButton:
                 if complete_response.strip():
                     self.tts.tts_to_file(text=complete_response.strip(), file_path="output.wav")
                     os.system("aplay output.wav")
+                    # Restore the text window size
+                    self.text_window.set_default_size(original_size[0], original_size[1])
+                    self.text_window.present()
                 else:
                     print("Complete response is empty, skipping TTS.")
             else:
