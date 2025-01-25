@@ -28,15 +28,7 @@ class FloatingButton:
         self.text_window = None
 
         # Initialize the TTS engine
-        self.engine = pyttsx3.init()
-        voices = self.engine.getProperty('voices')
-        for voice in voices:
-            if "es" in voice.languages[0].lower():
-                self.engine.setProperty('voice', voice.id)
-                print(f"TTS voice selected: {voice.name}")
-                break
-        self.engine.setProperty('rate', 150)
-        self.engine.setProperty('volume', 0.9)
+        self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to("cuda")
 
     def on_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)
