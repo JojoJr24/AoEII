@@ -2,7 +2,7 @@
     "selected_provider": "gemini",
     "selected_model": "models/gemini-2.0-flash-exp",
     "selected_conversation_id": null,
-    "selected_system_message_id": 2,
+    "selected_system_message_id": 3,
     "selected_modes": [],
     "think_mode": false,
     "think_depth": 0,

@@ -16,4 +16,4 @@ Pillow
 faster-whisper
 language_tool_python
 PyGObject
-TTS
+coqui-tts
