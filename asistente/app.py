@@ -58,6 +58,9 @@ class FloatingButton:
             self.text_window.present()
 
     def on_send_clicked(self, widget):
+        # Minimize the text window
+        self.text_window.iconify()
+
         # Get the root window
         window = Gdk.get_default_root_window()
         if not window:
