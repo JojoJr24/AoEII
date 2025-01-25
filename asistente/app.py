@@ -157,6 +157,8 @@ class FloatingButton:
                     # Restore the text window size
                     self.text_window.set_default_size(original_size[0], original_size[1])
                     self.text_window.present()
+                    # Insert the response into the text area
+                    self.text_buffer.insert(self.text_buffer.get_end_iter(), "\n" + complete_response)
                 else:
                     print("Complete response is empty, skipping TTS.")
             else:
