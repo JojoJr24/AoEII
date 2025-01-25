@@ -33,6 +33,12 @@ class FloatingButton:
         self.tts = TTS(model_name="tts_models/es/css10/vits", progress_bar=False)
         self.tts.to(device)
 
+    def wrap_text(self, text, width):
+        """Wraps text to a given width."""
+        import textwrap
+        wrapped_text = textwrap.fill(text, width=width)
+        return wrapped_text
+
     def on_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)
         cr.set_operator(1)
@@ -157,8 +163,12 @@ class FloatingButton:
                     # Restore the text window size
                     self.text_window.set_default_size(original_size[0], original_size[1])
                     self.text_window.present()
+                    # Get the text area width
+                    text_area_width = self.text_area.get_allocated_width()
+                    # Wrap the response text
+                    wrapped_response = self.wrap_text(complete_response, text_area_width)
                     # Insert the response into the text area
-                    self.text_buffer.insert(self.text_buffer.get_end_iter(), "\n" + complete_response)
+                    self.text_buffer.insert(self.text_buffer.get_end_iter(), "\n" + wrapped_response)
                 else:
                     print("Complete response is empty, skipping TTS.")
             else:
