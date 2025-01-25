@@ -91,7 +91,7 @@ class FloatingButton:
 
         # Load the configuration from console/config.json
         try:
-            with open("console/config.json", "r") as f:
+            with open("../console/config.json", "r") as f:
                 config = json.load(f)
                 selected_provider = config.get("selected_provider", "gemini")
                 selected_model = config.get("selected_model", "models/gemini-2.0-flash-exp")
