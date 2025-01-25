@@ -55,15 +55,15 @@ class FloatingButton:
             self.text_window.present()
 
     def on_send_clicked(self, widget):
-        # Get the window
-        window = self.text_window.get_window()
+        # Get the root window
+        window = Gdk.get_default_root_window()
         if not window:
-            print("No window found")
+            print("No root window found")
             return
         
-        # Get the window size
-        width = self.text_window.get_allocation().width
-        height = self.text_window.get_allocation().height
+        # Get the screen size
+        width = window.get_width()
+        height = window.get_height()
 
         # Create a pixbuf from the window
         pixbuf = Gdk.pixbuf_get_from_window(window, 0, 0, width, height)
