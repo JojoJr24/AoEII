@@ -6,7 +6,7 @@ import cairo
 import json
 import requests
 import io
-import pyttsx3
+from TTS.api import TTS
 
 class FloatingButton:
     def __init__(self):
@@ -132,8 +132,8 @@ class FloatingButton:
                             json_data = json.loads(line.strip())
                             response_text = json_data.get('response', '')
                             print(response_text)
-                            self.engine.say(response_text)
-                            self.engine.runAndWait()
+                            self.tts.tts(text=response_text, speaker="es", language="es", file_path="output.wav")
+                            os.system("aplay output.wav")
                         except json.JSONDecodeError:
                             print(f"Error decoding JSON: {line}")
             else:
