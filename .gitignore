@@ -9,3 +9,4 @@ backend/.env
 uv.lock
 pyproject.toml
 output.wav
+screenshot.png
