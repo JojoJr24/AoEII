@@ -1,11 +1,12 @@
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk
 import os
-import cairo
 import json
 import requests
 import io
+import torch
+import cairo
 from TTS.api import TTS
 
 class FloatingButton:
@@ -28,7 +29,9 @@ class FloatingButton:
         self.text_window = None
 
         # Initialize the TTS engine
-        self.tts = TTS(model_name="tts_models/es/mai/tacotron2-DDC").to("cuda")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.tts = TTS(model_name="tts_models/es/css10/vits", progress_bar=False)
+        self.tts.to(device)
 
     def on_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)
@@ -65,12 +68,16 @@ class FloatingButton:
         # Minimize the text window
         self.text_window.iconify()
 
+        # Wait for the text window to be minimized
+        while Gtk.events_pending():
+            Gtk.main_iteration()
+
         # Get the root window
         window = Gdk.get_default_root_window()
         if not window:
             print("No root window found")
             return
-        
+
         # Get the screen size
         width = window.get_width()
         height = window.get_height()
@@ -131,23 +138,23 @@ class FloatingButton:
         try:
             response = requests.post("http://127.0.0.1:5000/api/generate", files=files, data=data, stream=True)
             if response.status_code == 200:
+                complete_response = ""
                 for line in response.iter_lines():
                     if line:
                         try:
                             json_data = json.loads(line.strip())
                             response_text = json_data.get('response', '')
                             print(response_text)
-                            
-                            # Filter out characters not in the vocabulary
-                            filtered_text = ''.join(filter(lambda char: char in self.tts.model.text_manager.vocabulary, response_text))
-                            
-                            if filtered_text:
-                                self.tts.tts(text=filtered_text, file_path="output.wav")
-                                os.system("aplay output.wav")
-                            else:
-                                print("Filtered text is empty, skipping TTS.")
+                            complete_response += response_text + " "
                         except json.JSONDecodeError:
                             print(f"Error decoding JSON: {line}")
+
+                # Once the entire response is received, synthesize it
+                if complete_response.strip():
+                    self.tts.tts_to_file(text=complete_response.strip(), file_path="output.wav")
+                    os.system("aplay output.wav")
+                else:
+                    print("Complete response is empty, skipping TTS.")
             else:
                 print(f"Error: {response.status_code} - {response.text}")
         except Exception as e:
