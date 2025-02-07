@@ -146,7 +146,7 @@ def generate_response(prompt, model_name, image=None, history=None, provider_nam
             provider, model_name, prompt, tool_descriptions, system_message, tool_instances
         )
 
-    response = provider.generate_response(prompt, model_name, image, history, system_message)
+    response = provider.generate_response(prompt=prompt, model_name=model_name, image=image, history=history, system_message=system_message)
     debug_print(GREEN, "Response generated successfully.")
     return response
 
