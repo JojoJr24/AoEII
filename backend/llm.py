@@ -64,18 +64,12 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     """
     Invokes the generate_response method from the Think class and returns the response.
     """
-    if not selected_model:
-        selected_model = selected_model
-
-    # provider = llm_providers.get(selected_provider)
-    # if not provider:
-    #     yield "Error: Provider not found"
-    #     return
-
-    print("PEnsando")
+    print(f"Thinking with prompt: {prompt}, depth: {depth}, model: {selected_model}, provider: {selected_provider}")
+    
     for chunk in think_instance.generate_response(
         prompt=prompt,
         model_name=selected_model,
+        provider=selected_provider,
         depth=depth
     ):
         yield chunk
