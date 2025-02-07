@@ -81,6 +81,10 @@ class OllamaAPI:
                 if i > 0:
                     final_prompt = f"{prompt}\nWait, I have to think it again..."
 
+                # Limpiar el historial de mensajes antes de cada iteración
+                messages = messages[:2] if system_message else []
+                messages.append({"role": "user", "content": final_prompt})
+
                 # Hacer la llamada a Ollama
                 response_stream = ollama.chat(model=model_name, messages=messages, stream=True)
                 for chunk in response_stream:
