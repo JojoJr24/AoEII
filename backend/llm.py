@@ -48,6 +48,15 @@ except Exception as e:
     debug_print(MAGENTA, f"Error initializing Claude API: {e}")
     claude_api = None
 
+# Initialize the Groq API
+groq_api = None
+try:
+    groq_api = GroqAPI()
+    debug_print(BLUE, "Groq API initialized.")
+except Exception as e:
+    debug_print(MAGENTA, f"Error initializing Groq API: {e}")
+    groq_api = None
+
 # Initialize Think class
 think_instance = Think()
 
@@ -57,12 +66,12 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     """
     if not selected_model:
         selected_model = selected_model
-    
+
     # provider = llm_providers.get(selected_provider)
     # if not provider:
     #     yield "Error: Provider not found"
     #     return
-    
+
     for chunk in think_instance.generate_response(
         prompt=prompt,
         model_name=selected_model,
