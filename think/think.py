@@ -5,7 +5,7 @@ import io
 import json
 import sys
 
-class OllamaAPI:
+class Think:
     def __init__(self):
         self.available_models = self._list_available_models()
 
