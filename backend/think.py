@@ -7,7 +7,7 @@ import sys
 
 class Think:
     def __init__(self):
-        self.available_models = self._list_available_models()
+        self.available_models = self._list_available_models("ollama")
 
     def _list_available_models(self, provider) -> List[str]:
         """
