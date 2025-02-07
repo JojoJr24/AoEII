@@ -10,7 +10,7 @@ import importlib.util
 import os
 import json
 
-from .think.think import Think
+from ..think.think import Think
 from utils import GREEN, debug_print
 
 # Initialize the Gemini API
