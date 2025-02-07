@@ -57,16 +57,22 @@ class Think:
             # Ensure we only use the model name (separated by :)
             model_name = model_name.split(":")[0]
 
-            final_prompt = prompt  # Initialize with the original prompt
+            final_prompt = prompt
+            full_response = ""
 
             for i in range(depth):
                 print(f"\n--- Iteration #{i + 1} of {depth} ---")
 
-                if i > 0:
-                    final_prompt = f"{prompt}\nWait, I have to think it again..."
-
                 # Clear the message history before each iteration
-                messages = messages[:2] if system_message else []
+                messages = []
+                if system_message:
+                    messages.append({"role": "system", "content": system_message})
+                if history:
+                    for message in history:
+                        if message["role"] == "model":
+                            messages.append({"role": "assistant", "content": message["content"]})
+                        else:
+                            messages.append({"role": message["role"], "content": message["content"]})
                 messages.append({"role": "user", "content": final_prompt})
 
                 # Use the provider to call the model
@@ -74,8 +80,13 @@ class Think:
                 llm_provider = llm_providers.get(provider)
                 if llm_provider:
                     response_generator = llm_provider.generate_response(prompt=final_prompt, model_name=model_name, image=image, history=history, system_message=system_message)
+                    current_response = ""
                     for chunk in response_generator:
+                        current_response += chunk
                         yield chunk
+                    full_response += current_response
+                    if i < depth - 1:
+                        final_prompt = full_response + "\nWait, I have to think it again..."
                 else:
                     yield f"Error: Provider {provider} not found."
 
