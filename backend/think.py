@@ -6,23 +6,6 @@ import json
 import sys
 
 class Think:
-    def __init__(self):
-        self.available_models = self._list_available_models("ollama")
-
-    def _list_available_models(self, provider) -> List[str]:
-        """
-        Lists available models in the Ollama API.
-
-        Returns:
-            List[str]: Lista con los nombres de los modelos disponibles.
-        """
-        try:
-            models = ollama.list()
-            print(f"Ollama models response: {models}")
-            return [model.model for model in models['models']]
-        except Exception as e:
-            print(f"Error listing Ollama models: {e}")
-            return []
 
     def generate_response(
         self,
