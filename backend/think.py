@@ -88,6 +88,19 @@ class Think:
                 else:
                     yield f"Error: Provider {provider} not found."
 
+            # Generate final response
+            final_prompt = f"Based on the information you have gathered: {full_response}\nWhat is your final answer?"
+            
+            # Use the provider to call the model
+            from llm import llm_providers
+            llm_provider = llm_providers.get(provider)
+            if llm_provider:
+                response_generator = llm_provider.generate_response(prompt=final_prompt, model_name=model_name, image=image, history=history, system_message=system_message)
+                for chunk in response_generator:
+                    yield chunk
+            else:
+                yield f"Error: Provider {provider} not found."
+
         except Exception as e:
             yield f"Error generating response: {e}"
 
