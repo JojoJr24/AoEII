@@ -69,11 +69,13 @@ class Think:
                 messages = messages[:2] if system_message else []
                 messages.append({"role": "user", "content": final_prompt})
 
-                # Make the call to Ollama
-                # TODO: Use the provider to call the model
-                response_stream = ollama.chat(model=model_name, messages=messages, stream=True)
-                for chunk in response_stream:
-                    yield chunk['message']['content']
+                # Use the provider to call the model
+                if provider == "ollama":
+                    response_stream = ollama.chat(model=model_name, messages=messages, stream=True)
+                    for chunk in response_stream:
+                        yield chunk['message']['content']
+                else:
+                    yield f"Error: Provider {provider} not yet implemented for think."
 
         except Exception as e:
             yield f"Error generating response: {e}"
