@@ -10,7 +10,7 @@ import importlib.util
 import os
 import json
 
-from think.think import Think
+from think import Think
 from utils import GREEN, debug_print
 
 # Initialize the Gemini API
@@ -72,6 +72,7 @@ def think(prompt: str, depth: int, selected_model=None, selected_provider=None) 
     #     yield "Error: Provider not found"
     #     return
 
+    print("PEnsando")
     for chunk in think_instance.generate_response(
         prompt=prompt,
         model_name=selected_model,
