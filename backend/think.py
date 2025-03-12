@@ -73,7 +73,7 @@ class Think:
                             messages.append({"role": "assistant", "content": message["content"]})
                         else:
                             messages.append({"role": message["role"], "content": message["content"]})
-                messages.append({"role": "user", "content": final_prompt})
+                messages.append({"role": "assistant", "content": final_prompt})
 
 
                 if llm_provider:
@@ -84,16 +84,14 @@ class Think:
                         yield chunk
                     full_response += current_response
                     if i < depth - 1:
-                        final_prompt = full_response + "\nWait, I have to think it again, may be I'm wrong..."
+                        final_prompt = full_response + "\nWait,What I know for sure?, I have to think the original problem again from another point of view, may be I was are wrong... "
                 else:
                     yield f"Error: Provider {provider} not found."
 
             # Generate final response
-            final_prompt = f"Based on the information you have gathered: {full_response}\nWhat is your final answer?"
+            final_prompt = f"{full_response}\nWhat is your final answer?"
             
-            # Use the provider to call the model
-            from llm import llm_providers
-            llm_provider = llm_providers.get(provider)
+
             if llm_provider:
                 response_generator = llm_provider.generate_response(prompt=final_prompt, model_name=model_name, image=image, history=history, system_message=system_message)
                 for chunk in response_generator:

@@ -232,9 +232,9 @@ def process_tools_with_llm(provider, model_name, prompt, tool_descriptions, syst
         Now, respond to the following prompt:
         {prompt}
     """
-
     tool_response_generator = provider.generate_response(tool_prompt, model_name, None, None, system_message)
     tool_response = "".join(tool_response_generator)
+    debug_print(MAGENTA,tool_response)
 
     try:
         tool_calls = parse_tool_calls(tool_response)
