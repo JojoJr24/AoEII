@@ -35,5 +35,6 @@ export const elements = {
     deleteAllTasksButton: document.getElementById('delete-all-tasks-button'),
     taskResponseModal: document.getElementById('task-response-modal'),
     taskResponseContent: document.getElementById('task-response-content'),
-    tokensPerSecondDisplay: document.getElementById('tokens-per-second')
+    tokensPerSecondDisplay: document.getElementById('tokens-per-second'),
+    connectBackendButton: document.getElementById('connect-backend-button')
 };

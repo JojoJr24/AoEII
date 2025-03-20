@@ -5,7 +5,7 @@ export async function fetchToolModes() {
         const response = await fetch('http://127.0.0.1:5000/api/tool_modes');
         if (!response.ok) {
             console.error('Failed to fetch modes:', response.statusText);
-            return;
+            return null;
         }
         const modes = await response.json();
         elements.toolsContainer.innerHTML = '';
@@ -19,8 +19,10 @@ export async function fetchToolModes() {
             toolTag.addEventListener('dragstart', handleDragStart);
             elements.toolsContainer.appendChild(toolTag);
         });
+        return modes;
     } catch (error) {
         console.error('Error fetching modes:', error);
+        return null;
     }
 }
 

@@ -12,7 +12,7 @@ let selectedModel = elements.llmModel.value;
 let availableModels = [];
 
 // Function to fetch available models
-async function fetchModels(provider) {
+export async function fetchModels(provider) {
     try {
         const response = await fetch(`http://127.0.0.1:5000/api/models?provider=${provider}`);
         if (!response.ok) {
@@ -20,7 +20,7 @@ async function fetchModels(provider) {
             console.error('Failed to fetch models:', message);
             addMessage(`Error loading models: ${message}`, false)
             elements.llmModel.innerHTML = '<option>Error loading models</option>';
-            return;
+            return null;
         }
         const models = await response.json();
         if (models && models.length > 0) {
@@ -30,16 +30,72 @@ async function fetchModels(provider) {
             setupModelAutocomplete(models);
             updateLLMStatus(selectedProvider, selectedModel);
             saveConfig();
+            return models;
         } else {
             console.error('No models returned from the API.');
             addMessage('No models available for this provider.', false);
             elements.llmModel.value = 'No models available';
             elements.llmModel.setAttribute('list', '');
+            return null;
         }
     } catch (error) {
         console.error('Failed to fetch models:', error);
         addMessage(`Error loading models: ${error.message}`, false)
         elements.llmModel.value = 'Error loading models';
+        return null;
+    }
+}
+
+// Function to initialize all data
+async function initializeAllData() {
+    try {
+        // Load config first
+        const config = loadConfig();
+        
+        // Apply config settings
+        if (config) {
+            if (config.selected_provider) {
+                selectedProvider = config.selected_provider;
+                elements.llmProvider.value = selectedProvider;
+            }
+            if (config.openai_base_url) {
+                elements.openaiBaseUrlInput.value = config.openai_base_url;
+            }
+            if (config.think_mode !== undefined) {
+                elements.thinkToggle.checked = config.think_mode;
+            }
+            if (config.think_depth !== undefined) {
+                elements.thinkDepth.value = config.think_depth;
+                elements.thinkDepth.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // Load all required data in parallel
+        const [models] = await Promise.all([
+            fetchModels(selectedProvider),
+            fetchSystemMessages(),
+            fetchToolModes(),
+            loadConversations()
+        ]);
+
+        // Apply model from config after models are loaded
+        if (config && config.selected_model && models) {
+            if (models.includes(config.selected_model)) {
+                selectedModel = config.selected_model;
+                elements.llmModel.value = selectedModel;
+                updateLLMStatus(selectedProvider, selectedModel);
+            }
+        }
+
+        // Trigger base URL input event if needed
+        if (config && config.openai_base_url) {
+            elements.openaiBaseUrlInput.dispatchEvent(new Event('input'));
+        }
+
+
+    } catch (error) {
+        console.error('Error initializing app:', error);
+        addMessage('Error al conectar con el backend. Por favor intente nuevamente.', false);
     }
 }
 
@@ -50,6 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setupModalHandlers();
     setupDragAndDrop();
     setupToolListeners();
+
+    // Event listener for connect button
+    elements.connectBackendButton.addEventListener('click', initializeAllData);
 
     // Event listener for provider change
     elements.llmProvider.addEventListener('change', async () => {
@@ -178,35 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for conversation created
     window.addEventListener('conversationCreated', loadConversations);
 
-    // Load config first
-    const config = loadConfig();
-    if (config && config.selected_provider) {
-        selectedProvider = config.selected_provider;
-        elements.llmProvider.value = selectedProvider;
-    }
-
-    // Initial setup
-    elements.llmProvider.dispatchEvent(new Event('change')); // This will trigger fetchModels
-    fetchSystemMessages();
-    fetchToolModes();
-    loadConversations();
-
-    // Apply remaining config
-    if (config) {
-        if (config.selected_model) {
-            selectedModel = config.selected_model;
-            elements.llmModel.value = selectedModel;
-        }
-            if (config.openai_base_url) {
-                elements.openaiBaseUrlInput.value = config.openai_base_url;
-                elements.openaiBaseUrlInput.dispatchEvent(new Event('input'));
-            }
-            if (config.think_mode !== undefined) {
-                elements.thinkToggle.checked = config.think_mode;
-            }
-            if (config.think_depth !== undefined) {
-                elements.thinkDepth.value = config.think_depth;
-                elements.thinkDepth.dispatchEvent(new Event('change'));
-            }
-        }
-    }, 1000);
+    // Initialize the application
+    initializeAllData();
+});

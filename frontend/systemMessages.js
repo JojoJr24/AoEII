@@ -5,7 +5,7 @@ export async function fetchSystemMessages() {
         const response = await fetch('http://127.0.0.1:5000/api/system_messages');
         if (!response.ok) {
             console.error('Failed to fetch system messages:', response.statusText);
-            return;
+            return null;
         }
         const systemMessages = await response.json();
         elements.systemMessageSelect.innerHTML = '<option value="">None</option>';
@@ -15,8 +15,10 @@ export async function fetchSystemMessages() {
             option.textContent = `${message.name} (${message.content.length > 50 ? message.content.substring(0, 50) + '...' : message.content})`;
             elements.systemMessageSelect.appendChild(option);
         });
+        return systemMessages;
     } catch (error) {
         console.error('Error fetching system messages:', error);
+        return null;
     }
 }
 

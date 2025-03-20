@@ -1,14 +1,17 @@
+import { elements } from './domElements.js';
+import { fetchModels } from './main.js';
+
 // Configuration management
 export function saveConfig() {
     const config = {
-        selected_provider: document.getElementById('llm-provider').value,
-        selected_model: document.getElementById('llm-model').value,
+        selected_provider: elements.llmProvider.value,
+        selected_model: elements.llmModel.value,
         selected_conversation_id: "",
         selected_system_message_id: "",
         selected_modes: [],
-        think_mode: document.getElementById('think-toggle').checked,
-        think_depth: parseInt(document.getElementById('think-depth').value),
-        openai_base_url: document.getElementById('openai-base-url').value
+        think_mode: elements.thinkToggle.checked,
+        think_depth: parseInt(elements.thinkDepth.value),
+        openai_base_url: elements.openaiBaseUrlInput.value
     };
 
     localStorage.setItem('config', JSON.stringify(config));
@@ -20,17 +23,17 @@ export function loadConfig() {
      const config = JSON.parse(localStorage.getItem('config'));
      console.log('Loaded config:', config);
      if (config) {
-         selectedProvider = config.selected_provider;
-         selectedModel = config.selected_model;
-         currentConversationId = config.selected_conversation_id;
-         selectedSystemMessageId = config.selected_system_message_id;
-         thinkToggle.checked = config.think_mode;
-         thinkDepth.value = config.think_depth;
-         openaiBaseUrlInput.value = config.openai_base_url;
-         llmProvider.value = selectedProvider;
-         llmModel.value = selectedModel;
+         let selectedProvider = config.selected_provider;
+         let selectedModel = config.selected_model;
+         let currentConversationId = config.selected_conversation_id;
+         let selectedSystemMessageId = config.selected_system_message_id;
+         elements.thinkToggle.checked = config.think_mode;
+         elements.thinkDepth.value = config.think_depth;
+         elements.openaiBaseUrlInput.value = config.openai_base_url;
+         elements.llmProvider.value = selectedProvider;
+         elements.llmModel.value = selectedModel;
          if (selectedProvider === 'openai') {
-             openaiBaseUrlGroup.style.display = 'flex';
+             elements.openaiBaseUrlGroup.style.display = 'flex';
          }
          fetchModels(selectedProvider);
          if (currentConversationId) {
@@ -58,7 +61,7 @@ export function loadConfig() {
                      toolTag.remove();
                  });
                  toolTag.appendChild(deleteButton);
-                 activeToolsContainer.appendChild(toolTag);
+                 elements.activeToolsContainer.appendChild(toolTag);
              });
          }
      }
