@@ -10,7 +10,6 @@ import { fetchToolModes, setupToolListeners } from './tools.js';
 let selectedProvider = elements.llmProvider.value;
 let selectedModel = elements.llmModel.value;
 let availableModels = [];
-let uploadedImage = null;
 
 // Function to fetch available models
 async function fetchModels(provider) {
@@ -100,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.imageUpload.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
-            uploadedImage = file;
             handleImageUpload(file);
         }
     });

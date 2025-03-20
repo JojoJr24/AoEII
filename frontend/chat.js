@@ -4,6 +4,13 @@ import { elements } from './domElements.js';
 let chatHistory = [];
 let uploadedImage = null;
 let systemMessage = '';
+
+// Listen for image uploads
+window.addEventListener('imageUploaded', (event) => {
+    uploadedImage = event.detail.file;
+    // Add the image preview to chat
+    addMessage(event.detail.image);
+});
 let currentConversationId = null;
 let firstMessage = true;
 let conversationTitle = null;
