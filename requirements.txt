@@ -17,3 +17,4 @@ faster-whisper
 language_tool_python
 PyGObject
 coqui-tts
+aiohttp

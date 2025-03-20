@@ -7,13 +7,13 @@ export async function fetchToolModes() {
             console.error('Failed to fetch modes:', response.statusText);
             return null;
         }
-        const modes = await response.json();
+        const toolNames = await response.json();
         elements.toolsContainer.innerHTML = '';
-        modes.forEach(mode => {
+        toolNames.forEach(toolName => {
             const toolTag = document.createElement('span');
             toolTag.classList.add('tool-tag', 'draggable-tool');
-            toolTag.textContent = mode;
-            toolTag.title = mode;
+            toolTag.textContent = toolName;
+            toolTag.title = toolName;
             
             toolTag.draggable = true;
             toolTag.addEventListener('dragstart', handleDragStart);

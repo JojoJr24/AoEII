@@ -124,7 +124,7 @@ class FloatingButton:
         system_message = None
         if selected_system_message_id:
             try:
-                response = requests.get(f"http://127.0.0.1:5000/api/system_messages/{selected_system_message_id}")
+                response = requests.get(f"http://127.0.0.1:5001/api/system_messages/{selected_system_message_id}")
                 if response.status_code == 200:
                     system_message = response.json().get('content')
                 else:
@@ -143,7 +143,7 @@ class FloatingButton:
 
         # Send the request to the /generate endpoint
         try:
-            response = requests.post("http://127.0.0.1:5000/api/generate", files=files, data=data, stream=True)
+            response = requests.post("http://127.0.0.1:5001/api/generate", files=files, data=data, stream=True)
             if response.status_code == 200:
                 complete_response = ""
                 for line in response.iter_lines():

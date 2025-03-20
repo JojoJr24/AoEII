@@ -1,0 +1,40 @@
+{
+    "mcpServers": {
+      "searxng": {
+        "command": "node",
+        "args": [
+          "/home/guillermo/Documents/Cline/MCP/searxng-server/build/index.js"
+        ],
+        "env": {},
+        "disabled": false,
+        "alwaysAllow": []
+      },
+      "sequential-thinking-server": {
+        "command": "node",
+        "args": [
+          "/home/guillermo/Documents/Cline/MCP/sequential-thinking-server/build/index.js"
+        ],
+        "env": {},
+        "disabled": false,
+        "alwaysAllow": []
+      },
+      "minima": {
+        "command": "uv",
+        "args": [
+          "--directory",
+          "/home/guillermo/Documents/Cline/MCP/minima/mcp-server",
+          "run",
+          "minima"
+        ]
+      },
+      "json": {
+        "command": "node",
+        "args": [
+          "/home/guillermo/Documents/Cline/MCP/JSON-MCP-Server/build/index.js"
+        ],
+        "env": {},
+        "disabled": true,
+        "alwaysAllow": []
+      }
+    }
+  }
