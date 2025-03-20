@@ -148,3 +148,21 @@ def delete_all_conversations():
     cursor.execute("DELETE FROM messages")
     conn.commit()
     conn.close()
+
+def update_message(message_id, edited_content):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE messages SET content = ? WHERE id = ?", (edited_content, message_id))
+    conn.commit()
+    conn.close()
+    return cursor.rowcount > 0
+
+def get_conversation_id_from_message(message_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT conversation_id FROM messages WHERE id = ?", (message_id,))
+    message = cursor.fetchone()
+    conn.close()
+    if message:
+        return message['conversation_id']
+    return None

@@ -54,54 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Config saved in localStorage!');
     }
     
-    function loadConfig() {
-       /* const config = JSON.parse(localStorage.getItem('config'));
-        console.log('Loaded config:', config);
-        if (config) {
-            selectedProvider = config.selected_provider;
-            selectedModel = config.selected_model;
-            currentConversationId = config.selected_conversation_id;
-            selectedSystemMessageId = config.selected_system_message_id;
-            thinkToggle.checked = config.think_mode;
-            thinkDepth.value = config.think_depth;
-            openaiBaseUrlInput.value = config.openai_base_url;
-            llmProvider.value = selectedProvider;
-            llmModel.value = selectedModel;
-            if (selectedProvider === 'openai') {
-                openaiBaseUrlGroup.style.display = 'flex';
-            }
-            fetchModels(selectedProvider);
-            if (currentConversationId) {
-                loadConversation(currentConversationId);
-            }
-            if (selectedSystemMessageId) {
-                fetch(`http://127.0.0.1:5000/api/system_messages/${selectedSystemMessageId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        systemMessageTextarea.value = data.content;
-                        document.getElementById('system-message-name').value = data.name;
-                    })
-                    .catch(error => console.error('Error fetching system message:', error));
-            }
-            const savedModes = config.selected_modes;
-            if (savedModes && savedModes.length > 0) {
-                savedModes.forEach(modeName => {
-                    const toolTag = document.createElement('span');
-                    toolTag.classList.add('tool-tag', 'active-tool-tag');
-                    toolTag.textContent = modeName;
-                    const deleteButton = document.createElement('button');
-                    deleteButton.innerHTML = '<i class="fas fa-times"></i>';
-                    deleteButton.classList.add('delete-active-tool-button');
-                    deleteButton.addEventListener('click', () => {
-                        toolTag.remove();
-                    });
-                    toolTag.appendChild(deleteButton);
-                    activeToolsContainer.appendChild(toolTag);
-                });
-            }
-        }*/
-    }
-    
+     
 
     // Initialize variables
     let selectedProvider = llmProvider.value;
@@ -123,28 +76,202 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!messageDiv) {
             messageDiv = document.createElement('div');
             messageDiv.classList.add('message', isUser ? 'user-message' : 'llm-message');
+            
+            // Crear avatar
+            const avatar = document.createElement('div');
+            avatar.classList.add('message-avatar');
+            avatar.innerHTML = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+            messageDiv.appendChild(avatar);
+
+            // Crear contenedor del contenido
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            messageDiv.appendChild(contentDiv);
+
+            // Crear contenedor de acciones
+            const actionsDiv = document.createElement('div');
+            actionsDiv.classList.add('message-actions');
+            messageDiv.appendChild(actionsDiv);
+
+            // Agregar botones de acción
+            if (isUser) {
+                const editButton = document.createElement('button');
+                editButton.innerHTML = '<i class="fas fa-edit"></i>';
+                editButton.classList.add('message-button');
+                editButton.title = 'Editar mensaje';
+                actionsDiv.appendChild(editButton);
+
+                editButton.addEventListener('click', () => {
+                    const messageText = contentDiv.innerHTML;
+                    const inputField = document.createElement('textarea');
+                    inputField.value = messageText.replace(/<br>/g, '\n').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp; /g, ' ');
+                    contentDiv.innerHTML = '';
+                    contentDiv.appendChild(inputField);
+                    inputField.focus();
+
+                    const buttonsDiv = document.createElement('div');
+                    buttonsDiv.style.marginTop = '8px';
+                    buttonsDiv.style.display = 'flex';
+                    buttonsDiv.style.gap = '8px';
+                    contentDiv.appendChild(buttonsDiv);
+
+                    const saveButton = document.createElement('button');
+                    saveButton.innerHTML = '<i class="fas fa-check"></i>';
+                    saveButton.classList.add('message-button');
+                    saveButton.title = 'Guardar cambios';
+                    buttonsDiv.appendChild(saveButton);
+
+                    const cancelButton = document.createElement('button');
+                    cancelButton.innerHTML = '<i class="fas fa-times"></i>';
+                    cancelButton.classList.add('message-button');
+                    cancelButton.title = 'Cancelar edición';
+                    buttonsDiv.appendChild(cancelButton);
+
+                    saveButton.addEventListener('click', async () => {
+                        const editedMessage = inputField.value;
+                        const messageId = Array.from(chatWindow.children).indexOf(messageDiv);
+                        
+                        // Eliminar todos los mensajes posteriores
+                        const messagesToRemove = Array.from(chatWindow.children).slice(messageId + 1);
+                        messagesToRemove.forEach(msg => msg.remove());
+                        
+                        // Actualizar el historial de chat
+                        chatHistory = chatHistory.slice(0, messageId + 1);
+                        chatHistory[messageId] = { role: "user", content: editedMessage };
+                        previousResponses = previousResponses.slice(0, messageId);
+                        
+                        // Actualizar el contenido del mensaje editado
+                        contentDiv.innerHTML = editedMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>').replace(/  /g, '&nbsp; ');
+                        
+                        // Enviar el mensaje editado al LLM
+                        const formData = new FormData();
+                        formData.append('prompt', editedMessage);
+                        formData.append('model', selectedModel);
+                        formData.append('provider', selectedProvider);
+                        formData.append('history', JSON.stringify(chatHistory));
+                        formData.append('system_message', systemMessage || " ");
+                        if (currentConversationId) {
+                            formData.append('conversation_id', currentConversationId);
+                        }
+                        const activeModes = Array.from(activeToolsContainer.querySelectorAll('.active-tool-tag')).map(tool => tool.textContent);
+                        formData.append('selected_modes', JSON.stringify(activeModes));
+                        formData.append('think', thinkToggle.checked);
+                        formData.append('think_depth', thinkDepth.value);
+                        
+                        try {
+                            const response = await fetch('http://127.0.0.1:5000/api/generate', {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'Accept': 'text/event-stream'
+                                }
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const reader = response.body.getReader();
+                            let partialResponse = '';
+                            let llmMessageDiv = null;
+                            responseStartTime = performance.now();
+
+                            while(true) {
+                                const { done, value } = await reader.read();
+                                if (done) break;
+                                
+                                const text = new TextDecoder().decode(value);
+                                const lines = text.split('\n').filter(line => line.startsWith(' '));
+                                
+                                for (const line of lines) {
+                                    if (line.trim() === '') continue;
+                                    
+                                    try {
+                                        const jsonString = line.substring(1);
+                                        const data = JSON.parse(jsonString);
+                                        partialResponse += data.response;
+                                        if (!llmMessageDiv) {
+                                            llmMessageDiv = addMessage(partialResponse, false);
+                                        } else {
+                                            addMessage(partialResponse, false, llmMessageDiv);
+                                        }
+                                    } catch (e) {
+                                        console.error('Error parsing JSON:', e, line);
+                                        if (!llmMessageDiv) {
+                                            llmMessageDiv = addMessage(partialResponse, false);
+                                        } else {
+                                            addMessage(partialResponse, false, llmMessageDiv);
+                                        }
+                                    }
+                                }
+                            }
+
+                            lastResponse = partialResponse;
+                            const responseEndTime = performance.now();
+                            const elapsedTime = (responseEndTime - responseStartTime) / 1000;
+                            const tokens = partialResponse.split(/\s+/).length;
+                            const tokensPerSecond = (tokens / elapsedTime).toFixed(2);
+                            tokensPerSecondDisplay.textContent = `${tokensPerSecond} tokens/sec`;
+                            
+                            addMessage(partialResponse, false, llmMessageDiv);
+                            chatHistory.push({ role: "model", content: partialResponse });
+                            previousResponses.push({
+                                prompt: editedMessage,
+                                response: partialResponse,
+                                conversationId: currentConversationId,
+                                model: selectedModel,
+                                provider: selectedProvider,
+                                systemMessage: systemMessage,
+                                image: null
+                            });
+
+                        } catch (error) {
+                            console.error('Failed to send message:', error);
+                            addMessage(`Error generating response: ${error.message}`, false);
+                        }
+                    });
+
+                    cancelButton.addEventListener('click', () => {
+                        contentDiv.innerHTML = messageText;
+                    });
+                });
+            } else {
+                const regenerateButton = document.createElement('button');
+                regenerateButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                regenerateButton.classList.add('message-button');
+                regenerateButton.title = 'Regenerar respuesta';
+                actionsDiv.appendChild(regenerateButton);
+                regenerateButton.addEventListener('click', () => regenerateResponse(messageDiv));
+            }
+
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteButton.classList.add('message-button');
+            deleteButton.title = 'Eliminar mensaje';
+            actionsDiv.appendChild(deleteButton);
+            deleteButton.addEventListener('click', () => {
+                const index = Array.from(chatWindow.children).indexOf(messageDiv);
+                if (index > -1) chatHistory.splice(index, 1);
+                messageDiv.remove();
+            });
         }
+
+        const contentDiv = messageDiv.querySelector('.message-content');
         if (typeof message === 'string') {
             if (isUser) {
-                messageDiv.innerHTML = message.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>').replace(/  /g, '&nbsp; ');
-                messageDiv.style.whiteSpace = 'pre-wrap';
+                contentDiv.innerHTML = message.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>').replace(/  /g, '&nbsp; ');
+                contentDiv.style.whiteSpace = 'pre-wrap';
             } else {
-                // Parse markdown and highlight code blocks
-                messageDiv.innerHTML = marked.parse(message);
-                messageDiv.querySelectorAll('pre code').forEach(block => {
-                    // Add copy button
+                contentDiv.innerHTML = marked.parse(message);
+                contentDiv.querySelectorAll('pre code').forEach(block => {
                     const copyButton = document.createElement('button');
                     copyButton.innerHTML = '<i class="fas fa-copy"></i>';
                     copyButton.classList.add('copy-button');
-                    copyButton.style.position = 'absolute';
-                    copyButton.style.top = '0.5em';
-                    copyButton.style.right = '0.5em';
+                    copyButton.title = 'Copiar código';
                     copyButton.addEventListener('click', () => {
                         navigator.clipboard.writeText(block.textContent).then(() => {
                             copyButton.innerHTML = '<i class="fas fa-check"></i>';
-                            setTimeout(() => {
-                                copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-                            }, 2000);
+                            setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i>', 2000);
                         });
                     });
                     const pre = block.parentNode;
@@ -154,29 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         } else if (message instanceof HTMLImageElement) {
-            messageDiv.appendChild(message);
-        }
-        
-        const deleteButton = document.createElement('button');
-        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
-        deleteButton.classList.add('delete-message-button');
-        messageDiv.appendChild(deleteButton);
-        deleteButton.addEventListener('click', () => {
-            const index = Array.from(chatWindow.children).indexOf(messageDiv);
-            if (index > -1) {
-                chatHistory.splice(index, 1);
-            }
-            messageDiv.remove();
-        });
-
-        if (!isUser) {
-            const regenerateButton = document.createElement('button');
-            regenerateButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
-            regenerateButton.classList.add('regenerate-button');
-            messageDiv.appendChild(regenerateButton);
-            regenerateButton.addEventListener('click', () => {
-                regenerateResponse(messageDiv);
-            });
+            contentDiv.appendChild(message);
         }
         if (!messageDiv.parentNode) {
             chatWindow.appendChild(messageDiv);
@@ -706,6 +811,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
+                // Agregar indicador de escritura
+                const typingDiv = document.createElement('div');
+                typingDiv.classList.add('typing-indicator');
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('div');
+                    dot.classList.add('typing-dot');
+                    typingDiv.appendChild(dot);
+                }
+                chatWindow.appendChild(typingDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     body: formData,
@@ -713,7 +829,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Accept': 'text/event-stream'
                     }
                 });
+
+                // Remover indicador de escritura cuando hay error
                 if (!response.ok) {
+                    typingDiv.remove();
                     const errorMsg = `HTTP error! status: ${response.status}`;
                     console.error('Failed to send message:', errorMsg);
                     addMessage(`Error generating response: ${errorMsg}`, false);
@@ -724,6 +843,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let partialResponse = '';
                 let llmMessageDiv = null;
                 responseStartTime = performance.now();
+
+                // Remover indicador de escritura cuando comienza la respuesta
+                typingDiv.remove();
                 while(true) {
                     const { done, value } = await reader.read();
                     if (done) {

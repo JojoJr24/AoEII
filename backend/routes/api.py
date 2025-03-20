@@ -258,3 +258,43 @@ def stop_stream_route():
     stop_stream_global()
     debug_print(True, "Received request to /api/stop")
     return jsonify({"message": "Streaming stopped"})
+
+@api_bp.route('/edit_message', methods=['POST'])
+def edit_message_route():
+    debug_print(True, "Received request to POST /api/edit_message")
+    data = request.get_json()
+    message_id = data.get('message_id')
+    edited_content = data.get('edited_content')
+
+    if not message_id or not edited_content:
+        debug_print(True, "Error: Message ID and edited content are required")
+        return jsonify({"message": "Message ID and edited content are required"}), 400
+
+    # Update the message in the database
+    success = update_message(message_id, edited_content)
+
+    if not success:
+        debug_print(True, f"Error: Message {message_id} not found")
+        return jsonify({"message": f"Message {message_id} not found"}), 404
+
+    # Get the conversation ID
+    conversation_id = get_conversation_id_from_message(message_id)
+
+    # Get the conversation history
+    conversation, messages = get_conversation(conversation_id)
+    history = []
+    for message in messages:
+        history.append({"role": message['role'], "content": message['content']})
+
+    # Generate the response
+    def stream_response():
+        global streaming
+        full_response = ""
+        for chunk in generate_response(edited_content, conversation['model'], None, history, conversation['provider'], conversation['system_message'], []):
+            if not streaming:
+                debug_print(True, "Streaming stopped.")
+                break
+            full_response += chunk
+            yield f" {json.dumps({'response': chunk})}\n\n"
+
+    return Response(stream_response(), mimetype='text/event-stream')
