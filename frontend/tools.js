@@ -40,28 +40,73 @@ export function clearActiveTools() {
 }
 
 export function addActiveTool(modeName) {
+    modeName = modeName.trim();
+
+    // Check if tool already exists
+    const existingTool = Array.from(elements.activeToolsContainer.querySelectorAll('.active-tool-tag'))
+        .find(tool => tool.textContent.trim() === modeName);
+
+    if (existingTool) {
+        console.log('Tool already exists:', modeName);
+        return; // Don't add if already exists
+    }
+
     const toolTag = document.createElement('span');
     toolTag.classList.add('tool-tag', 'active-tool-tag');
     toolTag.textContent = modeName;
-    
+
     const deleteButton = document.createElement('button');
-    deleteButton.innerHTML = '<i class="fas fa-times"></i>';
+    deleteButton.textContent = '×';
     deleteButton.classList.add('delete-active-tool-button');
-    deleteButton.addEventListener('click', () => toolTag.remove());
-    
+    deleteButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toolTag.remove();
+    });
+
     toolTag.appendChild(deleteButton);
     elements.activeToolsContainer.appendChild(toolTag);
 }
 
 export function setupToolListeners() {
+    let isDragging = false;
+    
     // Setup drag and drop for tools
+    elements.activeToolsContainer.addEventListener('dragenter', (event) => {
+        event.preventDefault();
+        isDragging = true;
+    });
+
+    elements.activeToolsContainer.addEventListener('dragleave', () => {
+        isDragging = false;
+    });
+
     elements.activeToolsContainer.addEventListener('dragover', (event) => {
         event.preventDefault();
+        if (!isDragging) {
+            isDragging = true;
+        }
     });
 
     elements.activeToolsContainer.addEventListener('drop', (event) => {
         event.preventDefault();
+        event.stopPropagation();
+        isDragging = false;
+        
         const modeName = event.dataTransfer.getData('text/plain');
-        addActiveTool(modeName);
+        if (!modeName || !modeName.trim()) return;
+
+        const trimmedModeName = modeName.trim();
+
+        // Check if tool already exists
+        const existingTool = Array.from(elements.activeToolsContainer.querySelectorAll('.active-tool-tag'))
+            .find(tool => tool.textContent.trim() === trimmedModeName);
+
+        if (existingTool) {
+            console.log('Tool already exists:', trimmedModeName);
+            return;
+        }
+
+        console.log('Adding new tool:', trimmedModeName);
+        addActiveTool(trimmedModeName);
     });
 }
