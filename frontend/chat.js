@@ -1,7 +1,4 @@
 import { elements } from './domElements.js';
-// Import marked from CDN
-const { marked } = window;
-import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/highlight.min.js';
 
 // State variables
 let chatHistory = [];
@@ -72,7 +69,7 @@ export function addMessage(message, isUser = true, messageDiv = null) {
             contentDiv.innerHTML = message.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>').replace(/  /g, '&nbsp; ');
             contentDiv.style.whiteSpace = 'pre-wrap';
         } else {
-            contentDiv.innerHTML = marked.parse(message);
+            contentDiv.innerHTML = window.marked.parse(message);
             contentDiv.querySelectorAll('pre code').forEach(block => {
                 const copyButton = document.createElement('button');
                 copyButton.innerHTML = '<i class="fas fa-copy"></i>';
@@ -87,7 +84,7 @@ export function addMessage(message, isUser = true, messageDiv = null) {
                 const pre = block.parentNode;
                 pre.style.position = 'relative';
                 pre.appendChild(copyButton);
-                hljs.highlightBlock(block);
+                window.hljs.highlightBlock(block);
             });
         }
     } else if (message instanceof HTMLImageElement) {

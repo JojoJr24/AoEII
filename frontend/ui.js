@@ -26,6 +26,12 @@ export function setInitialDarkMode() {
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     elements.darkModeToggle.checked = prefersDark;
     toggleDarkMode(prefersDark);
+
+    // Listen for system dark mode changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        elements.darkModeToggle.checked = e.matches;
+        toggleDarkMode(e.matches);
+    });
 }
 
 export function handleImageUpload(file) {
@@ -104,18 +110,43 @@ export function updateLLMStatus(provider, model) {
 }
 
 export function setupModelAutocomplete(availableModels) {
-    const datalistId = 'models-list';
-    let datalist = document.getElementById(datalistId);
-    if (!datalist) {
-        datalist = document.createElement('datalist');
-        datalist.id = datalistId;
-        document.body.appendChild(datalist);
-    }
-    datalist.innerHTML = '';
-    availableModels.forEach(model => {
+    elements.llmModel.innerHTML = '';
+    if (availableModels && availableModels.length > 0) {
+        availableModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            elements.llmModel.appendChild(option);
+        });
+    } else {
         const option = document.createElement('option');
-        option.value = model;
-        datalist.appendChild(option);
-    });
-    elements.llmModel.setAttribute('list', datalistId);
+        option.value = '';
+        option.textContent = 'No models available';
+        elements.llmModel.appendChild(option);
+    }
 }
+
+// Save dark mode preference to localStorage
+function saveDarkModePreference(isDark) {
+    localStorage.setItem('darkMode', isDark);
+}
+
+// Load dark mode preference from localStorage
+function loadDarkModePreference() {
+    const savedPreference = localStorage.getItem('darkMode');
+    if (savedPreference !== null) {
+        const isDark = savedPreference === 'true';
+        elements.darkModeToggle.checked = isDark;
+        toggleDarkMode(isDark);
+    }
+}
+
+// Initialize dark mode from saved preference
+document.addEventListener('DOMContentLoaded', () => {
+    loadDarkModePreference();
+    elements.darkModeToggle.addEventListener('change', () => {
+        const isDark = elements.darkModeToggle.checked;
+        toggleDarkMode(isDark);
+        saveDarkModePreference(isDark);
+    });
+});

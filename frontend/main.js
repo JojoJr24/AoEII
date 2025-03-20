@@ -6,11 +6,45 @@ import { fetchSystemMessages, saveSystemMessage, deleteSystemMessage, loadSystem
 import { toggleDarkMode, setInitialDarkMode, handleImageUpload, setupModalHandlers, setupDragAndDrop, updateThinkDepthMessage, toggleOpenAIBaseUrl, updateLLMStatus, setupModelAutocomplete } from './ui.js';
 import { fetchToolModes, setupToolListeners } from './tools.js';
 
+// State variables
 let selectedProvider = elements.llmProvider.value;
 let selectedModel = elements.llmModel.value;
 let availableModels = [];
 let uploadedImage = null;
 
+// Function to fetch available models
+async function fetchModels(provider) {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/api/models?provider=${provider}`);
+        if (!response.ok) {
+            const message = `HTTP error! status: ${response.status}`;
+            console.error('Failed to fetch models:', message);
+            addMessage(`Error loading models: ${message}`, false)
+            elements.llmModel.innerHTML = '<option>Error loading models</option>';
+            return;
+        }
+        const models = await response.json();
+        if (models && models.length > 0) {
+            availableModels = models;
+            selectedModel = models[0];
+            elements.llmModel.value = selectedModel;
+            setupModelAutocomplete(models);
+            updateLLMStatus(selectedProvider, selectedModel);
+            saveConfig();
+        } else {
+            console.error('No models returned from the API.');
+            addMessage('No models available for this provider.', false);
+            elements.llmModel.value = 'No models available';
+            elements.llmModel.setAttribute('list', '');
+        }
+    } catch (error) {
+        console.error('Failed to fetch models:', error);
+        addMessage(`Error loading models: ${error.message}`, false)
+        elements.llmModel.value = 'Error loading models';
+    }
+}
+
+// Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize UI
     setInitialDarkMode();
@@ -65,13 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.imageUpload.addEventListener('change', (event) => {
         const file = event.target.files[0];
-        handleImageUpload(file);
-    });
-
-    // Event listener for image uploaded
-    window.addEventListener('imageUploaded', (event) => {
-        uploadedImage = event.detail.file;
-        addMessage(event.detail.image);
+        if (file) {
+            uploadedImage = file;
+            handleImageUpload(file);
+        }
     });
 
     // Event listener for user input keydown
@@ -149,40 +180,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for conversation created
     window.addEventListener('conversationCreated', loadConversations);
 
-    // Function to fetch available models
-    async function fetchModels(provider) {
-        try {
-            const response = await fetch(`http://127.0.0.1:5000/api/models?provider=${provider}`);
-            if (!response.ok) {
-                const message = `HTTP error! status: ${response.status}`;
-                console.error('Failed to fetch models:', message);
-                addMessage(`Error loading models: ${message}`, false)
-                elements.llmModel.innerHTML = '<option>Error loading models</option>';
-                return;
-            }
-            const models = await response.json();
-            if (models && models.length > 0) {
-                availableModels = models;
-                selectedModel = models[0];
-                elements.llmModel.value = selectedModel;
-                updateLLMStatus(selectedProvider, selectedModel);
-            } else {
-                console.error('No models returned from the API.');
-                addMessage('No models available for this provider.', false);
-                elements.llmModel.value = 'No models available';
-            }
-        } catch (error) {
-            console.error('Failed to fetch models:', error);
-            addMessage(`Error loading models: ${error.message}`, false)
-            elements.llmModel.value = 'Error loading models';
-        }
+    // Load config first
+    const config = loadConfig();
+    if (config && config.selected_provider) {
+        selectedProvider = config.selected_provider;
+        elements.llmProvider.value = selectedProvider;
     }
 
     // Initial setup
-    fetchModels(selectedProvider);
+    elements.llmProvider.dispatchEvent(new Event('change')); // This will trigger fetchModels
     fetchSystemMessages();
     fetchToolModes();
-    updateLLMStatus(selectedProvider, selectedModel);
     loadConversations();
-    setTimeout(loadConfig, 2000);
-});
+
+    // Apply remaining config
+    if (config) {
+        if (config.selected_model) {
+            selectedModel = config.selected_model;
+            elements.llmModel.value = selectedModel;
+        }
+            if (config.openai_base_url) {
+                elements.openaiBaseUrlInput.value = config.openai_base_url;
+                elements.openaiBaseUrlInput.dispatchEvent(new Event('input'));
+            }
+            if (config.think_mode !== undefined) {
+                elements.thinkToggle.checked = config.think_mode;
+            }
+            if (config.think_depth !== undefined) {
+                elements.thinkDepth.value = config.think_depth;
+                elements.thinkDepth.dispatchEvent(new Event('change'));
+            }
+        }
+    }, 1000);
