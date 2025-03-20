@@ -1,0 +1,92 @@
+.system-message-column {
+    width: 280px;
+    background-color: #242526;
+    color: #e4e6eb;
+    padding: 1.25rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.system-message-group,
+.tools-group,
+.think-group {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    background-color: #3a3b3c;
+}
+
+/* Botón borrar conversaciones más pequeño */
+#delete-all-conversations-button {
+    padding: 0.25rem;
+    font-size: 0.8rem;
+    color: #b0b3b8;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+#delete-all-conversations-button:hover {
+    color: #ef4444;
+}
+
+/* System Message modernizado */
+#system-message {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background-color: #3a3b3c;
+    color: #e4e6eb;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+#system-message:focus {
+    outline: none;
+    border-color: #4a9eff;
+    background-color: #4a4b4c;
+}
+
+.system-message-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+#system-message-name {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background-color: #3a3b3c;
+    color: #e4e6eb;
+    font-size: 0.9rem;
+}
+
+#save-system-message-button,
+#delete-system-message-button {
+    padding: 0.4rem;
+    background: transparent;
+    border: none;
+    color: #b0b3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+#save-system-message-button:hover {
+    color: #4a9eff;
+}
+
+#delete-system-message-button:hover {
+    color: #ef4444;
+}

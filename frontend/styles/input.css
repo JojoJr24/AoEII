@@ -1,0 +1,70 @@
+.input-area {
+    background-color: #242526;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.input-with-upload {
+    display: flex;
+    flex: 1;
+    gap: 0.75rem;
+    background-color: #3a3b3c;
+    border-radius: 12px;
+    padding: 0.75rem;
+    align-items: flex-end;
+}
+
+.input-with-upload textarea {
+    flex: 1;
+    min-height: 24px;
+    max-height: 200px;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #e4e6eb;
+}
+
+.input-with-upload textarea::placeholder {
+    color: #b0b3b8;
+}
+
+#send-button, #stop-button, #reset-button, #upload-button {
+    padding: 0.75rem;
+    border-radius: 8px;
+    color: #fff;
+    transition: all 0.2s ease;
+}
+
+#send-button {
+    background-color: #4a9eff;
+}
+
+#stop-button {
+    background-color: #ef4444;
+}
+
+#reset-button {
+    background-color: #6b7280;
+}
+
+#upload-button {
+    background-color: transparent;
+    color: #b0b3b8;
+}
+
+#send-button:hover, #stop-button:hover, #reset-button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+#upload-button:hover {
+    color: #e4e6eb;
+}
