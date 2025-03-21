@@ -1,22 +1,5 @@
 """
 Tool Manager - Local and MCP Tool Integration
-
-This module serves as a wrapper that integrates both local tool execution and Model Context Protocol (MCP) functionality.
-It maintains backward compatibility with existing local tools while adding support for MCP servers that can provide
-additional tools and resources.
-
-Key features:
-- Local tool loading and execution from Python modules
-- MCP client for connecting to remote and local MCP servers
-- Unified interface for executing both local and MCP tools
-- Asynchronous support for MCP operations
-- Configuration loading from cline_mcp_settings.json
-
-The module exposes the same public interface as before:
-- load_tools(): Load local tool modules
-- generate_tool_descriptions(): Get descriptions for all tools (local + MCP)
-- parse_tool_calls(): Parse tool calls from LLM responses
-- execute_tools(): Execute tool calls (handles both local and MCP tools)
 """
 
 import os
@@ -38,7 +21,7 @@ class McpClient:
         self.env = server_config.get('env', {})
         self.tools: List[Dict[str, Any]] = []
         self.resources: List[Dict[str, Any]] = []
-        
+
     async def connect(self):
         """Connect to MCP server and load available tools and resources"""
         if self.url:  # Remote server
@@ -47,7 +30,7 @@ class McpClient:
                 async with session.get(f"{self.url}/tools", headers=self.headers) as resp:
                     if resp.status == 200:
                         self.tools = await resp.json()
-                
+
                 # List resources
                 async with session.get(f"{self.url}/resources", headers=self.headers) as resp:
                     if resp.status == 200:
@@ -103,7 +86,7 @@ class ToolManager:
             with open(config_path) as f:
                 config = json.load(f)
                 for name, server_config in config.get('mcpServers', {}).items():
-                    if not server_config.get('disabled', False):
+                    if not server_config.get('disabled', False): # Check if server is disabled
                         self.mcp_clients[name] = McpClient(server_config)
         except Exception as e:
             debug_print(MAGENTA, f"Error loading MCP config: {e}")
@@ -112,14 +95,14 @@ class ToolManager:
         """Load local tool modules"""
         tools_dir = '../tools'
         tool_instances = []
-        
+
         for tool_name in tool_names:
             try:
                 file_path = os.path.join(tools_dir, f'{tool_name}.py')
                 spec = importlib.util.spec_from_file_location(tool_name, file_path)
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-                
+
                 if hasattr(module, 'execute') and hasattr(module, 'get_tool_description'):
                     tool_instances.append({
                         'name': tool_name,
@@ -131,7 +114,7 @@ class ToolManager:
                     debug_print(MAGENTA, f"Error: Tool {tool_name} lacks required methods.")
             except Exception as e:
                 debug_print(MAGENTA, f"Error loading tool {tool_name}: {e}")
-        
+
         return tool_instances
 
     async def load_mcp_tools(self):
@@ -145,40 +128,45 @@ class ToolManager:
     def generate_tool_descriptions(self, tool_instances: List[Dict[str, Any]]) -> str:
         """Generate formatted tool descriptions including both local and MCP tools"""
         descriptions = []
-        
+
         # Local tools
         for tool in tool_instances:
             descriptions.append(f"- {tool['name']}: {tool['description']}")
-        
+
         # MCP tools
         for client in self.mcp_clients.values():
             for tool in client.tools:
-                descriptions.append(f"- {tool['name']} (MCP): {tool['description']}")
-        
+                descriptions.append(f"- mcp_{tool['name']} (MCP): {tool['description']}")
+
         return "\n".join(descriptions)
 
     def parse_tool_calls(self, tool_response: str) -> List[Dict[str, Any]]:
         """Parse tool calls from LLM response"""
         start_index = tool_response.find('[')
         end_index = tool_response.rfind(']')
-        
+
         if start_index == -1 or end_index == -1:
-            raise json.JSONDecodeError("No tool calls found", tool_response, 0)
-        
+            debug_print(MAGENTA, "Warning: No tool calls found in response.")
+            return []
+
         json_string = tool_response[start_index:end_index + 1]
-        return json.loads(json_string)
+        try:
+            return json.loads(json_string)
+        except json.JSONDecodeError as e:
+            debug_print(MAGENTA, f"Error decoding tool calls: {e}")
+            return []
 
     async def execute_tools(self, tool_calls: List[Dict[str, Any]], tool_instances: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Execute both local and MCP tools"""
         results = []
-        
+
         for call in tool_calls:
             tool_name = call.get('tool_name')
             params = call.get('parameters', {})
-            
+
             # Check local tools first
             local_tool = next((t for t in tool_instances if t['name'] == tool_name), None)
-            
+
             if local_tool:
                 try:
                     debug_print(BLUE, f"Executing local tool: {tool_name} with params: {params}")
@@ -190,26 +178,36 @@ class ToolManager:
                     results.append({"tool_name": tool_name, "error": str(e)})
             else:
                 # Check MCP tools
-                for client in self.mcp_clients.values():
-                    mcp_tool = next((t for t in client.tools if t['name'] == tool_name), None)
-                    if mcp_tool:
-                        try:
-                            debug_print(BLUE, f"Executing MCP tool: {tool_name} with params: {params}")
-                            result = await client.execute_tool(tool_name, params)
-                            debug_print(GREEN, f"Tool result: {result}")
-                            results.append({"tool_name": tool_name, "tool_params": params, "tool_result": result})
-                            break
-                        except Exception as e:
-                            debug_print(MAGENTA, f"Error executing MCP tool {tool_name}: {e}")
-                            results.append({"tool_name": tool_name, "error": str(e)})
+                if tool_name.startswith("mcp_"): # Check if it's an MCP tool
+                    mcp_tool_name = tool_name[4:] # Remove "mcp_" prefix
+                    for client in self.mcp_clients.values():
+                        mcp_tool = next((t for t in client.tools if t['name'] == mcp_tool_name), None)
+                        if mcp_tool:
+                            try:
+                                debug_print(BLUE, f"Executing MCP tool: {tool_name} with params: {params}")
+                                result = await client.execute_tool(mcp_tool_name, params) # Use mcp_tool_name here
+                                debug_print(GREEN, f"Tool result: {result}")
+                                results.append({"tool_name": tool_name, "tool_params": params, "tool_result": result})
+                                break
+                            except Exception as e:
+                                debug_print(MAGENTA, f"Error executing MCP tool {tool_name}: {e}")
+                                results.append({"tool_name": tool_name, "error": str(e)})
+                    else:
+                        debug_print(MAGENTA, f"Error: MCP Tool {tool_name} not found.") # Indicate MCP tool not found
+                        results.append({"tool_name": tool_name, "error": "MCP Tool not found"})
                 else:
-                    debug_print(MAGENTA, f"Error: Tool {tool_name} not found.")
+                    debug_print(MAGENTA, f"Error: Tool {tool_name} not found.") # Indicate local tool not found
                     results.append({"tool_name": tool_name, "error": "Tool not found"})
-        
+
         return results
 
 # Create singleton instance
 tool_manager = ToolManager()
+
+async def _load_mcp_tools():
+    await tool_manager.load_mcp_tools()
+
+asyncio.run(_load_mcp_tools())
 
 # Export functions that maintain the original interface
 def load_tools(tool_names):
