@@ -21,6 +21,7 @@ class ToolManagerApp:
 
     def load_tools(self):
         tools = []
+        # Load tools from .py files in the TOOLS_DIR
         for filename in os.listdir(TOOLS_DIR):
             if filename.endswith(".py") and filename != "__init__.py" and filename != "tool_manager.py":
                 try:
@@ -35,6 +36,20 @@ class ToolManagerApp:
                         })
                 except Exception as e:
                     self.add_message(f"Error loading tool {filename}: {e}", is_user=False)
+
+        # Load MCP tools from config
+        try:
+            with open("mcp_config.json", "r") as f:
+                mcp_config = json.load(f)
+                for server_name, server_config in mcp_config["mcpServers"].items():
+                    tools.append({
+                        "name": server_name,
+                        "description": f"MCP Server: {server_name}",
+                        "modes": ["mcp"]  # Assuming MCP tools operate in 'mcp' mode
+                    })
+        except Exception as e:
+            self.add_message(f"Error loading MCP config: {e}", is_user=False)
+
         return tools
 
     def display_tools(self):

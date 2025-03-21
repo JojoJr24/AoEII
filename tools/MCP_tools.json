@@ -6,7 +6,6 @@
           "/home/guillermo/Documents/Cline/MCP/searxng-server/build/index.js"
         ],
         "env": {},
-        "disabled": false,
         "alwaysAllow": []
       },
       "sequential-thinking-server": {
@@ -15,7 +14,6 @@
           "/home/guillermo/Documents/Cline/MCP/sequential-thinking-server/build/index.js"
         ],
         "env": {},
-        "disabled": false,
         "alwaysAllow": []
       },
       "minima": {
@@ -33,7 +31,6 @@
           "/home/guillermo/Documents/Cline/MCP/JSON-MCP-Server/build/index.js"
         ],
         "env": {},
-        "disabled": true,
         "alwaysAllow": []
       }
     }
